@@ -39,6 +39,25 @@ daryaft https://example.com/file.zip --dry-run
 daryaft -f urls.txt --dry-run
 ```
 
+## `daryaft <url>`
+
+Implemented for exactly one URL. Performs an HTTP GET, accepts HTTP 2xx
+responses, writes to `<filename>.part`, then renames the file after completion.
+
+```bash
+daryaft https://example.com/file.zip
+daryaft https://example.com/file.zip --output downloads
+daryaft https://example.com/file.zip --name file.zip
+```
+
+The command does not overwrite existing final files. It uses simple text output:
+
+```text
+Downloading: <url>
+Saving to: <path>
+Completed: <path>
+```
+
 ## `daryaft download [url...] --dry-run`
 
 Implemented. Explicit form of the same download validation and dry-run planner.
@@ -48,19 +67,26 @@ daryaft download https://example.com/file.zip --dry-run
 daryaft download -f urls.txt --dry-run
 ```
 
-The current milestone does not perform network calls. Without `--dry-run`, the
-command validates input and then reports that the downloader engine is not
-implemented yet.
+## `daryaft download <url>`
+
+Implemented. Explicit form of single URL real download.
+
+Batch real downloads are not implemented yet. A non-dry-run plan with more than
+one URL returns:
+
+```text
+batch downloading is not implemented yet; use --dry-run to inspect the plan
+```
 
 ## Download Flags
 
 - `-f`, `--file string`: read URLs from a file.
-- `-o`, `--output string`: planned output directory.
-- `--name string`: planned filename for a single URL.
+- `-o`, `--output string`: output directory.
+- `--name string`: filename for a single URL.
 - `--dry-run`: validate inputs and print the download plan.
-- `--retries int`: planned retry count, default `3`.
-- `--resume`: enable planned resume support, default `true`.
-- `--no-resume`: disable planned resume support.
+- `--retries int`: included in the plan, default `3`; retry execution is planned.
+- `--resume`: included in the plan, default `true`; resume execution is planned.
+- `--no-resume`: disable planned resume support in the plan.
 
 Validation rules:
 
@@ -87,8 +113,8 @@ These are planned and not implemented yet:
 daryaft update
 ```
 
-Real downloading for `daryaft <url>` and `daryaft download <url>` is planned for
-the next downloader engine milestone.
+Progress bars, TUI rendering, resume execution, retry execution, segmented
+downloads, and self-update are planned.
 
 Related docs:
 

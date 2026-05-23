@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/he8um/daryaft/internal/download"
+	"github.com/he8um/daryaft/internal/downloader"
 	"github.com/spf13/cobra"
 )
 
@@ -25,15 +26,16 @@ var (
 
 var downloadCmd = &cobra.Command{
 	Use:   "download [url...]",
-	Short: "Validate download inputs and show a dry-run plan",
-	Long: `Validate download inputs and show a dry-run plan.
+	Short: "Download one URL or show a dry-run plan",
+	Long: `Download one HTTP/HTTPS URL or show a dry-run plan.
 
-The downloader engine is planned but not implemented yet. Use --dry-run to
+Batch real downloads are planned but not implemented yet. Use --dry-run to
 inspect how Daryaft will interpret URLs, batch files, output options, retries,
-and resume settings.`,
+and resume settings before any network request is made.`,
 	Example: `  daryaft download https://example.com/file.zip --dry-run
+  daryaft download https://example.com/file.zip
   daryaft download -f urls.txt --dry-run
-  daryaft download https://example.com/file.zip --output ~/Downloads --dry-run`,
+  daryaft download https://example.com/file.zip --output ~/Downloads`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return runDownload(cmd, args, subDownloadFlags)
 	},
@@ -49,8 +51,8 @@ func addDownloadFlags(command *cobra.Command, flags *downloadFlagValues) {
 	flags.resume = true
 
 	command.Flags().StringVarP(&flags.file, "file", "f", "", "read URLs from a file")
-	command.Flags().StringVarP(&flags.output, "output", "o", "", "planned output directory")
-	command.Flags().StringVar(&flags.name, "name", "", "planned filename for a single URL")
+	command.Flags().StringVarP(&flags.output, "output", "o", "", "output directory")
+	command.Flags().StringVar(&flags.name, "name", "", "filename for a single URL")
 	command.Flags().BoolVar(&flags.dryRun, "dry-run", false, "validate inputs and print the download plan")
 	command.Flags().IntVar(&flags.retries, "retries", 3, "planned retry count")
 	command.Flags().BoolVar(&flags.resume, "resume", true, "enable planned resume support")
@@ -79,7 +81,20 @@ func runDownload(cmd *cobra.Command, args []string, flags downloadFlagValues) er
 		return nil
 	}
 
-	return errors.New(download.EngineNotImplementedMessage)
+	if len(plan.URLs) > 1 {
+		return errors.New(download.BatchNotImplementedMessage)
+	}
+
+	fmt.Fprintf(cmd.OutOrStdout(), "Downloading: %s\n", plan.URLs[0])
+
+	result, err := downloader.New().Download(plan)
+	if err != nil {
+		return err
+	}
+
+	fmt.Fprintf(cmd.OutOrStdout(), "Saving to: %s\n", result.Path)
+	fmt.Fprintf(cmd.OutOrStdout(), "Completed: %s\n", result.Path)
+	return nil
 }
 
 func hasDownloadFlagChanges(cmd *cobra.Command) bool {

@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-const EngineNotImplementedMessage = "download engine is not implemented yet; use --dry-run to inspect the download plan"
+const BatchNotImplementedMessage = "batch downloading is not implemented yet; use --dry-run to inspect the plan"
 
 type Plan struct {
 	URLs    []string
@@ -27,7 +27,7 @@ func (p Plan) DryRunString() string {
 	fmt.Fprintf(&builder, "Filename: %s\n", valueOrDefault(p.Name, "auto-detect"))
 	fmt.Fprintf(&builder, "Retries: %d\n", p.Retries)
 	fmt.Fprintf(&builder, "Resume: %t\n", p.Resume)
-	fmt.Fprintln(&builder, "Mode: dry-run only, downloader engine not implemented yet")
+	fmt.Fprintln(&builder, "Mode: dry-run only, no network request performed")
 
 	return strings.TrimRight(builder.String(), "\n")
 }

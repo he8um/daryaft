@@ -21,7 +21,7 @@ func TestDryRunString(t *testing.T) {
 		"Filename: auto-detect",
 		"Retries: 3",
 		"Resume: true",
-		"Mode: dry-run only, downloader engine not implemented yet",
+		"Mode: dry-run only, no network request performed",
 	} {
 		if !strings.Contains(got, want) {
 			t.Fatalf("DryRunString() missing %q in:\n%s", want, got)

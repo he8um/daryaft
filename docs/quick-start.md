@@ -10,14 +10,16 @@ go run . --help
 go run . version
 go run .
 go run . https://example.com/file.zip --dry-run
+go run . https://example.com/file.zip --output downloads
 go run . download https://example.com/file.zip --dry-run
 ```
 
 `go run .` prints the current placeholder message. Interactive mode is planned
 for the TUI milestone.
 
-The download command surface currently supports validation and dry-run planning.
-Real downloading is planned for the next downloader engine milestone.
+The download command surface supports validation, dry-run planning, and real
+single URL downloads. Batch real downloads, TUI, progress, resume, and retry
+execution are planned.
 
 ## Build And Test
 

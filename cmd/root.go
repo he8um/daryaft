@@ -23,11 +23,12 @@ var rootCmd = &cobra.Command{
 	Long: `Daryaft is a modern terminal downloader written in Go.
 
 It is similar in spirit to wget, with a clean CLI foundation today and a planned
-terminal UI, downloader engine, packaging, and self-update workflow in future
-milestones.`,
+terminal UI, packaging, self-update workflow, and expanded downloader engine in
+future milestones.`,
 	Example: `  daryaft https://example.com/file.zip
   daryaft https://example.com/file.zip --dry-run
   daryaft -f urls.txt --dry-run
+  daryaft download https://example.com/file.zip
   daryaft download https://example.com/file.zip --dry-run
   daryaft version
   daryaft update`,

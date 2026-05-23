@@ -1,14 +1,13 @@
 # Feature: Single URL Download
 
-Single URL download behavior is partly implemented as validation and dry-run
-planning. Real HTTP downloading is planned for the next downloader engine
-milestone.
+Single URL HTTP/HTTPS download is implemented with simple text output.
 
 ## Current
 
 ```bash
+daryaft https://example.com/file.zip
+daryaft download https://example.com/file.zip
 daryaft https://example.com/file.zip --dry-run
-daryaft download https://example.com/file.zip --dry-run
 ```
 
 Current behavior:
@@ -16,19 +15,28 @@ Current behavior:
 - Accepts `http` and `https` URLs.
 - Rejects empty or malformed URLs.
 - Supports `--output`, `--name`, `--retries`, `--resume`, and `--no-resume`.
-- Prints a dry-run plan.
-- Does not make network calls.
+- Performs one HTTP GET for non-dry-run single URL plans.
+- Accepts only HTTP 2xx responses.
+- Creates the output directory when needed.
+- Writes to `<filename>.part`, then renames to the final filename on success.
+- Leaves `.part` files in place on failure for future resume work.
+- Restarts/truncates existing `.part` files because resume is not implemented yet.
+- Does not overwrite existing final files.
+- Uses simple text output.
 
-Without `--dry-run`, Daryaft validates input and returns:
+Filename selection:
 
-```text
-download engine is not implemented yet; use --dry-run to inspect the download plan
-```
+1. `Content-Disposition` filename.
+2. URL path base name.
+3. `download.bin`.
+
+Filenames are sanitized so path traversal and directory separators cannot escape
+the output directory.
 
 ## Planned
 
-The downloader engine milestone will add real HTTP downloads, output filename
-detection, filesystem writes, progress events, and error handling.
+TUI rendering, progress bars, resume execution, retry execution, checksum
+validation, and segmented downloads are planned.
 
 Related docs:
 

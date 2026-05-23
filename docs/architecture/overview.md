@@ -1,7 +1,8 @@
 # Architecture Overview
 
-Daryaft should stay small and testable. The current implementation only has the
-CLI foundation, version package, and default metadata.
+Daryaft should stay small and testable. The current implementation has the CLI
+foundation, version package, default metadata, validation and planning packages,
+and a first single URL downloader engine.
 
 ## CLI Layer
 
@@ -10,8 +11,10 @@ contain downloader business logic.
 
 ## Downloader Engine
 
-Planned. The engine will own HTTP requests, resume support, retry behavior,
-checksum validation, and file writes.
+Partly implemented. The current engine performs one HTTP/HTTPS GET, accepts
+HTTP 2xx responses, chooses a safe filename, writes to a `.part` file, and
+renames it on success. Batch downloads, progress events, resume execution, retry
+execution, checksum validation, and richer file conflict behavior are planned.
 
 ## Event System
 

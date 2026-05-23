@@ -13,11 +13,13 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 - Root command placeholder for future interactive mode.
 - Version command with build metadata defaults.
 - Download command surface with validation and dry-run planning.
+- Single URL HTTP/HTTPS downloader with safe filename selection and `.part` writes.
 - Starter documentation, CI, Makefile, and future packaging configuration.
 
 ### Planned
 
-- Downloader engine.
+- Batch downloader engine.
+- Progress, resume, and retry execution.
 - Terminal UI foundation.
 - Public installation channels from v1.0.0 onward.
 
