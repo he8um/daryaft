@@ -1,0 +1,41 @@
+# Build outputs
+/bin/
+/dist/
+/build/
+*.exe
+*.test
+*.out
+coverage.out
+coverage.html
+
+# Go workspace noise
+vendor/
+
+# Local env
+.env
+.env.*
+*.local
+*.local.*
+
+# OS/editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Runtime data
+*.part
+*.part.daryaft
+*.tmp
+*.log
+
+# Local-only folders if accidentally copied into repo
+/Docs/
+/Caveman/
+/Workspace/
+/.agent/
+/tmp/
+/scratch/
+*.private.md
+*.local.md

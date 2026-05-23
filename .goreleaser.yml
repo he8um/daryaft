@@ -1,0 +1,39 @@
+# GoReleaser configuration for Daryaft.
+# Public installable release channels must not be published before v1.0.0.
+
+project_name: daryaft
+
+before:
+  hooks:
+    - go mod tidy
+    - go test ./...
+
+builds:
+  - id: daryaft
+    main: .
+    binary: daryaft
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X github.com/he8um/daryaft/pkg/version.Version={{.Version}}
+      - -X github.com/he8um/daryaft/pkg/version.Commit={{.Commit}}
+      - -X github.com/he8um/daryaft/pkg/version.Date={{.Date}}
+
+archives:
+  - id: default
+    builds:
+      - daryaft
+    format: tar.gz
+    name_template: >-
+      {{ .ProjectName }}_{{ .Os }}_{{ .Arch }}
+
+checksum:
+  name_template: checksums.txt
+
+# Homebrew, deb, rpm, and arch package publishing should be enabled only from v1.0.0 onward.
+# See docs/roadmap/release-train.md and docs/engineering/release-process.md.
