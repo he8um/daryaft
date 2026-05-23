@@ -6,22 +6,30 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 
 ## [Unreleased]
 
-### Planned
+### Added
 
 - Initial project skeleton.
-- Core downloader engine.
-- Terminal UI foundation.
-- Pre-1.0 development roadmap.
+- Minimal Cobra CLI foundation.
+- Root command placeholder for future interactive mode.
+- Version command with build metadata defaults.
+- Starter documentation, CI, Makefile, and future packaging configuration.
 
-## [v0.1.0] - Planned
+### Planned
+
+- Downloader engine.
+- Terminal UI foundation.
+- Public installation channels from v1.0.0 onward.
+
+## [v0.1.0-dev] - 2026-05-23
 
 ### Added
 
-- Single URL download.
-- Basic TUI progress bar.
-- Speed, ETA, and downloaded/total display.
-- Footer attribution.
+- Development version for the first local CLI foundation.
+- `daryaft --help`.
+- `daryaft version`.
+- No-argument placeholder for planned interactive mode.
 
 ### Release policy
 
-This version is a pre-1.0 development release and must not be promoted as a public installable stable release.
+This version is a pre-1.0 development version and must not be promoted as a
+public installable stable release.

@@ -1,18 +1,11 @@
 # Contributing to Daryaft
 
-Thank you for considering contributing to Daryaft.
+Daryaft is in pre-1.0 development. Contributions should keep the codebase small,
+testable, and honest about which features are implemented.
 
-## Development rules
+## Branches
 
-1. Keep business logic out of `cmd/`.
-2. Keep TUI rendering independent from downloader internals.
-3. Use events to communicate downloader state.
-4. Add tests for any downloader, updater, or parser behavior.
-5. Update documentation when changing commands, flags, config, storage, or release behavior.
-
-## Branching
-
-Use focused branches:
+Use focused branches named for the change:
 
 ```text
 feature/downloader-core
@@ -21,7 +14,7 @@ fix/resume-range-validation
 chore/goreleaser-config
 ```
 
-## Commit style
+## Commit Messages
 
 Prefer conventional commits:
 
@@ -31,6 +24,27 @@ fix: handle missing content length
 chore: add release workflow
 ```
 
-## Pre-1.0 note
+## Tests
 
-Before v1.0.0, the project may be public but should not publish official user installation channels.
+Run these before opening a pull request:
+
+```bash
+go test ./...
+go build ./...
+```
+
+Add tests for downloader, updater, parser, config, storage, and event behavior.
+CLI-only text changes may use focused command tests once command behavior grows.
+
+## Documentation
+
+Update docs when changing commands, flags, config, storage, release behavior, or
+the public roadmap. Do not document planned commands as active commands unless
+they are implemented and tested.
+
+## Project Rules
+
+- Keep business logic out of `cmd/`.
+- Keep TUI rendering independent from downloader internals.
+- Use events to communicate downloader state when the engine is introduced.
+- Keep public install instructions disabled until `v1.0.0`.

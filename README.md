@@ -1,88 +1,78 @@
 # Daryaft
 
-Daryaft is a beautiful, fast, terminal-based download manager for macOS and Linux.
-It is inspired by tools like `wget`, but adds a modern TUI, queue management, self-update, package releases, and automation-friendly output.
+Daryaft is a modern terminal downloader written in Go. It is similar in spirit
+to `wget`, with a planned terminal UI, clean architecture, packaging, and future
+self-update support.
 
 > Developed with <3 by AmirHesam Piri
 
 ## Status
 
-Daryaft is planned as a public open-source project at:
+Daryaft is in pre-1.0 development and is not stable yet. The current codebase is
+only the smallest working CLI foundation.
 
 - Repository: https://github.com/he8um/daryaft
+- Website: https://xhesam.com
 - Project page: https://xhesam.com/daryaft
 - Author: AmirHesam Piri <info@xhesam.com>
 - License: MIT
 
-## Pre-1.0 policy
+## Install Policy
 
-The repository may be public before `v1.0.0`, but pre-1.0 versions are not public installation releases.
-Do not publish Homebrew, Debian, RPM, Arch, or one-line install channels before `v1.0.0`.
+Public install channels begin at `v1.0.0`. Before that release, Homebrew, Debian,
+RPM, Arch, and one-line install instructions are planned only and must not be
+presented as stable user-facing install paths.
 
-Before `v1.0.0`, releases may exist as internal/local tags or GitHub pre-releases for development validation only.
-Users must not be directed to install Daryaft before the first stable release.
-
-## Stable installation policy
-
-From `v1.0.0` onward, users should be able to install the latest stable version with one command and optionally install a specific version.
-
-Examples planned for stable releases:
+For local development:
 
 ```bash
-brew install he8um/tap/daryaft
+go mod download
+go run . --help
+go run . version
+go run .
 ```
+
+Build and test locally:
 
 ```bash
-curl -fsSL https://xhesam.com/daryaft/install.sh | sh
+make test
+make build
+make run
 ```
 
-Specific version installation is planned through installer flags and package manager versions:
+## Current Commands
 
 ```bash
-curl -fsSL https://xhesam.com/daryaft/install.sh | sh -s -- --version v1.0.0
+daryaft --help
+daryaft version
+daryaft
 ```
+
+With no arguments, Daryaft prints a friendly placeholder. Interactive mode is
+planned for the TUI milestone.
+
+## Planned Features
+
+- Single URL downloads
+- Batch downloads from files
+- Resume, retry, and checksum-aware behavior
+- Beautiful terminal UI
+- Queue and history management
+- Structured automation output
+- Self-update support after the release model is ready
+- Public packages from `v1.0.0` onward
 
 ## Documentation
 
 Repository documentation lives in `docs/`.
-Private implementation docs for agents live outside this repository in `Documents/Daryaft-project/Docs` and must not be committed.
 
 Start here:
 
+- [Documentation Index](docs/index.md)
 - [Quick Start](docs/quick-start.md)
+- [Installation](docs/installation.md)
+- [Usage](docs/usage.md)
 - [Command Reference](docs/command-reference.md)
 - [Architecture Overview](docs/architecture/overview.md)
 - [Roadmap](docs/roadmap/index.md)
-- [Release Policy](docs/roadmap/versioning-policy.md)
-
-## Core commands
-
-```bash
-daryaft
-```
-
-```bash
-daryaft https://example.com/file.zip
-```
-
-```bash
-daryaft -f urls.txt
-```
-
-```bash
-daryaft update
-```
-
-## Footer
-
-The TUI footer must show:
-
-```text
-Developed with <3 by AmirHesam Piri
-```
-
-If terminal hyperlink support is available, `AmirHesam Piri` should link to:
-
-```text
-https://xhesam.com
-```
+- [Versioning Policy](docs/roadmap/versioning-policy.md)

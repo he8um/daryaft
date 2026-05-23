@@ -8,12 +8,13 @@ Report security issues privately to:
 info@xhesam.com
 ```
 
-Do not open public GitHub issues for security vulnerabilities.
+Do not open public GitHub issues for vulnerabilities.
 
 ## Security model
 
-Daryaft downloads files from user-provided URLs. It must not execute downloaded files automatically.
-Features that execute user commands, run hooks, or scan files must be explicit opt-in features.
+Daryaft will download files from user-provided URLs. It must never execute
+downloaded files automatically. Future features that run hooks, execute commands,
+or scan files must be explicit opt-in features.
 
 Read:
 
@@ -23,5 +24,5 @@ Read:
 
 ## Update security
 
-Self-update must verify checksums before replacing the binary.
-Rollback must be attempted when replacement fails.
+Self-update is planned but not implemented. When added, it must verify checksums
+before replacing the binary and attempt rollback if replacement fails.

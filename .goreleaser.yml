@@ -35,5 +35,38 @@ archives:
 checksum:
   name_template: checksums.txt
 
+changelog:
+  use: git
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+
+# Package publishing placeholders for v1.0.0 and later.
+# Enable these sections only when public install channels are official.
+#
+# nfpms:
+#   - id: packages
+#     package_name: daryaft
+#     vendor: AmirHesam Piri
+#     homepage: https://xhesam.com/daryaft
+#     maintainer: AmirHesam Piri <info@xhesam.com>
+#     description: Modern terminal downloader written in Go.
+#     license: MIT
+#     formats:
+#       - deb
+#       - rpm
+#       - archlinux
+#
+# brews:
+#   - name: daryaft
+#     repository:
+#       owner: he8um
+#       name: homebrew-tap
+#     homepage: https://xhesam.com/daryaft
+#     description: Modern terminal downloader written in Go.
+#     license: MIT
+
 # Homebrew, deb, rpm, and arch package publishing should be enabled only from v1.0.0 onward.
 # See docs/roadmap/release-train.md and docs/engineering/release-process.md.
