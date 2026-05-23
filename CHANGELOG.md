@@ -12,6 +12,7 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 - Minimal Cobra CLI foundation.
 - Root command placeholder for future interactive mode.
 - Version command with build metadata defaults.
+- Download command surface with validation and dry-run planning.
 - Starter documentation, CI, Makefile, and future packaging configuration.
 
 ### Planned

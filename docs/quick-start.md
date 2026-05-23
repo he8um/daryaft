@@ -9,10 +9,15 @@ go mod download
 go run . --help
 go run . version
 go run .
+go run . https://example.com/file.zip --dry-run
+go run . download https://example.com/file.zip --dry-run
 ```
 
 `go run .` prints the current placeholder message. Interactive mode is planned
 for the TUI milestone.
+
+The download command surface currently supports validation and dry-run planning.
+Real downloading is planned for the next downloader engine milestone.
 
 ## Build And Test
 
@@ -20,6 +25,7 @@ for the TUI milestone.
 make test
 make build
 ./bin/daryaft version
+./bin/daryaft https://example.com/file.zip --dry-run
 ```
 
 Related docs:

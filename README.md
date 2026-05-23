@@ -8,8 +8,8 @@ self-update support.
 
 ## Status
 
-Daryaft is in pre-1.0 development and is not stable yet. The current codebase is
-only the smallest working CLI foundation.
+Daryaft is in pre-1.0 development and is not stable yet. The current codebase
+has a CLI foundation plus download input validation and dry-run planning.
 
 - Repository: https://github.com/he8um/daryaft
 - Website: https://xhesam.com
@@ -30,6 +30,8 @@ go mod download
 go run . --help
 go run . version
 go run .
+go run . https://example.com/file.zip --dry-run
+go run . download https://example.com/file.zip --dry-run
 ```
 
 Build and test locally:
@@ -46,15 +48,23 @@ make run
 daryaft --help
 daryaft version
 daryaft
+daryaft https://example.com/file.zip --dry-run
+daryaft -f urls.txt --dry-run
+daryaft download https://example.com/file.zip --dry-run
+daryaft download -f urls.txt --dry-run
 ```
 
 With no arguments, Daryaft prints a friendly placeholder. Interactive mode is
 planned for the TUI milestone.
 
+Download commands currently validate URLs and print a dry-run plan. Real HTTP
+downloading is planned for the next downloader engine milestone. Non-dry-run
+download attempts return a clear not-implemented error.
+
 ## Planned Features
 
-- Single URL downloads
-- Batch downloads from files
+- Real single URL downloads
+- Real batch downloads from files
 - Resume, retry, and checksum-aware behavior
 - Beautiful terminal UI
 - Queue and history management

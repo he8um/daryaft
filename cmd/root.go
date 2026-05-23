@@ -16,19 +16,27 @@ var (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   config.BinaryName,
-	Short: "Daryaft is a modern terminal downloader.",
+	Use:           config.BinaryName,
+	Short:         "Daryaft is a modern terminal downloader.",
+	SilenceUsage:  true,
+	SilenceErrors: true,
 	Long: `Daryaft is a modern terminal downloader written in Go.
 
 It is similar in spirit to wget, with a clean CLI foundation today and a planned
 terminal UI, downloader engine, packaging, and self-update workflow in future
 milestones.`,
 	Example: `  daryaft https://example.com/file.zip
-  daryaft -f urls.txt
+  daryaft https://example.com/file.zip --dry-run
+  daryaft -f urls.txt --dry-run
+  daryaft download https://example.com/file.zip --dry-run
   daryaft version
   daryaft update`,
-	Args: cobra.NoArgs,
+	Args: cobra.ArbitraryArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) > 0 || hasDownloadFlagChanges(cmd) {
+			return runDownload(cmd, args, rootDownloadFlags)
+		}
+
 		fmt.Fprintln(cmd.OutOrStdout(), app.InteractivePlaceholder())
 		return nil
 	},
