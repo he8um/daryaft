@@ -36,6 +36,7 @@ Implemented. Validates one or more HTTP/HTTPS URLs and prints a dry-run plan.
 
 ```bash
 daryaft https://example.com/file.zip --dry-run
+daryaft https://example.com/a.txt https://example.com/b.txt --dry-run
 daryaft -f urls.txt --dry-run
 ```
 
@@ -81,12 +82,36 @@ daryaft download -f urls.txt --dry-run
 
 Implemented. Explicit form of single URL real download.
 
-Batch real downloads are not implemented yet. A non-dry-run plan with more than
-one URL returns:
+## `daryaft [url...]`
+
+Implemented for one or more URLs. When more than one URL is present, downloads
+run sequentially in input order and continue after item failures.
+
+```bash
+daryaft https://example.com/a.txt https://example.com/b.txt
+daryaft -f urls.txt
+daryaft https://example.com/a.txt -f urls.txt
+```
+
+Batch output uses item headers, per-item progress, and a final summary:
 
 ```text
-batch downloading is not implemented yet; use --dry-run to inspect the plan
+[1/2] Downloading: <url>
+Saving to: <path>
+Progress: <downloaded> / <total> bytes (<percent>%) | <speed>
+Completed: <path>
+Daryaft batch summary
+Total: 2
+Completed: 2
+Failed: 0
 ```
+
+If any item fails, Daryaft continues with the remaining URLs, lists failed
+downloads in the summary, and returns a non-zero exit status at the end.
+
+## `daryaft download [url...]`
+
+Implemented. Explicit form of sequential batch download.
 
 ## Download Flags
 
@@ -123,8 +148,8 @@ These are planned and not implemented yet:
 daryaft update
 ```
 
-Rich progress bars, TUI rendering, resume execution, retry execution, segmented
-downloads, and self-update are planned.
+Batch concurrency, queue persistence, rich progress bars, TUI rendering, resume
+execution, retry execution, segmented downloads, and self-update are planned.
 
 Related docs:
 

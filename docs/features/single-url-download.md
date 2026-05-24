@@ -59,4 +59,5 @@ Related docs:
 
 - [Usage](../usage.md)
 - [Command Reference](../command-reference.md)
+- [Batch Downloads](batch-downloads.md)
 - [Downloader Engine](../architecture/downloader-engine.md)

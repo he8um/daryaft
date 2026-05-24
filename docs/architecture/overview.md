@@ -14,16 +14,18 @@ contain downloader business logic.
 Partly implemented. The current engine performs one HTTP/HTTPS GET, accepts
 HTTP 2xx responses, chooses a safe filename, writes to a `.part` file, and
 renames it on success. The single URL path emits structured lifecycle and
-progress events. Batch downloads, resume execution, retry execution, checksum
+progress events. Multiple URLs are supported through a simple sequential batch
+runner that invokes the single URL downloader one item at a time and collects
+per-item results. Batch concurrency, resume execution, retry execution, checksum
 validation, and richer file conflict behavior are planned.
 
 ## Event System
 
 Partly implemented. The downloader layer defines typed events for started,
 progress, completed, and failed states. The current CLI consumes these events to
-print simple line-based progress. The same event boundary is intended to support
-future TUI rendering and structured automation output without coupling those
-interfaces to downloader internals.
+print simple line-based progress for single and sequential batch downloads. The
+same event boundary is intended to support future TUI rendering and structured
+automation output without coupling those interfaces to downloader internals.
 
 ## TUI Renderer
 
@@ -43,7 +45,7 @@ variables, and flags in a predictable order.
 ## Storage
 
 Planned. Storage may persist history, queue state, partial download metadata,
-and lockfiles.
+and lockfiles. The current sequential batch runner does not persist queue state.
 
 Related docs:
 

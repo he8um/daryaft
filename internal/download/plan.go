@@ -5,8 +5,6 @@ import (
 	"strings"
 )
 
-const BatchNotImplementedMessage = "batch downloading is not implemented yet; use --dry-run to inspect the plan"
-
 type Plan struct {
 	URLs    []string
 	Output  string

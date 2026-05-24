@@ -12,11 +12,6 @@ import (
 
 const progressInterval = 200 * time.Millisecond
 
-type Result struct {
-	URL  string
-	Path string
-}
-
 type Downloader struct {
 	client *http.Client
 }
@@ -155,6 +150,7 @@ func copyWithProgress(file *os.File, body io.Reader, events copyEvents) (int64, 
 	buffer := make([]byte, 64*1024)
 	startedAt := time.Now()
 	lastProgressAt := time.Time{}
+	var lastProgressBytes int64
 	var downloadedBytes int64
 
 	for {
@@ -173,11 +169,14 @@ func copyWithProgress(file *os.File, body io.Reader, events copyEvents) (int64, 
 			if lastProgressAt.IsZero() || now.Sub(lastProgressAt) >= progressInterval {
 				emitEvent(events.Handler, newProgressEvent(events.URL, events.TargetPath, downloadedBytes, events.TotalBytes, startedAt))
 				lastProgressAt = now
+				lastProgressBytes = downloadedBytes
 			}
 		}
 
 		if readErr == io.EOF {
-			emitEvent(events.Handler, newProgressEvent(events.URL, events.TargetPath, downloadedBytes, events.TotalBytes, startedAt))
+			if lastProgressAt.IsZero() || lastProgressBytes != downloadedBytes {
+				emitEvent(events.Handler, newProgressEvent(events.URL, events.TargetPath, downloadedBytes, events.TotalBytes, startedAt))
+			}
 			return downloadedBytes, nil
 		}
 		if readErr != nil {

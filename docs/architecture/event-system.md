@@ -26,8 +26,8 @@ Footer: Developed with <3 by AmirHesam Piri
 
 ## Current implementation
 
-The single URL downloader emits structured events from `internal/downloader`.
-The implemented event types are:
+The downloader emits structured events from `internal/downloader`. The
+implemented event types are:
 
 - `started`: emitted after the target path and partial file are ready, before body copy starts.
 - `progress`: emitted during the controlled copy loop, throttled to avoid excessive output.
@@ -45,7 +45,8 @@ Events carry simple fields that can be tested and reused by later interfaces:
 - error, for failed events
 - timestamp
 
-The CLI currently consumes these events for line-based progress output:
+The CLI currently consumes these events for line-based progress output. Single
+URL output uses:
 
 ```text
 Downloading: <url>
@@ -60,11 +61,25 @@ When the total size is unknown:
 Progress: <downloaded> bytes | <speed>
 ```
 
+Sequential batch downloads reuse the same per-item downloader events. The batch
+runner adds item metadata so the CLI can print headers and collect summary
+counts:
+
+```text
+[1/3] Downloading: <url>
+Saving to: <path>
+Progress: <downloaded> / <total> bytes (<percent>%) | <speed>
+Completed: <path>
+```
+
+The batch runner continues after item failures and returns a final result that
+contains completed and failed item counts plus failure reasons.
+
 ## Boundaries
 
 The event system is deliberately small. It does not implement Bubble Tea, a full
-terminal UI, JSON output, batch download orchestration, resume, retry, or
-segmented downloads yet.
+terminal UI, JSON output, concurrent batch download orchestration, queue
+persistence, resume, retry, or segmented downloads yet.
 
 Future TUI work should subscribe to the downloader event stream instead of
 reaching into downloader internals. Future automation output can use the same

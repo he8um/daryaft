@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/he8um/daryaft/internal/download"
@@ -27,15 +26,17 @@ var (
 
 var downloadCmd = &cobra.Command{
 	Use:   "download [url...]",
-	Short: "Download one URL or show a dry-run plan",
-	Long: `Download one HTTP/HTTPS URL or show a dry-run plan.
+	Short: "Download URLs or show a dry-run plan",
+	Long: `Download one or more HTTP/HTTPS URLs or show a dry-run plan.
 
-Batch real downloads are planned but not implemented yet. Use --dry-run to
-inspect how Daryaft will interpret URLs, batch files, output options, retries,
-and resume settings before any network request is made.`,
+Multiple URLs are downloaded sequentially. Use --dry-run to inspect how Daryaft
+will interpret URLs, batch files, output options, retries, and resume settings
+before any network request is made.`,
 	Example: `  daryaft download https://example.com/file.zip --dry-run
   daryaft download https://example.com/file.zip
+  daryaft download https://example.com/a.txt https://example.com/b.txt
   daryaft download -f urls.txt --dry-run
+  daryaft download -f urls.txt
   daryaft download https://example.com/file.zip --output ~/Downloads`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return runDownload(cmd, args, subDownloadFlags)
@@ -83,7 +84,26 @@ func runDownload(cmd *cobra.Command, args []string, flags downloadFlagValues) er
 	}
 
 	if len(plan.URLs) > 1 {
-		return errors.New(download.BatchNotImplementedMessage)
+		result := downloader.New().DownloadBatch(plan, downloader.BatchHandlers{
+			ItemStarted: func(item downloader.BatchItem) {
+				fmt.Fprintf(cmd.OutOrStdout(), "[%d/%d] Downloading: %s\n", item.Index, item.Total, item.URL)
+			},
+			Event: func(item downloader.BatchItem, event downloader.Event) {
+				switch event.Type {
+				case downloader.EventStarted:
+					fmt.Fprintf(cmd.OutOrStdout(), "Saving to: %s\n", event.TargetPath)
+				case downloader.EventProgress:
+					printProgress(cmd, event)
+				case downloader.EventCompleted:
+					fmt.Fprintf(cmd.OutOrStdout(), "Completed: %s\n", event.TargetPath)
+				case downloader.EventFailed:
+					fmt.Fprintf(cmd.OutOrStdout(), "Failed: %s\n", event.Error)
+				}
+			},
+		})
+
+		fmt.Fprintln(cmd.OutOrStdout(), result.SummaryString())
+		return result.Err()
 	}
 
 	fmt.Fprintf(cmd.OutOrStdout(), "Downloading: %s\n", plan.URLs[0])
