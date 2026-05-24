@@ -32,6 +32,7 @@ Each item uses the normal single URL behavior:
 - writes to `<filename>.part`
 - renames to the final path on success
 - rejects existing final files
+- retries transient network and server failures according to `--retries`
 - emits downloader events that the CLI renders as text progress
 
 Batch output starts each item with a clear header:
@@ -57,14 +58,23 @@ Failed downloads:
 If one or more items fail, Daryaft returns a non-zero exit status after printing
 the summary.
 
+Each batch item has its own retry cycle. `--retries 0` means one attempt for
+each item. `--retries 3` means each item can make up to four attempts total.
+Retryable failures are network errors, timeouts, HTTP `429`, `500`, `502`,
+`503`, and `504`.
+
+Resume is still planned, not implemented. Until resume exists, retries
+restart/truncate the item `.part` file. If a final target file exists or appears
+between attempts, that item fails without retrying and the batch continues.
+
 `--name` remains rejected when multiple URLs are present because one filename
 cannot safely apply to multiple downloads.
 
 ## Planned
 
-Concurrency, persistent queue state, history, retry execution, TUI rendering,
-and richer batch formats are planned. The current implementation deliberately
-does not do concurrent downloads or queue persistence.
+Concurrency, persistent queue state, history, TUI rendering, and richer batch
+formats are planned. The current implementation deliberately does not do
+concurrent downloads or queue persistence.
 
 Related docs:
 

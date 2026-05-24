@@ -18,12 +18,14 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 - CLI text progress output backed by downloader events.
 - Sequential batch downloading for multiple URL args, URL files, and combined inputs.
 - Batch summary output with continue-on-error failure reporting.
+- Basic retry execution with exponential backoff for transient network and server failures.
+- Retry events and CLI retry messages.
 - Starter documentation, CI, Makefile, and future packaging configuration.
 
 ### Planned
 
 - Concurrent batch downloader engine.
-- Rich progress bars, resume, and retry execution.
+- Rich progress bars and resume execution.
 - Terminal UI foundation.
 - Queue persistence.
 - Public installation channels from v1.0.0 onward.

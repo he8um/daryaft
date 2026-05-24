@@ -31,8 +31,9 @@ implemented event types are:
 
 - `started`: emitted after the target path and partial file are ready, before body copy starts.
 - `progress`: emitted during the controlled copy loop, throttled to avoid excessive output.
+- `retrying`: emitted before a retry delay when a failure is retryable and attempts remain.
 - `completed`: emitted after the `.part` file is renamed to the final target path.
-- `failed`: emitted when a download attempt fails after entering the downloader path.
+- `failed`: emitted when a download fails after retries are exhausted or the error is not retryable.
 
 Events carry simple fields that can be tested and reused by later interfaces:
 
@@ -42,7 +43,9 @@ Events carry simple fields that can be tested and reused by later interfaces:
 - total bytes, using `0` when the server does not provide a usable content length
 - percent, only populated when total bytes are known and greater than zero
 - approximate bytes per second
-- error, for failed events
+- error, for failed and retrying events
+- attempt and max attempts, for retrying and attempt-scoped events
+- next delay, for retrying events
 - timestamp
 
 The CLI currently consumes these events for line-based progress output. Single
@@ -52,6 +55,7 @@ URL output uses:
 Downloading: <url>
 Saving to: <path>
 Progress: <downloaded> / <total> bytes (<percent>%) | <speed>
+Retrying <attempt>/<max> in <delay>: <reason>
 Completed: <path>
 ```
 
@@ -79,7 +83,7 @@ contains completed and failed item counts plus failure reasons.
 
 The event system is deliberately small. It does not implement Bubble Tea, a full
 terminal UI, JSON output, concurrent batch download orchestration, queue
-persistence, resume, retry, or segmented downloads yet.
+persistence, resume, or segmented downloads yet.
 
 Future TUI work should subscribe to the downloader event stream instead of
 reaching into downloader internals. Future automation output can use the same

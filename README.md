@@ -11,7 +11,8 @@ self-update support.
 Daryaft is in pre-1.0 development and is not stable yet. The current codebase
 has a CLI foundation, dry-run planning, and real single URL HTTP/HTTPS
 downloads with simple text progress output. Multiple URLs can also be
-downloaded sequentially in one command.
+downloaded sequentially in one command. Basic retry execution is implemented
+for temporary network and server failures.
 
 - Repository: https://github.com/he8um/daryaft
 - Website: https://xhesam.com
@@ -68,18 +69,20 @@ planned for the TUI milestone.
 
 Download commands validate URLs and can print a dry-run plan. Real downloading
 is implemented for one URL and for multiple URLs sequentially. Batch downloads
-continue after item failures and print a final summary.
+continue after item failures and print a final summary. `--retries` controls
+retry attempts after the initial attempt; the default `3` means up to four total
+attempts.
 
 The downloader now emits structured started, progress, completed, and failed
-events for the single URL path. The CLI consumes those events for line-based
-progress output for single and sequential batch downloads; the full terminal UI
-is still planned.
+events plus retrying events. The CLI consumes those events for line-based
+progress and retry output for single and sequential batch downloads; the full
+terminal UI is still planned.
 
 ## Planned Features
 
 - Concurrent batch downloads
 - Rich progress bars
-- Resume, retry, and checksum-aware behavior
+- Resume and checksum-aware behavior
 - Beautiful terminal UI
 - Queue persistence and history management
 - Structured automation output

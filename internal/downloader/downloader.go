@@ -13,7 +13,8 @@ import (
 const progressInterval = 200 * time.Millisecond
 
 type Downloader struct {
-	client *http.Client
+	client  *http.Client
+	sleeper Sleeper
 }
 
 func New() *Downloader {
@@ -26,7 +27,10 @@ func NewWithClient(client *http.Client) *Downloader {
 	if client == nil {
 		client = defaultHTTPClient()
 	}
-	return &Downloader{client: client}
+	return &Downloader{
+		client:  client,
+		sleeper: time.Sleep,
+	}
 }
 
 func (d *Downloader) Download(plan download.Plan) (Result, error) {
@@ -39,30 +43,67 @@ func (d *Downloader) DownloadWithEvents(plan download.Plan, handler EventHandler
 	}
 
 	rawURL := plan.URLs[0]
-	targetPath := ""
-	totalBytes := int64(0)
-	downloadedBytes := int64(0)
+	policy := d.retryPolicy(plan.Retries)
+	attempts := policy.MaxAttempts()
 
-	fail := func(err error) (Result, error) {
+	var lastErr error
+	for attempt := 1; attempt <= attempts; attempt++ {
+		result, err := d.downloadAttempt(plan, handler, attempt, attempts)
+		if err == nil {
+			return result, nil
+		}
+
+		lastErr = err
+		if attempt >= attempts || !IsRetryableError(err) {
+			emitEvent(handler, Event{
+				Type:        EventFailed,
+				URL:         rawURL,
+				Error:       err,
+				Attempt:     attempt,
+				MaxAttempts: attempts,
+			})
+			return Result{}, err
+		}
+
+		nextAttempt := attempt + 1
+		delay := BackoffDelay(attempt)
 		emitEvent(handler, Event{
-			Type:            EventFailed,
-			URL:             rawURL,
-			TargetPath:      targetPath,
-			DownloadedBytes: downloadedBytes,
-			TotalBytes:      totalBytes,
-			Error:           err,
+			Type:        EventRetrying,
+			URL:         rawURL,
+			Error:       err,
+			Attempt:     nextAttempt,
+			MaxAttempts: attempts,
+			NextDelay:   delay,
 		})
-		return Result{}, err
+		policy.Sleep(delay)
 	}
+
+	return Result{}, lastErr
+}
+
+func (d *Downloader) retryPolicy(retries int) RetryPolicy {
+	sleep := d.sleeper
+	if sleep == nil {
+		sleep = time.Sleep
+	}
+	return RetryPolicy{
+		Retries: retries,
+		Sleep:   sleep,
+	}
+}
+
+func (d *Downloader) downloadAttempt(plan download.Plan, handler EventHandler, attempt, attempts int) (Result, error) {
+	rawURL := plan.URLs[0]
+	totalBytes := int64(0)
 
 	request, err := newRequest(rawURL)
 	if err != nil {
-		return fail(fmt.Errorf("create download request: %w", err))
+		return Result{}, nonRetryableError{err: fmt.Errorf("create download request: %w", err)}
 	}
 
 	response, err := d.client.Do(request)
 	if err != nil {
-		return fail(fmt.Errorf("download %q: %w", rawURL, err))
+		return Result{}, fmt.Errorf("download %q: %w", rawURL, err)
 	}
 	defer response.Body.Close()
 
@@ -71,28 +112,32 @@ func (d *Downloader) DownloadWithEvents(plan download.Plan, handler EventHandler
 	}
 
 	if response.StatusCode < http.StatusOK || response.StatusCode > 299 {
-		return fail(fmt.Errorf("download %q failed: server returned %s", rawURL, response.Status))
+		return Result{}, httpStatusError{
+			StatusCode: response.StatusCode,
+			Status:     response.Status,
+		}
 	}
 
 	filename := FilenameFromResponse(rawURL, response.Header, plan.Name)
 	target, err := prepareTarget(plan.Output, filename)
 	if err != nil {
-		return fail(err)
+		return Result{}, err
 	}
-	targetPath = target.Final
 
 	// Resume is not implemented yet; restart any existing partial file for now.
 	partial, err := os.Create(target.Partial)
 	if err != nil {
-		return fail(fmt.Errorf("create partial file %q: %w", target.Partial, err))
+		return Result{}, fmt.Errorf("create partial file %q: %w", target.Partial, err)
 	}
 
 	emitEvent(handler, Event{
-		Type:       EventStarted,
-		URL:        rawURL,
-		TargetPath: target.Final,
-		TotalBytes: totalBytes,
-		Timestamp:  time.Now(),
+		Type:        EventStarted,
+		URL:         rawURL,
+		TargetPath:  target.Final,
+		TotalBytes:  totalBytes,
+		Attempt:     attempt,
+		MaxAttempts: attempts,
+		Timestamp:   time.Now(),
 	})
 
 	downloadedBytes, copyErr := copyAndClose(partial, response.Body, copyEvents{
@@ -102,11 +147,11 @@ func (d *Downloader) DownloadWithEvents(plan download.Plan, handler EventHandler
 		Handler:    handler,
 	})
 	if copyErr != nil {
-		return fail(copyErr)
+		return Result{}, copyErr
 	}
 
 	if err := os.Rename(target.Partial, target.Final); err != nil {
-		return fail(fmt.Errorf("complete download %q: %w", target.Final, err))
+		return Result{}, fmt.Errorf("complete download %q: %w", target.Final, err)
 	}
 
 	emitEvent(handler, Event{
@@ -116,6 +161,8 @@ func (d *Downloader) DownloadWithEvents(plan download.Plan, handler EventHandler
 		DownloadedBytes: downloadedBytes,
 		TotalBytes:      totalBytes,
 		Percent:         percent(downloadedBytes, totalBytes),
+		Attempt:         attempt,
+		MaxAttempts:     attempts,
 		Timestamp:       time.Now(),
 	})
 

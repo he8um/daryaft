@@ -42,7 +42,7 @@ Current flags:
 - `-o`, `--output`: output directory.
 - `--name`: filename for a single URL.
 - `--dry-run`: print the plan without attempting a download.
-- `--retries`: planned retry count, default `3`.
+- `--retries`: retry attempts after the initial attempt, default `3`.
 - `--resume`: planned resume support, default `true`.
 - `--no-resume`: disable planned resume support.
 
@@ -66,6 +66,23 @@ Progress: 524288 / 1048576 bytes (50.0%) | 1.2 MB/s
 Completed: downloads/file.zip
 ```
 
+Retry execution is implemented for transient network failures and temporary
+server responses. `--retries 0` means one attempt total. `--retries 3` means the
+initial attempt plus up to three retries, for four total attempts.
+
+```text
+Downloading: https://example.com/file.zip
+Retrying 2/4 in 1s: temporary server error: 503 Service Unavailable
+Saving to: downloads/file.zip
+Progress: 524288 / 1048576 bytes (50.0%) | 1.2 MB/s
+Completed: downloads/file.zip
+```
+
+Daryaft retries network errors, timeouts, HTTP `429`, `500`, `502`, `503`, and
+`504`. It does not retry client errors such as `404`, existing final files,
+invalid output paths, filename safety failures, or local filesystem permission
+errors.
+
 When the server does not provide a known `Content-Length`, progress omits the
 total and percent:
 
@@ -84,7 +101,8 @@ daryaft https://example.com/a.txt -f urls.txt
 Batch downloads run one at a time in input order. URL arguments are processed
 first, then URLs from `--file`. Each item uses the same filename selection,
 partial file, existing final file rejection, and progress events as a single URL
-download. `--name` remains invalid when more than one URL is present.
+download. Each item also gets its own retry cycle. `--name` remains invalid when
+more than one URL is present.
 
 Batch output includes an item header and final summary:
 
@@ -119,6 +137,10 @@ Failed downloads:
 - https://example.com/missing.txt: download "https://example.com/missing.txt" failed: server returned 404 Not Found
 ```
 
+Resume is still planned, not implemented. Until resume exists, every retry
+restarts and truncates the `.part` file for that item. If the final target file
+appears between attempts, Daryaft fails that item instead of overwriting it.
+
 ## Planned Examples
 
 These examples are roadmap examples and are not implemented yet:
@@ -127,10 +149,10 @@ These examples are roadmap examples and are not implemented yet:
 daryaft update
 ```
 
-Concurrency, queue persistence, TUI, rich progress bars, resume, retry
-execution, segmented downloads, and self-update are planned. The current
-downloader event stream is the foundation for the future TUI, but no Bubble Tea
-interface is implemented yet.
+Concurrency, queue persistence, TUI, rich progress bars, resume, segmented
+downloads, and self-update are planned. The current downloader event stream is
+the foundation for the future TUI, but no Bubble Tea interface is implemented
+yet.
 
 Related docs:
 

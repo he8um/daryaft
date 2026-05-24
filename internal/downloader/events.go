@@ -9,6 +9,7 @@ const (
 	EventProgress  EventType = "progress"
 	EventCompleted EventType = "completed"
 	EventFailed    EventType = "failed"
+	EventRetrying  EventType = "retrying"
 )
 
 type Event struct {
@@ -20,6 +21,9 @@ type Event struct {
 	Percent             float64
 	SpeedBytesPerSecond float64
 	Error               error
+	Attempt             int
+	MaxAttempts         int
+	NextDelay           time.Duration
 	Timestamp           time.Time
 }
 

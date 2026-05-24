@@ -57,6 +57,7 @@ The command does not overwrite existing final files. It uses simple text output:
 Downloading: <url>
 Saving to: <path>
 Progress: <downloaded> / <total> bytes (<percent>%) | <speed>
+Retrying <attempt>/<max> in <delay>: <reason>
 Completed: <path>
 ```
 
@@ -68,6 +69,11 @@ Progress: <downloaded> bytes | <speed>
 
 Progress lines are generated from structured downloader events. The future TUI
 will consume the same event stream, but it is not implemented yet.
+
+`--retries` is implemented for transient failures. The value is the number of
+retry attempts after the first try, so `--retries 0` means one total attempt and
+`--retries 3` means up to four total attempts. Daryaft retries network errors,
+timeouts, HTTP `429`, `500`, `502`, `503`, and `504`.
 
 ## `daryaft download [url...] --dry-run`
 
@@ -107,7 +113,8 @@ Failed: 0
 ```
 
 If any item fails, Daryaft continues with the remaining URLs, lists failed
-downloads in the summary, and returns a non-zero exit status at the end.
+downloads in the summary, and returns a non-zero exit status at the end. Each
+batch item has its own retry cycle.
 
 ## `daryaft download [url...]`
 
@@ -119,7 +126,7 @@ Implemented. Explicit form of sequential batch download.
 - `-o`, `--output string`: output directory.
 - `--name string`: filename for a single URL.
 - `--dry-run`: validate inputs and print the download plan.
-- `--retries int`: included in the plan, default `3`; retry execution is planned.
+- `--retries int`: retry attempts after the initial attempt, default `3`.
 - `--resume`: included in the plan, default `true`; resume execution is planned.
 - `--no-resume`: disable planned resume support in the plan.
 
@@ -149,7 +156,7 @@ daryaft update
 ```
 
 Batch concurrency, queue persistence, rich progress bars, TUI rendering, resume
-execution, retry execution, segmented downloads, and self-update are planned.
+execution, segmented downloads, and self-update are planned.
 
 Related docs:
 

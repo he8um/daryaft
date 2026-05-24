@@ -84,6 +84,7 @@ func runDownload(cmd *cobra.Command, args []string, flags downloadFlagValues) er
 	}
 
 	if len(plan.URLs) > 1 {
+		savingPrinted := make(map[int]bool)
 		result := downloader.New().DownloadBatch(plan, downloader.BatchHandlers{
 			ItemStarted: func(item downloader.BatchItem) {
 				fmt.Fprintf(cmd.OutOrStdout(), "[%d/%d] Downloading: %s\n", item.Index, item.Total, item.URL)
@@ -91,9 +92,14 @@ func runDownload(cmd *cobra.Command, args []string, flags downloadFlagValues) er
 			Event: func(item downloader.BatchItem, event downloader.Event) {
 				switch event.Type {
 				case downloader.EventStarted:
-					fmt.Fprintf(cmd.OutOrStdout(), "Saving to: %s\n", event.TargetPath)
+					if !savingPrinted[item.Index] {
+						fmt.Fprintf(cmd.OutOrStdout(), "Saving to: %s\n", event.TargetPath)
+						savingPrinted[item.Index] = true
+					}
 				case downloader.EventProgress:
 					printProgress(cmd, event)
+				case downloader.EventRetrying:
+					printRetrying(cmd, event)
 				case downloader.EventCompleted:
 					fmt.Fprintf(cmd.OutOrStdout(), "Completed: %s\n", event.TargetPath)
 				case downloader.EventFailed:
@@ -108,12 +114,18 @@ func runDownload(cmd *cobra.Command, args []string, flags downloadFlagValues) er
 
 	fmt.Fprintf(cmd.OutOrStdout(), "Downloading: %s\n", plan.URLs[0])
 
+	savingPrinted := false
 	_, err = downloader.New().DownloadWithEvents(plan, func(event downloader.Event) {
 		switch event.Type {
 		case downloader.EventStarted:
-			fmt.Fprintf(cmd.OutOrStdout(), "Saving to: %s\n", event.TargetPath)
+			if !savingPrinted {
+				fmt.Fprintf(cmd.OutOrStdout(), "Saving to: %s\n", event.TargetPath)
+				savingPrinted = true
+			}
 		case downloader.EventProgress:
 			printProgress(cmd, event)
+		case downloader.EventRetrying:
+			printRetrying(cmd, event)
 		case downloader.EventCompleted:
 			fmt.Fprintf(cmd.OutOrStdout(), "Completed: %s\n", event.TargetPath)
 		}
@@ -143,6 +155,17 @@ func printProgress(cmd *cobra.Command, event downloader.Event) {
 		"Progress: %d bytes | %s\n",
 		event.DownloadedBytes,
 		utils.FormatSpeed(event.SpeedBytesPerSecond),
+	)
+}
+
+func printRetrying(cmd *cobra.Command, event downloader.Event) {
+	fmt.Fprintf(
+		cmd.OutOrStdout(),
+		"Retrying %d/%d in %s: %v\n",
+		event.Attempt,
+		event.MaxAttempts,
+		event.NextDelay,
+		event.Error,
 	)
 }
 
