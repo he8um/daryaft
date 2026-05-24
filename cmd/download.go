@@ -56,9 +56,9 @@ func addDownloadFlags(command *cobra.Command, flags *downloadFlagValues) {
 	command.Flags().StringVarP(&flags.output, "output", "o", "", "output directory")
 	command.Flags().StringVar(&flags.name, "name", "", "filename for a single URL")
 	command.Flags().BoolVar(&flags.dryRun, "dry-run", false, "validate inputs and print the download plan")
-	command.Flags().IntVar(&flags.retries, "retries", 3, "planned retry count")
-	command.Flags().BoolVar(&flags.resume, "resume", true, "enable planned resume support")
-	command.Flags().BoolVar(&flags.noResume, "no-resume", false, "disable planned resume support")
+	command.Flags().IntVar(&flags.retries, "retries", 3, "retry attempts after the initial attempt")
+	command.Flags().BoolVar(&flags.resume, "resume", true, "resume interrupted partial downloads")
+	command.Flags().BoolVar(&flags.noResume, "no-resume", false, "disable resume and restart partial downloads")
 }
 
 func runDownload(cmd *cobra.Command, args []string, flags downloadFlagValues) error {

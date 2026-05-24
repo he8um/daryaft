@@ -14,12 +14,13 @@ go run . https://example.com/file.zip --output downloads
 go run . download https://example.com/file.zip --dry-run
 ```
 
-`go run .` prints the current placeholder message. Interactive mode is planned
-for the TUI milestone.
+`go run .` opens the first interactive TUI home screen. Download actions inside
+the TUI are planned and do not start downloads yet.
 
 The download command surface supports validation, dry-run planning, and real
-single URL downloads. Batch real downloads, TUI, progress, resume, and retry
-execution are planned.
+single URL downloads. Sequential batch downloads, text progress, retry, and
+resume are also implemented. Use the CLI download commands for real downloads
+until TUI download execution is implemented.
 
 ## Build And Test
 

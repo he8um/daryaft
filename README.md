@@ -1,8 +1,8 @@
 # Daryaft
 
 Daryaft is a modern terminal downloader written in Go. It is similar in spirit
-to `wget`, with a planned terminal UI, clean architecture, packaging, and future
-self-update support.
+to `wget`, with a Bubble Tea terminal UI foundation, clean architecture,
+packaging, and future self-update support.
 
 > Developed with <3 by AmirHesam Piri
 
@@ -13,7 +13,8 @@ has a CLI foundation, dry-run planning, and real single URL HTTP/HTTPS
 downloads with simple text progress output. Multiple URLs can also be
 downloaded sequentially in one command. Basic retry execution is implemented
 for temporary network and server failures, and interrupted downloads can resume
-from `.part` files when the server supports HTTP Range requests.
+from `.part` files when the server supports HTTP Range requests. Running
+`daryaft` with no arguments opens the first interactive TUI home screen.
 
 - Repository: https://github.com/he8um/daryaft
 - Website: https://xhesam.com
@@ -65,8 +66,10 @@ daryaft download -f urls.txt --dry-run
 daryaft download -f urls.txt
 ```
 
-With no arguments, Daryaft prints a friendly placeholder. Interactive mode is
-planned for the TUI milestone.
+With no arguments, Daryaft opens a Bubble Tea home screen with menu entries for
+future download workflows, help, version information, and quit. Download actions
+inside the TUI are planned and do not start downloads yet. Existing CLI download
+commands remain the stable way to download files.
 
 Download commands validate URLs and can print a dry-run plan. Real downloading
 is implemented for one URL and for multiple URLs sequentially. Batch downloads
@@ -84,15 +87,15 @@ always restarts the partial file from byte `0`.
 
 The downloader now emits structured started, progress, completed, and failed
 events plus retrying events. The CLI consumes those events for line-based
-progress and retry output for single and sequential batch downloads; the full
-terminal UI is still planned.
+progress and retry output for single and sequential batch downloads. The TUI
+foundation is in place and will consume downloader events in a later milestone.
 
 ## Planned Features
 
 - Concurrent batch downloads
 - Rich progress bars
 - Checksum-aware behavior
-- Beautiful terminal UI
+- Download execution inside the terminal UI
 - Queue persistence and history management
 - Structured automation output
 - Self-update support after the release model is ready

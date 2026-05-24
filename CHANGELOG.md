@@ -10,7 +10,7 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 
 - Initial project skeleton.
 - Minimal Cobra CLI foundation.
-- Root command placeholder for future interactive mode.
+- Bubble Tea interactive home screen for no-argument `daryaft`.
 - Version command with build metadata defaults.
 - Download command surface with validation and dry-run planning.
 - Single URL HTTP/HTTPS downloader with safe filename selection and `.part` writes.
@@ -23,13 +23,15 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 - Real single URL resume support with `.part` files, `.part.daryaft.json`
   metadata sidecars, HTTP Range requests, safe server fallback restarts, and
   retry continuation from partial files.
+- First TUI foundation with Lip Gloss styling, home menu navigation, help,
+  version, planned download screens, and clean quit handling.
 - Starter documentation, CI, Makefile, and future packaging configuration.
 
 ### Planned
 
 - Concurrent batch downloader engine.
 - Rich progress bars.
-- Terminal UI foundation.
+- Download execution inside the terminal UI.
 - Queue persistence.
 - Public installation channels from v1.0.0 onward.
 

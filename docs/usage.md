@@ -21,8 +21,10 @@ Prints the Daryaft version, commit, build date, and Go version.
 daryaft
 ```
 
-Prints a placeholder explaining that interactive mode is planned for the TUI
-milestone.
+Opens the first Bubble Tea interactive home screen. The home screen includes
+Download from URL, Download from .txt file, View help, Version, and Quit.
+Download actions inside the TUI show planned screens for now and do not start
+downloads yet. Existing CLI commands remain the stable way to download files.
 
 ```bash
 daryaft https://example.com/file.zip --dry-run
@@ -45,6 +47,12 @@ Current flags:
 - `--retries`: retry attempts after the initial attempt, default `3`.
 - `--resume`: resume interrupted `.part` files, default `true`.
 - `--no-resume`: ignore existing partial state and restart from byte `0`.
+
+Common root flags:
+
+- `--no-color`: avoid color styling in the TUI.
+- `--no-tui`: skip the TUI and print the non-interactive placeholder.
+- `-v`, `--verbose`: reserved for future verbose output.
 
 ```bash
 daryaft https://example.com/file.zip
@@ -183,9 +191,9 @@ These examples are roadmap examples and are not implemented yet:
 daryaft update
 ```
 
-Concurrency, queue persistence, TUI, rich progress bars, segmented downloads,
-and self-update are planned. The current downloader event stream is the
-foundation for the future TUI, but no Bubble Tea interface is implemented yet.
+Concurrency, queue persistence, download execution inside the TUI, rich progress
+bars, segmented downloads, and self-update are planned. The current downloader
+event stream is the foundation for future TUI download screens.
 
 Related docs:
 

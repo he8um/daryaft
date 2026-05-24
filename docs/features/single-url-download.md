@@ -66,9 +66,9 @@ the output directory.
 
 ## Planned
 
-TUI rendering, rich progress bars, checksum validation, and segmented downloads
-are planned. The event stream is in place as the foundation for the future TUI;
-Bubble Tea is not integrated yet.
+TUI download rendering, rich progress bars, checksum validation, and segmented
+downloads are planned. The Bubble Tea home screen is implemented, and future
+download screens should consume the existing downloader event stream.
 
 Related docs:
 

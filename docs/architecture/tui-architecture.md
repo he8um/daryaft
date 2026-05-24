@@ -1,6 +1,6 @@
 # TUI Architecture
 
-Bubble Tea screens, models, components, styles, and footer behavior.
+Bubble Tea screens, models, styles, and footer behavior.
 
 ## Navigation
 
@@ -24,36 +24,62 @@ License: MIT
 Footer: Developed with <3 by AmirHesam Piri
 ```
 
-## Requirements
+## Current Package
 
-1. Implement this area using clean, isolated packages.
-2. Keep command wiring in `cmd/`; do not put business logic there.
-3. Use typed errors and user-safe messages.
-4. Update `daryaft -h` help text when user-facing commands or flags change.
-5. Update tests and documentation in the same change.
-6. Do not commit private agent docs from `Documents/Daryaft-project/Docs` or `Documents/Daryaft-project/Caveman`.
+The TUI lives in `internal/tui` and is independent from Cobra except for the
+small call from `cmd/root.go`.
 
-## Implementation notes
+Current files:
 
-The agent must treat this file as a contract. If behavior is ambiguous, prefer the behavior documented in:
+- `app.go`: starts the Bubble Tea program
+- `model.go`: model state and menu movement helpers
+- `update.go`: keyboard update logic
+- `view.go`: home and sub-screen rendering
+- `styles.go`: Lip Gloss style construction
+- `screens.go`: screen and menu definitions
+- `keys.go`: key classification helpers
 
-- `../engineering/interfaces-and-contracts.md`
-- `../engineering/error-model.md`
-- `../architecture/module-boundaries.md`
+`cmd/root.go` calls `tui.Run` only for no-argument execution. URL arguments,
+`--file`, and download flags continue through the existing CLI download path.
 
-## Acceptance criteria
+## Model
 
-- The feature is implemented in the correct module.
-- The feature is covered by tests where practical.
-- Errors are clear and actionable.
-- The command help reflects the implemented behavior.
-- The documentation includes examples and known limitations.
+The model tracks:
+
+- current screen
+- selected home menu index
+- style set
+- version details
+
+The first implemented screens are:
+
+- home
+- planned Download from URL
+- planned Download from .txt file
+- help
+- version
+
+## Styling
+
+Lip Gloss renders a bordered panel, highlighted selected menu item, muted
+footer, and simple body text. `--no-color` builds styles without foreground or
+background colors while preserving layout.
+
+## Event Boundary
+
+The current TUI does not start downloads. Future download screens should
+subscribe to the existing downloader event stream instead of reaching into
+downloader internals.
+
+## Testing
+
+Current tests cover menu navigation, wrap behavior, screen switching, back
+navigation, footer rendering, and version rendering without brittle snapshots.
 
 ## Examples
 
 ```bash
-daryaft -h
-daryaft https://example.com/file.zip
-daryaft -f urls.txt
-daryaft update --check
+daryaft
+daryaft --no-color
+daryaft https://example.com/file.zip --dry-run
 ```

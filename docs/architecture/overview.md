@@ -3,6 +3,8 @@
 Daryaft should stay small and testable. The current implementation has the CLI
 foundation, version package, default metadata, validation and planning packages,
 and a first single URL downloader engine.
+The first Bubble Tea TUI foundation is also implemented for no-argument
+startup.
 
 ## CLI Layer
 
@@ -33,8 +35,11 @@ internals.
 
 ## TUI Renderer
 
-Planned. The renderer will subscribe to downloader events and display richer
-progress, queue state, errors, and history. Bubble Tea is not integrated yet.
+Partly implemented. Running `daryaft` with no arguments opens a Bubble Tea home
+screen with Lip Gloss styling, simple menu navigation, help, version, planned
+download screens, and clean quit handling. It does not start downloads yet.
+Future TUI download screens will subscribe to downloader events and display
+richer progress, queue state, errors, and history.
 
 ## Updater
 

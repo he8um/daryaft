@@ -6,6 +6,7 @@ import (
 
 	"github.com/he8um/daryaft/internal/app"
 	"github.com/he8um/daryaft/internal/config"
+	"github.com/he8um/daryaft/internal/tui"
 	"github.com/spf13/cobra"
 )
 
@@ -22,9 +23,9 @@ var rootCmd = &cobra.Command{
 	SilenceErrors: true,
 	Long: `Daryaft is a modern terminal downloader written in Go.
 
-It is similar in spirit to wget, with a clean CLI foundation today and a planned
-terminal UI, packaging, self-update workflow, and expanded downloader engine in
-future milestones.`,
+It is similar in spirit to wget, with a clean CLI foundation, an interactive
+home screen, and planned packaging, self-update workflow, and expanded
+downloader engine in future milestones.`,
 	Example: `  daryaft https://example.com/file.zip
   daryaft https://example.com/file.zip --dry-run
   daryaft -f urls.txt --dry-run
@@ -36,6 +37,10 @@ future milestones.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) > 0 || hasDownloadFlagChanges(cmd) {
 			return runDownload(cmd, args, rootDownloadFlags)
+		}
+
+		if !noTUI {
+			return tui.Run(tui.Options{NoColor: noColor})
 		}
 
 		fmt.Fprintln(cmd.OutOrStdout(), app.InteractivePlaceholder())

@@ -1,6 +1,6 @@
 # Feature: Interactive Mode
 
-Spec for running `daryaft` without args.
+Running `daryaft` without arguments opens the first interactive home screen.
 
 ## Navigation
 
@@ -24,36 +24,48 @@ License: MIT
 Footer: Developed with <3 by AmirHesam Piri
 ```
 
-## Requirements
+## Current Behavior
 
-1. Implement this area using clean, isolated packages.
-2. Keep command wiring in `cmd/`; do not put business logic there.
-3. Use typed errors and user-safe messages.
-4. Update `daryaft -h` help text when user-facing commands or flags change.
-5. Update tests and documentation in the same change.
-6. Do not commit private agent docs from `Documents/Daryaft-project/Docs` or `Documents/Daryaft-project/Caveman`.
+`daryaft` launches a Bubble Tea home screen. The current menu is intentionally
+small:
 
-## Implementation notes
+1. Download from URL
+2. Download from .txt file
+3. View help
+4. Version
+5. Quit
 
-The agent must treat this file as a contract. If behavior is ambiguous, prefer the behavior documented in:
+The download menu entries are placeholders for now. They show a planned screen
+inside the TUI and do not start downloads. Use these CLI forms for real
+downloads:
 
-- `../engineering/interfaces-and-contracts.md`
-- `../engineering/error-model.md`
-- `../architecture/module-boundaries.md`
+```bash
+daryaft https://example.com/file.zip
+daryaft -f urls.txt
+daryaft download https://example.com/file.zip
+```
 
-## Acceptance criteria
+The help screen documents navigation keys. The version screen shows the same
+build metadata as `daryaft version`.
 
-- The feature is implemented in the correct module.
-- The feature is covered by tests where practical.
-- Errors are clear and actionable.
-- The command help reflects the implemented behavior.
-- The documentation includes examples and known limitations.
+## Keys
+
+- up/down arrows: move selection
+- `k`/`j`: move selection
+- enter: select
+- `esc` or backspace: return to home from a sub-screen
+- `q` or ctrl+c: quit from anywhere
+
+## Boundaries
+
+Interactive mode does not implement download execution, queue persistence,
+concurrency, self-update, or packaging flows yet. It is the foundation that will
+later consume downloader events.
 
 ## Examples
 
 ```bash
-daryaft -h
-daryaft https://example.com/file.zip
-daryaft -f urls.txt
-daryaft update --check
+daryaft
+daryaft --no-color
+daryaft --no-tui
 ```

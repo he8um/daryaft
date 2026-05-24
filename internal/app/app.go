@@ -2,12 +2,12 @@ package app
 
 import "github.com/he8um/daryaft/internal/config"
 
-// InteractivePlaceholder is the current no-argument startup message.
+// InteractivePlaceholder is used when the no-argument TUI is disabled.
 func InteractivePlaceholder() string {
-	return config.AppName + ` is starting its terminal downloader foundation.
+	return config.AppName + ` terminal UI is disabled.
 
-Interactive mode is planned for the TUI milestone and is not implemented yet.
-Use ` + config.BinaryName + ` --help to see the current commands and flags.
+Run ` + config.BinaryName + ` without --no-tui to open the interactive home screen,
+or use ` + config.BinaryName + ` --help to see the current CLI commands and flags.
 
 ` + config.FooterText
 }

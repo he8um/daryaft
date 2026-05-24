@@ -2,8 +2,23 @@
 
 ## `daryaft`
 
-Implemented. Prints the current placeholder message and exits successfully.
-Interactive TUI mode is planned.
+Implemented. Opens the Bubble Tea interactive home screen when run with no
+arguments.
+
+The home screen shows:
+
+- Daryaft
+- Modern terminal downloader
+- Download from URL
+- Download from .txt file
+- View help
+- Version
+- Quit
+
+Use up/down arrows or `k`/`j` to move, enter to select, `esc` or backspace to
+return from sub-screens, and `q` or ctrl+c to quit. Download from URL and
+Download from .txt file show planned screens and do not start downloads yet.
+Existing CLI download commands remain the stable way to download files.
 
 When URL arguments or `--file` are provided, the root command enters the current
 download validation mode.
@@ -72,8 +87,9 @@ If the server does not provide a known content length, progress uses:
 Progress: <downloaded> bytes | <speed>
 ```
 
-Progress lines are generated from structured downloader events. The future TUI
-will consume the same event stream, but it is not implemented yet.
+Progress lines are generated from structured downloader events. The current TUI
+home screen does not start downloads yet; future TUI download screens will
+consume the same event stream.
 
 `--retries` is implemented for transient failures. The value is the number of
 retry attempts after the first try, so `--retries 0` means one total attempt and
@@ -154,10 +170,10 @@ Validation rules:
 
 ## Common Flags
 
-Implemented harmless placeholders:
+Implemented:
 
-- `--no-color`: disable colored output when colorized output exists.
-- `--no-tui`: disable terminal UI when the TUI exists.
+- `--no-color`: avoid color styling in the TUI.
+- `--no-tui`: skip the no-argument TUI and print the non-interactive placeholder.
 - `-v`, `--verbose`: enable verbose output when verbose logging exists.
 
 ## Planned Commands And Forms
@@ -168,8 +184,8 @@ These are planned and not implemented yet:
 daryaft update
 ```
 
-Batch concurrency, queue persistence, rich progress bars, TUI rendering,
-segmented downloads, and self-update are planned.
+Batch concurrency, queue persistence, rich progress bars, TUI download
+execution, segmented downloads, and self-update are planned.
 
 Related docs:
 
