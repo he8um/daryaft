@@ -55,6 +55,23 @@ directory when needed, writes to `<filename>.part`, then renames it to the final
 filename when complete. Existing final files are not overwritten. Because resume
 is not implemented yet, an existing `.part` file is restarted/truncated.
 
+During real single URL downloads, the CLI prints line-based progress from
+structured downloader events:
+
+```text
+Downloading: https://example.com/file.zip
+Saving to: downloads/file.zip
+Progress: 524288 / 1048576 bytes (50.0%) | 1.2 MB/s
+Completed: downloads/file.zip
+```
+
+When the server does not provide a known `Content-Length`, progress omits the
+total and percent:
+
+```text
+Progress: 524288 bytes | 1.2 MB/s
+```
+
 Filenames are selected in this order:
 
 1. `Content-Disposition` filename.
@@ -77,8 +94,9 @@ daryaft -f urls.txt
 daryaft update
 ```
 
-TUI, progress bars, resume, retry execution, segmented downloads, and
-self-update are planned.
+TUI, rich progress bars, resume, retry execution, segmented downloads, and
+self-update are planned. The current downloader event stream is the foundation
+for the future TUI, but no Bubble Tea interface is implemented yet.
 
 Related docs:
 

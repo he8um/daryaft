@@ -55,8 +55,18 @@ The command does not overwrite existing final files. It uses simple text output:
 ```text
 Downloading: <url>
 Saving to: <path>
+Progress: <downloaded> / <total> bytes (<percent>%) | <speed>
 Completed: <path>
 ```
+
+If the server does not provide a known content length, progress uses:
+
+```text
+Progress: <downloaded> bytes | <speed>
+```
+
+Progress lines are generated from structured downloader events. The future TUI
+will consume the same event stream, but it is not implemented yet.
 
 ## `daryaft download [url...] --dry-run`
 
@@ -113,7 +123,7 @@ These are planned and not implemented yet:
 daryaft update
 ```
 
-Progress bars, TUI rendering, resume execution, retry execution, segmented
+Rich progress bars, TUI rendering, resume execution, retry execution, segmented
 downloads, and self-update are planned.
 
 Related docs:

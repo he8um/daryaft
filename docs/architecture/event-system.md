@@ -1,6 +1,6 @@
 # Event System
 
-Downloader-to-UI event contracts and lifecycle.
+Downloader-to-interface event contracts and lifecycle.
 
 ## Navigation
 
@@ -24,30 +24,51 @@ License: MIT
 Footer: Developed with <3 by AmirHesam Piri
 ```
 
-## Requirements
+## Current implementation
 
-1. Implement this area using clean, isolated packages.
-2. Keep command wiring in `cmd/`; do not put business logic there.
-3. Use typed errors and user-safe messages.
-4. Update `daryaft -h` help text when user-facing commands or flags change.
-5. Update tests and documentation in the same change.
-6. Do not commit private agent docs from `Documents/Daryaft-project/Docs` or `Documents/Daryaft-project/Caveman`.
+The single URL downloader emits structured events from `internal/downloader`.
+The implemented event types are:
 
-## Implementation notes
+- `started`: emitted after the target path and partial file are ready, before body copy starts.
+- `progress`: emitted during the controlled copy loop, throttled to avoid excessive output.
+- `completed`: emitted after the `.part` file is renamed to the final target path.
+- `failed`: emitted when a download attempt fails after entering the downloader path.
 
-The agent must treat this file as a contract. If behavior is ambiguous, prefer the behavior documented in:
+Events carry simple fields that can be tested and reused by later interfaces:
 
-- `../engineering/interfaces-and-contracts.md`
-- `../engineering/error-model.md`
-- `../architecture/module-boundaries.md`
+- URL
+- target path
+- downloaded bytes
+- total bytes, using `0` when the server does not provide a usable content length
+- percent, only populated when total bytes are known and greater than zero
+- approximate bytes per second
+- error, for failed events
+- timestamp
 
-## Acceptance criteria
+The CLI currently consumes these events for line-based progress output:
 
-- The feature is implemented in the correct module.
-- The feature is covered by tests where practical.
-- Errors are clear and actionable.
-- The command help reflects the implemented behavior.
-- The documentation includes examples and known limitations.
+```text
+Downloading: <url>
+Saving to: <path>
+Progress: <downloaded> / <total> bytes (<percent>%) | <speed>
+Completed: <path>
+```
+
+When the total size is unknown:
+
+```text
+Progress: <downloaded> bytes | <speed>
+```
+
+## Boundaries
+
+The event system is deliberately small. It does not implement Bubble Tea, a full
+terminal UI, JSON output, batch download orchestration, resume, retry, or
+segmented downloads yet.
+
+Future TUI work should subscribe to the downloader event stream instead of
+reaching into downloader internals. Future automation output can use the same
+event data with a separate renderer.
 
 ## Examples
 

@@ -10,7 +10,7 @@ self-update support.
 
 Daryaft is in pre-1.0 development and is not stable yet. The current codebase
 has a CLI foundation, dry-run planning, and real single URL HTTP/HTTPS
-downloads with simple text output.
+downloads with simple text progress output.
 
 - Repository: https://github.com/he8um/daryaft
 - Website: https://xhesam.com
@@ -65,10 +65,14 @@ Download commands validate URLs and can print a dry-run plan. Real downloading
 is implemented for exactly one URL. Batch real downloads are not implemented yet;
 use `--dry-run` to inspect multi-URL plans.
 
+The downloader now emits structured started, progress, completed, and failed
+events for the single URL path. The CLI consumes those events for line-based
+progress output; the full terminal UI is still planned.
+
 ## Planned Features
 
 - Real batch downloads from files
-- Progress display
+- Rich progress bars
 - Resume, retry, and checksum-aware behavior
 - Beautiful terminal UI
 - Queue and history management

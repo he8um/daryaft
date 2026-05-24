@@ -1,10 +1,12 @@
 package downloader
 
 import (
+	"bytes"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -111,5 +113,144 @@ func TestDownloadRejectsExistingTarget(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "target file already exists") {
 		t.Fatalf("error = %q, want existing target context", err)
+	}
+}
+
+func TestDownloadEmitsStartedProgressCompletedEvents(t *testing.T) {
+	body := bytes.Repeat([]byte("a"), 128*1024)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Length", strconv.Itoa(len(body)))
+		_, _ = w.Write(body)
+	}))
+	defer server.Close()
+
+	var events []Event
+	dir := t.TempDir()
+	result, err := New().DownloadWithEvents(download.Plan{
+		URLs:   []string{server.URL + "/file.bin"},
+		Output: dir,
+	}, func(event Event) {
+		events = append(events, event)
+	})
+	if err != nil {
+		t.Fatalf("DownloadWithEvents returned error: %v", err)
+	}
+
+	if len(events) < 3 {
+		t.Fatalf("got %d events, want at least started, progress, completed", len(events))
+	}
+	if events[0].Type != EventStarted {
+		t.Fatalf("first event = %q, want %q", events[0].Type, EventStarted)
+	}
+	if events[len(events)-1].Type != EventCompleted {
+		t.Fatalf("last event = %q, want %q", events[len(events)-1].Type, EventCompleted)
+	}
+
+	var progress Event
+	for _, event := range events {
+		if event.Type == EventProgress {
+			progress = event
+		}
+		if event.URL != server.URL+"/file.bin" {
+			t.Fatalf("event.URL = %q", event.URL)
+		}
+		if event.TargetPath != "" && event.TargetPath != result.Path {
+			t.Fatalf("event.TargetPath = %q, want %q", event.TargetPath, result.Path)
+		}
+		if event.Timestamp.IsZero() {
+			t.Fatalf("event %q has zero timestamp", event.Type)
+		}
+	}
+	if progress.Type != EventProgress {
+		t.Fatal("no progress event emitted")
+	}
+	if progress.DownloadedBytes != int64(len(body)) {
+		t.Fatalf("progress.DownloadedBytes = %d, want %d", progress.DownloadedBytes, len(body))
+	}
+	if progress.TotalBytes != int64(len(body)) {
+		t.Fatalf("progress.TotalBytes = %d, want %d", progress.TotalBytes, len(body))
+	}
+	if progress.Percent != 100 {
+		t.Fatalf("progress.Percent = %f, want 100", progress.Percent)
+	}
+	if progress.SpeedBytesPerSecond <= 0 {
+		t.Fatalf("progress.SpeedBytesPerSecond = %f, want > 0", progress.SpeedBytesPerSecond)
+	}
+
+	completed := events[len(events)-1]
+	if completed.DownloadedBytes != int64(len(body)) {
+		t.Fatalf("completed.DownloadedBytes = %d, want %d", completed.DownloadedBytes, len(body))
+	}
+	if completed.Percent != 100 {
+		t.Fatalf("completed.Percent = %f, want 100", completed.Percent)
+	}
+}
+
+func TestDownloadProgressUnknownTotal(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("hello"))
+		if flusher, ok := w.(http.Flusher); ok {
+			flusher.Flush()
+		}
+		_, _ = w.Write([]byte(" daryaft"))
+	}))
+	defer server.Close()
+
+	var progressEvents []Event
+	_, err := New().DownloadWithEvents(download.Plan{
+		URLs:   []string{server.URL + "/stream.txt"},
+		Output: t.TempDir(),
+	}, func(event Event) {
+		if event.Type == EventProgress {
+			progressEvents = append(progressEvents, event)
+		}
+	})
+	if err != nil {
+		t.Fatalf("DownloadWithEvents returned error: %v", err)
+	}
+	if len(progressEvents) == 0 {
+		t.Fatal("no progress event emitted")
+	}
+
+	lastProgress := progressEvents[len(progressEvents)-1]
+	if lastProgress.TotalBytes != 0 {
+		t.Fatalf("lastProgress.TotalBytes = %d, want 0", lastProgress.TotalBytes)
+	}
+	if lastProgress.Percent != 0 {
+		t.Fatalf("lastProgress.Percent = %f, want 0", lastProgress.Percent)
+	}
+	if lastProgress.DownloadedBytes != int64(len("hello daryaft")) {
+		t.Fatalf("lastProgress.DownloadedBytes = %d", lastProgress.DownloadedBytes)
+	}
+}
+
+func TestDownloadEmitsFailedEventForNon2xx(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "nope", http.StatusTeapot)
+	}))
+	defer server.Close()
+
+	var events []Event
+	_, err := New().DownloadWithEvents(download.Plan{
+		URLs:   []string{server.URL + "/file.txt"},
+		Output: t.TempDir(),
+	}, func(event Event) {
+		events = append(events, event)
+	})
+	if err == nil {
+		t.Fatal("DownloadWithEvents returned nil error")
+	}
+	if len(events) != 1 {
+		t.Fatalf("got %d events, want one failed event", len(events))
+	}
+	if events[0].Type != EventFailed {
+		t.Fatalf("event.Type = %q, want %q", events[0].Type, EventFailed)
+	}
+	if events[0].Error == nil {
+		t.Fatal("failed event Error is nil")
+	}
+	if !strings.Contains(events[0].Error.Error(), "server returned 418") {
+		t.Fatalf("failed event error = %q", events[0].Error)
 	}
 }

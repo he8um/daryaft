@@ -13,19 +13,22 @@ contain downloader business logic.
 
 Partly implemented. The current engine performs one HTTP/HTTPS GET, accepts
 HTTP 2xx responses, chooses a safe filename, writes to a `.part` file, and
-renames it on success. Batch downloads, progress events, resume execution, retry
-execution, checksum validation, and richer file conflict behavior are planned.
+renames it on success. The single URL path emits structured lifecycle and
+progress events. Batch downloads, resume execution, retry execution, checksum
+validation, and richer file conflict behavior are planned.
 
 ## Event System
 
-Planned. Downloader state should be emitted as events so CLI output, TUI
-rendering, JSON output, and tests can observe behavior without coupling to
-engine internals.
+Partly implemented. The downloader layer defines typed events for started,
+progress, completed, and failed states. The current CLI consumes these events to
+print simple line-based progress. The same event boundary is intended to support
+future TUI rendering and structured automation output without coupling those
+interfaces to downloader internals.
 
 ## TUI Renderer
 
-Planned. The renderer will subscribe to events and display progress, queue
-state, errors, and history.
+Planned. The renderer will subscribe to downloader events and display richer
+progress, queue state, errors, and history. Bubble Tea is not integrated yet.
 
 ## Updater
 

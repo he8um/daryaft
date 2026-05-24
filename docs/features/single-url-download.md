@@ -1,6 +1,6 @@
 # Feature: Single URL Download
 
-Single URL HTTP/HTTPS download is implemented with simple text output.
+Single URL HTTP/HTTPS download is implemented with simple text progress output.
 
 ## Current
 
@@ -22,7 +22,23 @@ Current behavior:
 - Leaves `.part` files in place on failure for future resume work.
 - Restarts/truncates existing `.part` files because resume is not implemented yet.
 - Does not overwrite existing final files.
-- Uses simple text output.
+- Emits structured downloader events for started, progress, completed, and failed states.
+- Uses simple line-based text progress in the CLI.
+
+Example output with a known total:
+
+```text
+Downloading: https://example.com/file.zip
+Saving to: downloads/file.zip
+Progress: 524288 / 1048576 bytes (50.0%) | 1.2 MB/s
+Completed: downloads/file.zip
+```
+
+Example output when the server does not provide `Content-Length`:
+
+```text
+Progress: 524288 bytes | 1.2 MB/s
+```
 
 Filename selection:
 
@@ -35,8 +51,9 @@ the output directory.
 
 ## Planned
 
-TUI rendering, progress bars, resume execution, retry execution, checksum
-validation, and segmented downloads are planned.
+TUI rendering, rich progress bars, resume execution, retry execution, checksum
+validation, and segmented downloads are planned. The event stream is in place as
+the foundation for the future TUI; Bubble Tea is not integrated yet.
 
 Related docs:
 

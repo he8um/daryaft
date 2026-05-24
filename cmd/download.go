@@ -6,6 +6,7 @@ import (
 
 	"github.com/he8um/daryaft/internal/download"
 	"github.com/he8um/daryaft/internal/downloader"
+	"github.com/he8um/daryaft/internal/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -87,14 +88,42 @@ func runDownload(cmd *cobra.Command, args []string, flags downloadFlagValues) er
 
 	fmt.Fprintf(cmd.OutOrStdout(), "Downloading: %s\n", plan.URLs[0])
 
-	result, err := downloader.New().Download(plan)
+	_, err = downloader.New().DownloadWithEvents(plan, func(event downloader.Event) {
+		switch event.Type {
+		case downloader.EventStarted:
+			fmt.Fprintf(cmd.OutOrStdout(), "Saving to: %s\n", event.TargetPath)
+		case downloader.EventProgress:
+			printProgress(cmd, event)
+		case downloader.EventCompleted:
+			fmt.Fprintf(cmd.OutOrStdout(), "Completed: %s\n", event.TargetPath)
+		}
+	})
 	if err != nil {
 		return err
 	}
 
-	fmt.Fprintf(cmd.OutOrStdout(), "Saving to: %s\n", result.Path)
-	fmt.Fprintf(cmd.OutOrStdout(), "Completed: %s\n", result.Path)
 	return nil
+}
+
+func printProgress(cmd *cobra.Command, event downloader.Event) {
+	if event.TotalBytes > 0 {
+		fmt.Fprintf(
+			cmd.OutOrStdout(),
+			"Progress: %d / %d bytes (%.1f%%) | %s\n",
+			event.DownloadedBytes,
+			event.TotalBytes,
+			event.Percent,
+			utils.FormatSpeed(event.SpeedBytesPerSecond),
+		)
+		return
+	}
+
+	fmt.Fprintf(
+		cmd.OutOrStdout(),
+		"Progress: %d bytes | %s\n",
+		event.DownloadedBytes,
+		utils.FormatSpeed(event.SpeedBytesPerSecond),
+	)
 }
 
 func hasDownloadFlagChanges(cmd *cobra.Command) bool {

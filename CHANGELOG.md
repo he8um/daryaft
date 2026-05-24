@@ -14,12 +14,14 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 - Version command with build metadata defaults.
 - Download command surface with validation and dry-run planning.
 - Single URL HTTP/HTTPS downloader with safe filename selection and `.part` writes.
+- Structured single URL downloader events for started, progress, completed, and failed states.
+- CLI text progress output backed by downloader events.
 - Starter documentation, CI, Makefile, and future packaging configuration.
 
 ### Planned
 
 - Batch downloader engine.
-- Progress, resume, and retry execution.
+- Rich progress bars, resume, and retry execution.
 - Terminal UI foundation.
 - Public installation channels from v1.0.0 onward.
 
