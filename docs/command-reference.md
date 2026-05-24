@@ -44,6 +44,8 @@ daryaft -f urls.txt --dry-run
 
 Implemented for exactly one URL. Performs an HTTP GET, accepts HTTP 2xx
 responses, writes to `<filename>.part`, then renames the file after completion.
+Incomplete downloads keep sidecar metadata at
+`<filename>.part.daryaft.json`.
 
 ```bash
 daryaft https://example.com/file.zip
@@ -57,6 +59,9 @@ The command does not overwrite existing final files. It uses simple text output:
 Downloading: <url>
 Saving to: <path>
 Progress: <downloaded> / <total> bytes (<percent>%) | <speed>
+Resuming from <bytes> bytes
+Resume not supported by server; restarting download
+Remote file changed; restarting download
 Retrying <attempt>/<max> in <delay>: <reason>
 Completed: <path>
 ```
@@ -73,7 +78,15 @@ will consume the same event stream, but it is not implemented yet.
 `--retries` is implemented for transient failures. The value is the number of
 retry attempts after the first try, so `--retries 0` means one total attempt and
 `--retries 3` means up to four total attempts. Daryaft retries network errors,
-timeouts, HTTP `429`, `500`, `502`, `503`, and `504`.
+timeouts, interrupted response bodies, HTTP `429`, `500`, `502`, `503`, and
+`504`.
+
+`--resume` is enabled by default. If a partial file exists, Daryaft sends
+`Range: bytes=<partial_size>-` and appends only after `206 Partial Content`.
+If the server returns a full response instead, Daryaft truncates the `.part`
+file and restarts safely. If saved `ETag` or `Last-Modified` metadata shows the
+remote file changed, Daryaft also restarts from byte `0`. `--no-resume` ignores
+existing partial data and overwrites the partial file from byte `0`.
 
 ## `daryaft download [url...] --dry-run`
 
@@ -127,8 +140,8 @@ Implemented. Explicit form of sequential batch download.
 - `--name string`: filename for a single URL.
 - `--dry-run`: validate inputs and print the download plan.
 - `--retries int`: retry attempts after the initial attempt, default `3`.
-- `--resume`: included in the plan, default `true`; resume execution is planned.
-- `--no-resume`: disable planned resume support in the plan.
+- `--resume`: resume interrupted `.part` files with HTTP Range, default `true`.
+- `--no-resume`: disable resume and restart partial files from byte `0`.
 
 Validation rules:
 
@@ -155,8 +168,8 @@ These are planned and not implemented yet:
 daryaft update
 ```
 
-Batch concurrency, queue persistence, rich progress bars, TUI rendering, resume
-execution, segmented downloads, and self-update are planned.
+Batch concurrency, queue persistence, rich progress bars, TUI rendering,
+segmented downloads, and self-update are planned.
 
 Related docs:
 

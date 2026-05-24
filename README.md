@@ -12,7 +12,8 @@ Daryaft is in pre-1.0 development and is not stable yet. The current codebase
 has a CLI foundation, dry-run planning, and real single URL HTTP/HTTPS
 downloads with simple text progress output. Multiple URLs can also be
 downloaded sequentially in one command. Basic retry execution is implemented
-for temporary network and server failures.
+for temporary network and server failures, and interrupted downloads can resume
+from `.part` files when the server supports HTTP Range requests.
 
 - Repository: https://github.com/he8um/daryaft
 - Website: https://xhesam.com
@@ -73,6 +74,14 @@ continue after item failures and print a final summary. `--retries` controls
 retry attempts after the initial attempt; the default `3` means up to four total
 attempts.
 
+Downloads write to `<filename>.part` first and keep sidecar state in
+`<filename>.part.daryaft.json` while incomplete. `--resume` is enabled by
+default. When a partial file exists, Daryaft sends `Range: bytes=<size>-` and
+appends only after the server replies with `206 Partial Content`. If the server
+does not support resume, or saved validators show the remote file changed,
+Daryaft truncates the `.part` file and restarts from byte `0`. `--no-resume`
+always restarts the partial file from byte `0`.
+
 The downloader now emits structured started, progress, completed, and failed
 events plus retrying events. The CLI consumes those events for line-based
 progress and retry output for single and sequential batch downloads; the full
@@ -82,7 +91,7 @@ terminal UI is still planned.
 
 - Concurrent batch downloads
 - Rich progress bars
-- Resume and checksum-aware behavior
+- Checksum-aware behavior
 - Beautiful terminal UI
 - Queue persistence and history management
 - Structured automation output

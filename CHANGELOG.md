@@ -20,12 +20,15 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 - Batch summary output with continue-on-error failure reporting.
 - Basic retry execution with exponential backoff for transient network and server failures.
 - Retry events and CLI retry messages.
+- Real single URL resume support with `.part` files, `.part.daryaft.json`
+  metadata sidecars, HTTP Range requests, safe server fallback restarts, and
+  retry continuation from partial files.
 - Starter documentation, CI, Makefile, and future packaging configuration.
 
 ### Planned
 
 - Concurrent batch downloader engine.
-- Rich progress bars and resume execution.
+- Rich progress bars.
 - Terminal UI foundation.
 - Queue persistence.
 - Public installation channels from v1.0.0 onward.

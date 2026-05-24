@@ -5,21 +5,26 @@ import "time"
 type EventType string
 
 const (
-	EventStarted   EventType = "started"
-	EventProgress  EventType = "progress"
-	EventCompleted EventType = "completed"
-	EventFailed    EventType = "failed"
-	EventRetrying  EventType = "retrying"
+	EventStarted    EventType = "started"
+	EventProgress   EventType = "progress"
+	EventCompleted  EventType = "completed"
+	EventFailed     EventType = "failed"
+	EventRetrying   EventType = "retrying"
+	EventResuming   EventType = "resuming"
+	EventRestarting EventType = "restarting"
+	EventWarning    EventType = "warning"
 )
 
 type Event struct {
 	Type                EventType
 	URL                 string
 	TargetPath          string
+	PartialPath         string
 	DownloadedBytes     int64
 	TotalBytes          int64
 	Percent             float64
 	SpeedBytesPerSecond float64
+	Message             string
 	Error               error
 	Attempt             int
 	MaxAttempts         int
@@ -39,11 +44,12 @@ func emitEvent(handler EventHandler, event Event) {
 	handler(event)
 }
 
-func newProgressEvent(rawURL, targetPath string, downloadedBytes, totalBytes int64, startedAt time.Time) Event {
+func newProgressEvent(rawURL, targetPath, partialPath string, downloadedBytes, transferredBytes, totalBytes int64, startedAt time.Time) Event {
 	event := Event{
 		Type:            EventProgress,
 		URL:             rawURL,
 		TargetPath:      targetPath,
+		PartialPath:     partialPath,
 		DownloadedBytes: downloadedBytes,
 		TotalBytes:      totalBytes,
 		Timestamp:       time.Now(),
@@ -55,7 +61,7 @@ func newProgressEvent(rawURL, targetPath string, downloadedBytes, totalBytes int
 
 	elapsed := event.Timestamp.Sub(startedAt).Seconds()
 	if elapsed > 0 {
-		event.SpeedBytesPerSecond = float64(downloadedBytes) / elapsed
+		event.SpeedBytesPerSecond = float64(transferredBytes) / elapsed
 	}
 
 	return event

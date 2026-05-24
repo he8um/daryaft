@@ -13,6 +13,25 @@ type targetPaths struct {
 }
 
 func prepareTarget(outputDir, filename string) (targetPaths, error) {
+	target, err := targetPathsFor(outputDir, filename)
+	if err != nil {
+		return targetPaths{}, err
+	}
+
+	if _, err := os.Stat(target.Final); err == nil {
+		return targetPaths{}, fmt.Errorf("%w: %s", ErrTargetExists, target.Final)
+	} else if !os.IsNotExist(err) {
+		return targetPaths{}, fmt.Errorf("check target file %q: %w", target.Final, err)
+	}
+
+	if err := os.MkdirAll(target.OutputDir, 0o755); err != nil {
+		return targetPaths{}, fmt.Errorf("create output directory %q: %w", target.OutputDir, err)
+	}
+
+	return target, nil
+}
+
+func targetPathsFor(outputDir, filename string) (targetPaths, error) {
 	if outputDir == "" {
 		outputDir = "."
 	}
@@ -25,16 +44,6 @@ func prepareTarget(outputDir, filename string) (targetPaths, error) {
 
 	if err := ensureInsideOutputDir(outputDir, finalPath); err != nil {
 		return targetPaths{}, err
-	}
-
-	if _, err := os.Stat(finalPath); err == nil {
-		return targetPaths{}, fmt.Errorf("%w: %s", ErrTargetExists, finalPath)
-	} else if !os.IsNotExist(err) {
-		return targetPaths{}, fmt.Errorf("check target file %q: %w", finalPath, err)
-	}
-
-	if err := os.MkdirAll(outputDir, 0o755); err != nil {
-		return targetPaths{}, fmt.Errorf("create output directory %q: %w", outputDir, err)
 	}
 
 	return targetPaths{

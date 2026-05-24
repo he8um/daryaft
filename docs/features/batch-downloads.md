@@ -30,6 +30,10 @@ Each item uses the normal single URL behavior:
 - accepts only HTTP 2xx responses
 - chooses `Content-Disposition`, URL basename, or `download.bin`
 - writes to `<filename>.part`
+- writes `<filename>.part.daryaft.json` metadata while incomplete
+- resumes existing `.part` files with HTTP Range when `--resume` is enabled
+- restarts safely from byte `0` when Range is unsupported or the remote changed
+- restarts from byte `0` when `--no-resume` is used
 - renames to the final path on success
 - rejects existing final files
 - retries transient network and server failures according to `--retries`
@@ -60,12 +64,13 @@ the summary.
 
 Each batch item has its own retry cycle. `--retries 0` means one attempt for
 each item. `--retries 3` means each item can make up to four attempts total.
-Retryable failures are network errors, timeouts, HTTP `429`, `500`, `502`,
-`503`, and `504`.
+Retryable failures are network errors, timeouts, interrupted response bodies,
+HTTP `429`, `500`, `502`, `503`, and `504`.
 
-Resume is still planned, not implemented. Until resume exists, retries
-restart/truncate the item `.part` file. If a final target file exists or appears
-between attempts, that item fails without retrying and the batch continues.
+Each batch item has independent resume state. If a retry follows a partial body
+failure and `--resume` is enabled, that item can continue from its current
+`.part` size. If a final target file exists or appears between attempts, that
+item fails without retrying and the batch continues.
 
 `--name` remains rejected when multiple URLs are present because one filename
 cannot safely apply to multiple downloads.

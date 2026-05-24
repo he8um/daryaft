@@ -41,6 +41,42 @@ The agent must treat this file as a contract. If behavior is ambiguous, prefer t
 - `../engineering/error-model.md`
 - `../architecture/module-boundaries.md`
 
+## Partial Downloads
+
+Single URL downloads store incomplete bytes next to the target file:
+
+```text
+file.zip.part
+file.zip.part.daryaft.json
+```
+
+The sidecar metadata contains:
+
+- URL
+- final target path
+- partial path
+- total bytes
+- downloaded bytes
+- `ETag`
+- `Last-Modified`
+- `Accept-Ranges`
+- created and updated timestamps
+
+Metadata writes use a temporary JSON file followed by a rename to keep updates
+simple and recoverable. On successful completion, Daryaft renames the `.part`
+file to the final target and removes the sidecar metadata.
+
+Resume uses filesystem size as the source of truth for the local byte offset.
+When `--resume` is enabled, Daryaft sends `Range: bytes=<partial_size>-` and
+appends only after a `206 Partial Content` response. If the server returns a
+full response, Daryaft truncates the partial file and restarts from byte `0`.
+If saved `ETag` or `Last-Modified` metadata differs from the resume response,
+Daryaft also restarts from byte `0`.
+
+`--no-resume` ignores existing partial state for append decisions, truncates the
+partial file, overwrites the sidecar metadata, and preserves the existing final
+file protection.
+
 ## Acceptance criteria
 
 - The feature is implemented in the correct module.

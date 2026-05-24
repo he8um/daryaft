@@ -43,8 +43,8 @@ Current flags:
 - `--name`: filename for a single URL.
 - `--dry-run`: print the plan without attempting a download.
 - `--retries`: retry attempts after the initial attempt, default `3`.
-- `--resume`: planned resume support, default `true`.
-- `--no-resume`: disable planned resume support.
+- `--resume`: resume interrupted `.part` files, default `true`.
+- `--no-resume`: ignore existing partial state and restart from byte `0`.
 
 ```bash
 daryaft https://example.com/file.zip
@@ -53,8 +53,38 @@ daryaft download https://example.com/file.zip
 
 Downloads one HTTP/HTTPS URL with simple text output. Daryaft creates the output
 directory when needed, writes to `<filename>.part`, then renames it to the final
-filename when complete. Existing final files are not overwritten. Because resume
-is not implemented yet, an existing `.part` file is restarted/truncated.
+filename when complete. While the partial file exists, Daryaft also writes
+`<filename>.part.daryaft.json` metadata with the URL, target path, partial path,
+byte counts, `ETag`, `Last-Modified`, `Accept-Ranges`, and timestamps. Existing
+final files are not overwritten.
+
+Resume is enabled by default. If `<filename>.part` exists, Daryaft checks the
+local file size and sends `Range: bytes=<partial_size>-`. It appends only when
+the server returns `206 Partial Content`. Progress starts at the existing byte
+count:
+
+```text
+Resuming from 524288 bytes
+Progress: 786432 / 1048576 bytes (75.0%) | 1.2 MB/s
+```
+
+If the server ignores Range and returns a full response, Daryaft safely
+truncates the partial file and restarts:
+
+```text
+Resume not supported by server; restarting download
+```
+
+If saved `ETag` or `Last-Modified` metadata no longer matches the server
+response, Daryaft does not append stale bytes:
+
+```text
+Remote file changed; restarting download
+```
+
+`--no-resume` ignores existing `.part` data for resume, truncates the partial
+file, overwrites the sidecar metadata, and downloads from byte `0`. Existing
+final target files are still rejected before Daryaft writes to the partial file.
 
 During real single URL downloads, the CLI prints line-based progress from
 structured downloader events:
@@ -79,7 +109,10 @@ Completed: downloads/file.zip
 ```
 
 Daryaft retries network errors, timeouts, HTTP `429`, `500`, `502`, `503`, and
-`504`. It does not retry client errors such as `404`, existing final files,
+`504`, plus interrupted response bodies such as unexpected EOF. When resume is
+enabled, a retry after a partial body failure can continue from the current
+`.part` size. With `--no-resume`, each retry restarts and truncates the `.part`
+file. It does not retry client errors such as `404`, existing final files,
 invalid output paths, filename safety failures, or local filesystem permission
 errors.
 
@@ -137,9 +170,10 @@ Failed downloads:
 - https://example.com/missing.txt: download "https://example.com/missing.txt" failed: server returned 404 Not Found
 ```
 
-Resume is still planned, not implemented. Until resume exists, every retry
-restarts and truncates the `.part` file for that item. If the final target file
-appears between attempts, Daryaft fails that item instead of overwriting it.
+Sequential batch downloads inherit the same resume behavior per item. A failed
+item can resume its own `.part` file during retries without affecting the next
+item. If the final target file appears between attempts, Daryaft fails that item
+instead of overwriting it.
 
 ## Planned Examples
 
@@ -149,10 +183,9 @@ These examples are roadmap examples and are not implemented yet:
 daryaft update
 ```
 
-Concurrency, queue persistence, TUI, rich progress bars, resume, segmented
-downloads, and self-update are planned. The current downloader event stream is
-the foundation for the future TUI, but no Bubble Tea interface is implemented
-yet.
+Concurrency, queue persistence, TUI, rich progress bars, segmented downloads,
+and self-update are planned. The current downloader event stream is the
+foundation for the future TUI, but no Bubble Tea interface is implemented yet.
 
 Related docs:
 

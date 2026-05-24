@@ -2,6 +2,7 @@ package downloader
 
 import (
 	"errors"
+	"io"
 	"net"
 	"net/http"
 	"os"
@@ -83,6 +84,10 @@ func IsRetryableError(err error) bool {
 	var statusErr httpStatusError
 	if errors.As(err, &statusErr) {
 		return isRetryableStatus(statusErr.StatusCode)
+	}
+
+	if errors.Is(err, io.ErrUnexpectedEOF) {
+		return true
 	}
 
 	var netErr net.Error

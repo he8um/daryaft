@@ -100,6 +100,8 @@ func runDownload(cmd *cobra.Command, args []string, flags downloadFlagValues) er
 					printProgress(cmd, event)
 				case downloader.EventRetrying:
 					printRetrying(cmd, event)
+				case downloader.EventResuming, downloader.EventRestarting, downloader.EventWarning:
+					printMessage(cmd, event)
 				case downloader.EventCompleted:
 					fmt.Fprintf(cmd.OutOrStdout(), "Completed: %s\n", event.TargetPath)
 				case downloader.EventFailed:
@@ -126,6 +128,8 @@ func runDownload(cmd *cobra.Command, args []string, flags downloadFlagValues) er
 			printProgress(cmd, event)
 		case downloader.EventRetrying:
 			printRetrying(cmd, event)
+		case downloader.EventResuming, downloader.EventRestarting, downloader.EventWarning:
+			printMessage(cmd, event)
 		case downloader.EventCompleted:
 			fmt.Fprintf(cmd.OutOrStdout(), "Completed: %s\n", event.TargetPath)
 		}
@@ -167,6 +171,13 @@ func printRetrying(cmd *cobra.Command, event downloader.Event) {
 		event.NextDelay,
 		event.Error,
 	)
+}
+
+func printMessage(cmd *cobra.Command, event downloader.Event) {
+	if event.Message == "" {
+		return
+	}
+	fmt.Fprintln(cmd.OutOrStdout(), event.Message)
 }
 
 func hasDownloadFlagChanges(cmd *cobra.Command) bool {

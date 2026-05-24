@@ -1,6 +1,7 @@
 # Feature: Resume and Retry
 
-Retry execution is implemented. Resume is still planned.
+Retry and single URL resume execution are implemented. Sequential batch
+downloads inherit the same behavior for each item.
 
 ## Current Retry Behavior
 
@@ -15,6 +16,7 @@ Daryaft retries:
 
 - network errors from the HTTP request
 - timeouts
+- interrupted response bodies, including unexpected EOF
 - HTTP `429`
 - HTTP `500`
 - HTTP `502`
@@ -56,19 +58,65 @@ can retry and succeed or fail without changing the retry cycle for the next
 item. If an item still fails after all retries, the batch continues and the
 final summary reports that item failure.
 
-## Resume Status
+## Resume Behavior
 
-Resume is not implemented yet. Daryaft still writes to `<filename>.part`, but it
-does not issue Range requests or continue from a previous partial file.
+Daryaft writes incomplete downloads to:
 
-Until resume exists, every retry restarts the download and truncates the `.part`
-file. Final files are never overwritten. If the final target file appears
-between attempts, Daryaft fails that item without retrying again.
+```text
+<filename>.part
+<filename>.part.daryaft.json
+```
+
+The sidecar metadata stores the URL, target path, partial path, total bytes,
+downloaded bytes, `ETag`, `Last-Modified`, `Accept-Ranges`, `created_at`, and
+`updated_at`. Metadata is written through a temporary file and renamed into
+place.
+
+`--resume` defaults to `true`. When a `.part` file exists, Daryaft uses the
+local partial size and sends:
+
+```text
+Range: bytes=<partial_size>-
+```
+
+If the server responds with `206 Partial Content`, Daryaft appends to the
+partial file, progress starts at the existing byte count, and completion renames
+the `.part` file to the final target. The sidecar metadata is removed after a
+successful rename.
+
+If the server does not support resume and returns a full response, Daryaft does
+not append. It truncates the `.part` file, overwrites metadata, emits:
+
+```text
+Resume not supported by server; restarting download
+```
+
+and downloads from byte `0`.
+
+If metadata contains an `ETag` or `Last-Modified` value and the resume response
+returns a different value, Daryaft treats the remote file as changed, emits:
+
+```text
+Remote file changed; restarting download
+```
+
+and restarts from byte `0`.
+
+`--no-resume` disables append behavior. Existing `.part` data is ignored for
+resume, the partial file is truncated, metadata is overwritten, and the final
+target overwrite rules still apply.
+
+Retries work with resume. If an attempt writes some bytes and then fails, the
+next retry can send a Range request for the current `.part` size. With
+`--no-resume`, retries restart from byte `0`.
+
+Final files are never overwritten. If the final target file exists before a
+partial write, Daryaft fails that item without retrying again.
 
 ## Planned
 
-Planned resume work includes Range requests, partial metadata validation,
-checksum-aware completion, and safer recovery after interrupted downloads.
+Planned follow-up work includes checksum-aware completion and richer progress
+rendering.
 
 Related docs:
 
