@@ -340,9 +340,10 @@ func TestBatchSummaryRendersCounts(t *testing.T) {
 		Done:   true,
 		Status: "Failed",
 		Summary: executionSummary{
-			Total:     3,
+			Total:     4,
 			Completed: 2,
 			Failed:    1,
+			Cancelled: 1,
 			Failures: []executionFailure{{
 				URL:   "https://example.com/missing.zip",
 				Error: "server returned 404 Not Found",
@@ -353,9 +354,10 @@ func TestBatchSummaryRendersCounts(t *testing.T) {
 	view := model.View()
 	for _, want := range []string{
 		"Summary",
-		"Total: 3",
+		"Total: 4",
 		"Completed: 2",
 		"Failed: 1",
+		"Cancelled: 1",
 		"https://example.com/missing.zip",
 		"server returned",
 	} {
@@ -369,13 +371,44 @@ func TestQWhileRunningDoesNotQuit(t *testing.T) {
 	model := NewModel(Options{NoColor: true})
 	model.screen = screenExecution
 	model.execution = executionState{Running: true}
+	cancelled := false
+	model.executionCancel = func() {
+		cancelled = true
+	}
 
 	model, cmd := updateWithRuneAndCmd(t, model, 'q')
 	if cmd != nil {
 		t.Fatal("q while running returned a command, want nil")
 	}
-	if !strings.Contains(model.execution.Message, "cancellation is planned") {
-		t.Fatalf("message = %q, want cancellation planned", model.execution.Message)
+	if !cancelled {
+		t.Fatal("cancel func was not called")
+	}
+	if model.execution.Status != "Cancelling" {
+		t.Fatalf("status = %q, want Cancelling", model.execution.Status)
+	}
+	if model.execution.Message != "Cancelling..." {
+		t.Fatalf("message = %q, want Cancelling...", model.execution.Message)
+	}
+}
+
+func TestCancelledEventChangesStatus(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model.screen = screenExecution
+
+	model = updateWithMsg(t, model, executionEventMsg{
+		Item: downloader.BatchItem{Index: 1, Total: 1},
+		Event: downloader.Event{
+			Type:    downloader.EventCancelled,
+			Error:   downloader.ErrCancelled,
+			Message: "Download cancelled. Partial file kept for resume.",
+		},
+	})
+
+	if model.execution.Status != "Cancelled" {
+		t.Fatalf("status = %q, want Cancelled", model.execution.Status)
+	}
+	if model.execution.Message != "Download cancelled. Partial file kept for resume." {
+		t.Fatalf("message = %q", model.execution.Message)
 	}
 }
 

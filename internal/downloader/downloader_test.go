@@ -2,6 +2,8 @@ package downloader
 
 import (
 	"bytes"
+	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -48,6 +50,91 @@ func TestDownloadSingleURL(t *testing.T) {
 	}
 	if userAgent != "Daryaft/0.1.0-dev" {
 		t.Fatalf("User-Agent = %q", userAgent)
+	}
+}
+
+func TestDownloadCancellationLeavesPartialAndMetadata(t *testing.T) {
+	body := bytes.Repeat([]byte("a"), 256*1024)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Length", strconv.Itoa(len(body)))
+		_, _ = w.Write(body)
+	}))
+	defer server.Close()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	var events []Event
+	dir := t.TempDir()
+	_, err := New().DownloadWithEventsContext(ctx, download.Plan{
+		URLs:    []string{server.URL + "/file.bin"},
+		Output:  dir,
+		Resume:  true,
+		Retries: 3,
+	}, func(event Event) {
+		events = append(events, event)
+		if event.Type == EventStarted {
+			cancel()
+		}
+	})
+	if !errors.Is(err, ErrCancelled) {
+		t.Fatalf("error = %v, want ErrCancelled", err)
+	}
+
+	final := filepath.Join(dir, "file.bin")
+	partial := final + ".part"
+	metadata := partial + ".daryaft.json"
+	assertMissing(t, final)
+	if _, err := os.Stat(partial); err != nil {
+		t.Fatalf("partial missing after cancellation: %v", err)
+	}
+	if _, err := os.Stat(metadata); err != nil {
+		t.Fatalf("metadata missing after cancellation: %v", err)
+	}
+
+	cancelled := findEvent(events, EventCancelled)
+	if cancelled.Type != EventCancelled {
+		t.Fatal("missing cancelled event")
+	}
+	if cancelled.TargetPath != final {
+		t.Fatalf("cancelled.TargetPath = %q, want %q", cancelled.TargetPath, final)
+	}
+	if cancelled.PartialPath != partial {
+		t.Fatalf("cancelled.PartialPath = %q, want %q", cancelled.PartialPath, partial)
+	}
+	if cancelled.Message != "Download cancelled. Partial file kept for resume." {
+		t.Fatalf("cancelled.Message = %q", cancelled.Message)
+	}
+}
+
+func TestDownloadCancellationIsNotRetried(t *testing.T) {
+	requests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests++
+		_, _ = w.Write(bytes.Repeat([]byte("a"), 128*1024))
+	}))
+	defer server.Close()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	var retryEvents []Event
+	_, err := newTestDownloader(server).DownloadWithEventsContext(ctx, download.Plan{
+		URLs:    []string{server.URL + "/file.bin"},
+		Output:  t.TempDir(),
+		Retries: 3,
+	}, func(event Event) {
+		if event.Type == EventStarted {
+			cancel()
+		}
+		if event.Type == EventRetrying {
+			retryEvents = append(retryEvents, event)
+		}
+	})
+	if !errors.Is(err, ErrCancelled) {
+		t.Fatalf("error = %v, want ErrCancelled", err)
+	}
+	if requests != 1 {
+		t.Fatalf("requests = %d, want 1", requests)
+	}
+	if len(retryEvents) != 0 {
+		t.Fatalf("retry events = %d, want 0", len(retryEvents))
 	}
 }
 

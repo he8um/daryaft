@@ -155,7 +155,7 @@ func (m Model) executionView() string {
 	builder.WriteString(m.styles.body.Render(m.executionBody()))
 	builder.WriteString("\n\n")
 	if m.execution.Running {
-		builder.WriteString(m.styles.muted.Render("download running • cancellation planned • ctrl+c quit"))
+		builder.WriteString(m.styles.muted.Render("download running • q cancel • ctrl+c quit"))
 	} else {
 		builder.WriteString(m.styles.muted.Render("enter/h home • q quit"))
 	}
@@ -199,7 +199,11 @@ func summaryView(summary executionSummary) string {
 	builder.WriteString("Summary\n")
 	fmt.Fprintf(&builder, "Total: %d\n", summary.Total)
 	fmt.Fprintf(&builder, "Completed: %d\n", summary.Completed)
-	fmt.Fprintf(&builder, "Failed: %d", summary.Failed)
+	fmt.Fprintf(&builder, "Failed: %d\n", summary.Failed)
+	fmt.Fprintf(&builder, "Cancelled: %d", summary.Cancelled)
+	if summary.Skipped > 0 {
+		fmt.Fprintf(&builder, "\nSkipped: %d", summary.Skipped)
+	}
 	if len(summary.Failures) == 0 {
 		return builder.String()
 	}

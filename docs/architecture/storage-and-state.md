@@ -66,6 +66,10 @@ Metadata writes use a temporary JSON file followed by a rename to keep updates
 simple and recoverable. On successful completion, Daryaft renames the `.part`
 file to the final target and removes the sidecar metadata.
 
+On cancellation, Daryaft does not rename the `.part` file. It leaves both the
+partial file and sidecar metadata in place so a later run can resume from the
+saved byte count when the server supports HTTP Range requests.
+
 Resume uses filesystem size as the source of truth for the local byte offset.
 When `--resume` is enabled, Daryaft sends `Range: bytes=<partial_size>-` and
 appends only after a `206 Partial Content` response. If the server returns a

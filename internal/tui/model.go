@@ -1,6 +1,8 @@
 package tui
 
 import (
+	"context"
+
 	"github.com/he8um/daryaft/internal/download"
 	"github.com/he8um/daryaft/pkg/version"
 
@@ -22,6 +24,7 @@ type Model struct {
 	plan              download.Plan
 	planReturn        screen
 	execution         executionState
+	executionCancel   context.CancelFunc
 	executionMessages <-chan tea.Msg
 }
 
@@ -76,6 +79,7 @@ func (m Model) openInput(next screen) (Model, tea.Cmd) {
 	m.errorMessage = ""
 	m.plan = download.Plan{}
 	m.execution = executionState{}
+	m.executionCancel = nil
 	m.executionMessages = nil
 	m.planReturn = next
 	return m, m.input.Focus()
@@ -95,6 +99,7 @@ func (m Model) home() Model {
 	m.screen = screenHome
 	m.errorMessage = ""
 	m.execution = executionState{}
+	m.executionCancel = nil
 	m.executionMessages = nil
 	return m
 }

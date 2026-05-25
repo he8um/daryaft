@@ -37,6 +37,7 @@ implemented event types are:
 - `retrying`: emitted before a retry delay when a failure is retryable and attempts remain.
 - `completed`: emitted after the `.part` file is renamed to the final target path.
 - `failed`: emitted when a download fails after retries are exhausted or the error is not retryable.
+- `cancelled`: emitted when a context cancellation stops the download and partial state is preserved.
 
 Events carry simple fields that can be tested and reused by later interfaces:
 
@@ -47,8 +48,8 @@ Events carry simple fields that can be tested and reused by later interfaces:
 - total bytes, using `0` when the server does not provide a usable content length
 - percent, only populated when total bytes are known and greater than zero
 - approximate bytes per second
-- message, for resuming, restarting, and warning events
-- error, for failed and retrying events
+- message, for resuming, restarting, warning, and cancelled events
+- error, for failed, retrying, and cancelled events
 - attempt and max attempts, for retrying and attempt-scoped events
 - next delay, for retrying events
 - timestamp
@@ -92,9 +93,13 @@ contains completed and failed item counts plus failure reasons.
 
 ## Boundaries
 
-The event system is deliberately small. It does not implement cancellation,
-JSON output, concurrent batch download orchestration, queue persistence, or
-segmented downloads yet.
+Cancellation emits `cancelled` with URL, target path, partial path, downloaded
+bytes, total bytes, and the message `Download cancelled. Partial file kept for
+resume.` Cancellation is not retryable and does not emit a failed event.
+
+The event system is deliberately small. It does not implement JSON output,
+concurrent batch download orchestration, queue persistence, or segmented
+downloads yet.
 
 The TUI subscribes to the downloader event stream instead of reaching into
 downloader internals. Future automation output can use the same event data with

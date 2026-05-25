@@ -1,6 +1,7 @@
 package downloader
 
 import (
+	"context"
 	"errors"
 	"io"
 	"net"
@@ -8,6 +9,8 @@ import (
 	"os"
 	"time"
 )
+
+var ErrCancelled = errors.New("download cancelled")
 
 const (
 	defaultRetryBaseDelay = time.Second
@@ -73,6 +76,10 @@ func BackoffDelay(failedAttempt int) time.Duration {
 
 func IsRetryableError(err error) bool {
 	if err == nil {
+		return false
+	}
+
+	if errors.Is(err, ErrCancelled) || errors.Is(err, context.Canceled) {
 		return false
 	}
 

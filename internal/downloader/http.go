@@ -1,6 +1,7 @@
 package downloader
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -17,7 +18,11 @@ func defaultHTTPClient() *http.Client {
 }
 
 func newRequest(rawURL string) (*http.Request, error) {
-	request, err := http.NewRequest(http.MethodGet, rawURL, nil)
+	return newRequestWithContext(context.Background(), rawURL)
+}
+
+func newRequestWithContext(ctx context.Context, rawURL string) (*http.Request, error) {
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, rawURL, nil)
 	if err != nil {
 		return nil, err
 	}

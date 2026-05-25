@@ -38,7 +38,7 @@ internals. The TUI now consumes this event boundary for its execution screen.
 Partly implemented. Running `daryaft` with no arguments opens a Bubble Tea home
 screen with Lip Gloss styling, simple menu navigation, URL and `.txt` file input
 forms, dry-run plan rendering, an execution/progress screen backed by downloader
-events, help, version, and clean quit handling. TUI cancellation, richer
+events, TUI cancellation, help, version, and clean quit handling. Richer
 progress, queue state, errors, and history are planned.
 
 ## Updater

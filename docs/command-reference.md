@@ -21,7 +21,8 @@ from anywhere. Download from URL and Download from .txt file open input forms,
 validate with the existing download planner, and show dry-run plans. Press enter
 on the plan screen to start a real download in the TUI. Existing CLI download
 commands remain fully supported. TUI downloads use the current directory as the
-output path for now.
+output path for now. Pressing `q` while a TUI download is running cancels it and
+keeps partial state for resume.
 
 When URL arguments or `--file` are provided, the root command enters the current
 download validation mode.
@@ -94,6 +95,10 @@ Progress lines are generated from structured downloader events. The TUI
 execution screen consumes the same event stream for status, target path,
 downloaded bytes, percent, speed, retry/resume/restart messages, completion,
 failure, and summaries.
+
+Cancellation is supported by the downloader context path. TUI cancellation
+emits a cancelled event, leaves the `.part` file and metadata sidecar in place,
+does not rename to the final target, and does not retry.
 
 `--retries` is implemented for transient failures. The value is the number of
 retry attempts after the first try, so `--retries 0` means one total attempt and
@@ -188,7 +193,7 @@ These are planned and not implemented yet:
 daryaft update
 ```
 
-Batch concurrency, queue persistence, rich progress bars, TUI cancellation,
+Batch concurrency, queue persistence, rich progress bars, TUI output path input,
 segmented downloads, and self-update are planned.
 
 Related docs:

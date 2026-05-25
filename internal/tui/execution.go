@@ -1,6 +1,8 @@
 package tui
 
 import (
+	"context"
+	"errors"
 	"fmt"
 
 	"github.com/he8um/daryaft/internal/download"
@@ -29,6 +31,8 @@ type executionSummary struct {
 	Total     int
 	Completed int
 	Failed    int
+	Cancelled int
+	Skipped   int
 	Failures  []executionFailure
 }
 
@@ -50,13 +54,13 @@ func newExecutionState(plan download.Plan) executionState {
 	return state
 }
 
-func runExecution(plan download.Plan) <-chan tea.Msg {
+func runExecution(ctx context.Context, plan download.Plan) <-chan tea.Msg {
 	messages := make(chan tea.Msg, 64)
 
 	go func() {
 		defer close(messages)
 
-		result := downloader.New().DownloadBatch(plan, downloader.BatchHandlers{
+		result := downloader.New().DownloadBatchContext(ctx, plan, downloader.BatchHandlers{
 			ItemStarted: func(item downloader.BatchItem) {
 				messages <- executionItemStartedMsg{Item: item}
 			},
@@ -122,7 +126,13 @@ func (m *Model) applyExecutionFinished(msg executionFinishedMsg) {
 	m.execution.Running = false
 	m.execution.Done = true
 	m.execution.Summary = msg.Summary
+	m.executionCancel = nil
 	m.executionMessages = nil
+	if msg.Summary.Cancelled > 0 {
+		m.execution.Status = "Cancelled"
+		m.execution.Message = "Download cancelled. Partial file kept for resume."
+		return
+	}
 	if msg.Summary.Failed > 0 {
 		m.execution.Status = "Failed"
 		return
@@ -135,6 +145,8 @@ func summaryFromBatch(result downloader.BatchResult) executionSummary {
 		Total:     result.Total(),
 		Completed: result.Completed(),
 		Failed:    result.Failed(),
+		Cancelled: result.Cancelled(),
+		Skipped:   result.Skipped(),
 	}
 	for _, failure := range result.FailedItems() {
 		summary.Failures = append(summary.Failures, executionFailure{
@@ -159,6 +171,8 @@ func statusFromEvent(eventType downloader.EventType) string {
 		return "Completed"
 	case downloader.EventFailed:
 		return "Failed"
+	case downloader.EventCancelled:
+		return "Cancelled"
 	case downloader.EventWarning:
 		return "Downloading"
 	default:
@@ -174,6 +188,11 @@ func messageFromEvent(event downloader.Event) string {
 		switch event.Type {
 		case downloader.EventRetrying:
 			return fmt.Sprintf("Retrying %d/%d in %s: %v", event.Attempt, event.MaxAttempts, event.NextDelay, event.Error)
+		case downloader.EventCancelled:
+			if errors.Is(event.Error, downloader.ErrCancelled) {
+				return "Download cancelled. Partial file kept for resume."
+			}
+			return event.Error.Error()
 		default:
 			return event.Error.Error()
 		}

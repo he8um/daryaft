@@ -13,6 +13,7 @@ const (
 	EventResuming   EventType = "resuming"
 	EventRestarting EventType = "restarting"
 	EventWarning    EventType = "warning"
+	EventCancelled  EventType = "cancelled"
 )
 
 type Event struct {

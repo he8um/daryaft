@@ -1,6 +1,8 @@
 package tui
 
 import (
+	"context"
+
 	"github.com/he8um/daryaft/internal/download"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -34,7 +36,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 	if key.String() == "q" {
 		if m.execution.Running {
-			m.execution.Message = "Download is running; cancellation is planned."
+			if m.executionCancel != nil {
+				m.executionCancel()
+			}
+			m.execution.Status = "Cancelling"
+			m.execution.Message = "Cancelling..."
 			return m, nil
 		}
 		return m, tea.Quit
@@ -123,9 +129,11 @@ func (m Model) submitInput() (Model, tea.Cmd) {
 }
 
 func (m Model) startExecution() (Model, tea.Cmd) {
+	ctx, cancel := context.WithCancel(context.Background())
 	m.screen = screenExecution
 	m.errorMessage = ""
 	m.execution = newExecutionState(m.plan)
-	m.executionMessages = runExecution(m.plan)
+	m.executionCancel = cancel
+	m.executionMessages = runExecution(ctx, m.plan)
 	return m, waitForExecution(m.executionMessages)
 }

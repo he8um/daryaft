@@ -64,6 +64,11 @@ It consumes the same downloader event stream as the CLI and supports sequential
 batch execution for `.txt` input. TUI downloads use the current directory as
 the output path for now; output path input is planned.
 
+While a download is running, `q` cancels it and shows `Cancelling...`. After the
+downloader stops, the status becomes `Cancelled` with the message
+`Download cancelled. Partial file kept for resume.` Cancelled downloads keep
+their `.part` file and metadata sidecar and are not retried.
+
 CLI commands remain fully supported:
 
 ```bash
@@ -80,10 +85,9 @@ download files.
 
 ## Planned
 
-Cancellation is planned. While a TUI download is running, `q` indicates that
-cancellation is not implemented; ctrl+c can still terminate the program. Queue
-persistence, concurrent downloads, history, and rich progress bars are not
-implemented yet.
+Output path input, queue persistence, concurrent downloads, history, and rich
+progress bars are not implemented yet. CLI ctrl+c behavior is unchanged and may
+terminate the process directly.
 
 ## Examples
 

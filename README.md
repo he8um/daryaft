@@ -95,14 +95,16 @@ events plus retrying events. The CLI consumes those events for line-based
 progress and retry output for single and sequential batch downloads. The TUI
 execution screen consumes the same event stream for status, byte progress,
 speed, retry/resume/restart messages, completion, failure, and batch summaries.
-Cancellation from the TUI is planned; ctrl+c still exits the program.
+TUI downloads can be cancelled with `q`; Daryaft keeps the `.part` file and
+metadata sidecar for a future resume and does not retry cancelled downloads.
+CLI ctrl+c behavior is unchanged and may terminate the process directly.
 
 ## Planned Features
 
 - Concurrent batch downloads
 - Rich progress bars
 - Checksum-aware behavior
-- TUI cancellation controls
+- TUI output path input
 - Queue persistence and history management
 - Structured automation output
 - Self-update support after the release model is ready

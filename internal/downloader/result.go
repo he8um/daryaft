@@ -1,6 +1,7 @@
 package downloader
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -23,10 +24,14 @@ type BatchItemResult struct {
 }
 
 type BatchResult struct {
-	Items []BatchItemResult
+	Planned int
+	Items   []BatchItemResult
 }
 
 func (r BatchResult) Total() int {
+	if r.Planned > 0 {
+		return r.Planned
+	}
 	return len(r.Items)
 }
 
@@ -41,13 +46,37 @@ func (r BatchResult) Completed() int {
 }
 
 func (r BatchResult) Failed() int {
-	return r.Total() - r.Completed()
+	failed := 0
+	for _, item := range r.Items {
+		if item.Err != nil && !errors.Is(item.Err, ErrCancelled) {
+			failed++
+		}
+	}
+	return failed
+}
+
+func (r BatchResult) Cancelled() int {
+	cancelled := 0
+	for _, item := range r.Items {
+		if errors.Is(item.Err, ErrCancelled) {
+			cancelled++
+		}
+	}
+	return cancelled
+}
+
+func (r BatchResult) Skipped() int {
+	skipped := r.Total() - r.Completed() - r.Failed() - r.Cancelled()
+	if skipped < 0 {
+		return 0
+	}
+	return skipped
 }
 
 func (r BatchResult) FailedItems() []BatchItemResult {
 	failures := make([]BatchItemResult, 0)
 	for _, item := range r.Items {
-		if item.Err != nil {
+		if item.Err != nil && !errors.Is(item.Err, ErrCancelled) {
 			failures = append(failures, item)
 		}
 	}
@@ -55,6 +84,9 @@ func (r BatchResult) FailedItems() []BatchItemResult {
 }
 
 func (r BatchResult) Err() error {
+	if r.Cancelled() > 0 {
+		return ErrCancelled
+	}
 	if r.Failed() == 0 {
 		return nil
 	}
@@ -73,6 +105,12 @@ func (r BatchResult) SummaryString() string {
 	fmt.Fprintf(&builder, "Total: %d\n", r.Total())
 	fmt.Fprintf(&builder, "Completed: %d\n", r.Completed())
 	fmt.Fprintf(&builder, "Failed: %d", r.Failed())
+	if r.Cancelled() > 0 || r.Skipped() > 0 {
+		fmt.Fprintf(&builder, "\nCancelled: %d", r.Cancelled())
+	}
+	if r.Skipped() > 0 {
+		fmt.Fprintf(&builder, "\nSkipped: %d", r.Skipped())
+	}
 
 	failures := r.FailedItems()
 	if len(failures) > 0 {

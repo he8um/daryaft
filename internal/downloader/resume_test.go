@@ -1,10 +1,15 @@
 package downloader
 
 import (
+	"bytes"
+	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -32,6 +37,78 @@ func TestFreshDownloadRemovesPartialAndMetadata(t *testing.T) {
 	assertFileContent(t, result.Path, "hello fresh")
 	assertMissing(t, result.Path+".part")
 	assertMissing(t, result.Path+".part.daryaft.json")
+}
+
+func TestResumeAfterCancellation(t *testing.T) {
+	body := bytes.Repeat([]byte("r"), 192*1024)
+	requests := 0
+	var resumeRange string
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests++
+		if rangeHeader := r.Header.Get("Range"); rangeHeader != "" {
+			resumeRange = rangeHeader
+			var start int
+			if _, err := fmt.Sscanf(rangeHeader, "bytes=%d-", &start); err != nil {
+				t.Fatalf("parse range %q: %v", rangeHeader, err)
+			}
+			w.Header().Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", start, len(body)-1, len(body)))
+			w.Header().Set("Content-Length", strconv.Itoa(len(body)-start))
+			w.WriteHeader(http.StatusPartialContent)
+			_, _ = w.Write(body[start:])
+			return
+		}
+
+		w.Header().Set("Content-Length", strconv.Itoa(len(body)))
+		_, _ = w.Write(body)
+	}))
+	defer server.Close()
+
+	dir := t.TempDir()
+	ctx, cancel := context.WithCancel(context.Background())
+	_, err := New().DownloadWithEventsContext(ctx, download.Plan{
+		URLs:   []string{server.URL + "/file.bin"},
+		Output: dir,
+		Resume: true,
+	}, func(event Event) {
+		if event.Type == EventProgress {
+			cancel()
+		}
+	})
+	if !errors.Is(err, ErrCancelled) {
+		t.Fatalf("error = %v, want ErrCancelled", err)
+	}
+
+	partial := filepath.Join(dir, "file.bin.part")
+	info, err := os.Stat(partial)
+	if err != nil {
+		t.Fatalf("partial missing after cancellation: %v", err)
+	}
+	if info.Size() <= 0 || info.Size() >= int64(len(body)) {
+		t.Fatalf("partial size = %d, want between 0 and %d", info.Size(), len(body))
+	}
+
+	result, err := New().Download(download.Plan{
+		URLs:   []string{server.URL + "/file.bin"},
+		Output: dir,
+		Resume: true,
+	})
+	if err != nil {
+		t.Fatalf("resume Download returned error: %v", err)
+	}
+	if requests != 2 {
+		t.Fatalf("requests = %d, want 2", requests)
+	}
+	if resumeRange != fmt.Sprintf("bytes=%d-", info.Size()) {
+		t.Fatalf("resume Range = %q, want bytes=%d-", resumeRange, info.Size())
+	}
+	content, err := os.ReadFile(result.Path)
+	if err != nil {
+		t.Fatalf("read resumed file: %v", err)
+	}
+	if !bytes.Equal(content, body) {
+		t.Fatalf("resumed content length = %d, want %d", len(content), len(body))
+	}
 }
 
 func TestPartialFileCanResumeWithRangeAndComplete(t *testing.T) {

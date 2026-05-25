@@ -28,6 +28,10 @@ The TUI uses the same sequential batch runner after a `.txt` file is validated
 and confirmed from the plan screen. TUI batch downloads currently write to the
 current directory.
 
+If a TUI batch is cancelled, Daryaft cancels the current item, keeps its partial
+state for resume, and does not start remaining URLs. The final TUI summary
+shows total, completed, failed, cancelled, and skipped counts when relevant.
+
 Each item uses the normal single URL behavior:
 
 - accepts only HTTP 2xx responses
@@ -81,8 +85,8 @@ cannot safely apply to multiple downloads.
 
 ## Planned
 
-Concurrency, persistent queue state, history, TUI cancellation, and richer batch
-formats are planned. The current implementation deliberately does not do
+Concurrency, persistent queue state, history, TUI output path input, and richer
+batch formats are planned. The current implementation deliberately does not do
 concurrent downloads or queue persistence.
 
 Related docs:

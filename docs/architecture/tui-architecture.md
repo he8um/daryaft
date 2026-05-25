@@ -92,9 +92,10 @@ state. The TUI uses those messages to render status, target path, downloaded
 bytes, percent, speed, retry/resume/restart messages, completion, failure, and
 batch summaries.
 
-Cancellation is not implemented yet. Pressing `q` while a download is running
-updates the message area instead of silently quitting; ctrl+c still exits the
-program.
+Pressing `q` while a download is running calls the stored cancel function,
+moves the screen to `Cancelling...`, and continues receiving downloader events
+until the final cancelled message arrives. Ctrl+c behavior is unchanged and may
+terminate the process directly.
 
 ## Testing
 

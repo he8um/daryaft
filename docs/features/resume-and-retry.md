@@ -54,6 +54,10 @@ attempt is attempt 2 of 4 total possible attempts.
 The TUI execution screen consumes the same retry events and renders `Retrying`
 status with the retry attempt, delay, and error message.
 
+Cancellation is not retryable. When a download context is cancelled, Daryaft
+emits a cancelled event and returns immediately without waiting for backoff or
+starting another attempt.
+
 ## Batch Downloads
 
 Sequential batch downloads use the same retry behavior for each item. One item
@@ -98,6 +102,10 @@ and downloads from byte `0`.
 
 The TUI execution screen renders resume and restart events as `Resuming` and
 `Restarting` statuses with the same messages.
+
+Cancelled downloads keep the `.part` file and `.part.daryaft.json` sidecar.
+The next run with resume enabled can continue from the partial size when the
+server supports HTTP Range requests.
 
 If metadata contains an `ETag` or `Last-Modified` value and the resume response
 returns a different value, Daryaft treats the remote file as changed, emits:

@@ -1,6 +1,8 @@
 package downloader
 
 import (
+	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -55,6 +57,40 @@ func TestDownloadBatchDownloadsMultipleURLs(t *testing.T) {
 
 	assertFileContent(t, filepath.Join(dir, "a.txt"), "a")
 	assertFileContent(t, filepath.Join(dir, "b.txt"), "b")
+}
+
+func TestDownloadBatchCancellationStopsRemainingItems(t *testing.T) {
+	requests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests++
+		_, _ = w.Write([]byte("body"))
+	}))
+	defer server.Close()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	result := New().DownloadBatchContext(ctx, download.Plan{
+		URLs: []string{
+			server.URL + "/a.txt",
+			server.URL + "/b.txt",
+		},
+		Output: t.TempDir(),
+	}, BatchHandlers{
+		Event: func(_ BatchItem, event Event) {
+			if event.Type == EventStarted {
+				cancel()
+			}
+		},
+	})
+
+	if !errors.Is(result.Err(), ErrCancelled) {
+		t.Fatalf("result.Err() = %v, want ErrCancelled", result.Err())
+	}
+	if requests != 1 {
+		t.Fatalf("requests = %d, want 1", requests)
+	}
+	if result.Total() != 2 || result.Completed() != 0 || result.Failed() != 0 || result.Cancelled() != 1 || result.Skipped() != 1 {
+		t.Fatalf("counts = total %d completed %d failed %d cancelled %d skipped %d", result.Total(), result.Completed(), result.Failed(), result.Cancelled(), result.Skipped())
+	}
 }
 
 func TestDownloadBatchContinuesAfterFailedItem(t *testing.T) {

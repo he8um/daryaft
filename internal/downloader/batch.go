@@ -1,6 +1,10 @@
 package downloader
 
-import "github.com/he8um/daryaft/internal/download"
+import (
+	"context"
+
+	"github.com/he8um/daryaft/internal/download"
+)
 
 type BatchEventHandler func(BatchItem, Event)
 
@@ -10,9 +14,20 @@ type BatchHandlers struct {
 }
 
 func (d *Downloader) DownloadBatch(plan download.Plan, handlers BatchHandlers) BatchResult {
+	return d.DownloadBatchContext(context.Background(), plan, handlers)
+}
+
+func (d *Downloader) DownloadBatchContext(ctx context.Context, plan download.Plan, handlers BatchHandlers) BatchResult {
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	items := make([]BatchItemResult, 0, len(plan.URLs))
 
 	for index, rawURL := range plan.URLs {
+		if ctx.Err() != nil {
+			break
+		}
+
 		item := BatchItem{
 			Index: index + 1,
 			Total: len(plan.URLs),
@@ -26,7 +41,7 @@ func (d *Downloader) DownloadBatch(plan download.Plan, handlers BatchHandlers) B
 		itemPlan := plan
 		itemPlan.URLs = []string{rawURL}
 
-		result, err := d.DownloadWithEvents(itemPlan, func(event Event) {
+		result, err := d.DownloadWithEventsContext(ctx, itemPlan, func(event Event) {
 			if handlers.Event != nil {
 				handlers.Event(item, event)
 			}
@@ -37,7 +52,11 @@ func (d *Downloader) DownloadBatch(plan download.Plan, handlers BatchHandlers) B
 			Result: result,
 			Err:    err,
 		})
+
+		if isCancellationError(err) {
+			break
+		}
 	}
 
-	return BatchResult{Items: items}
+	return BatchResult{Planned: len(plan.URLs), Items: items}
 }
