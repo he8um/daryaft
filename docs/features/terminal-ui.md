@@ -1,8 +1,8 @@
 # Feature: Terminal UI
 
 The Bubble Tea terminal UI is implemented for no-argument startup. It can
-collect URL or `.txt` file input and show dry-run download plans. Full download
-execution and progress screens are planned next.
+collect URL or `.txt` file input, show dry-run download plans, and start real
+downloads from the plan screen.
 
 ## Navigation
 
@@ -48,7 +48,8 @@ Navigation:
 - up/down arrows or `k`/`j` move through menu items
 - enter selects an item
 - `esc` or backspace returns from sub-screens to home
-- `q` or ctrl+c quits from anywhere
+- `q` quits unless a download is running
+- ctrl+c quits from anywhere
 
 The View help and Version menu items render simple in-TUI screens. Download
 from URL and Download from .txt file render text input forms. Pressing enter
@@ -56,8 +57,13 @@ validates the URL or URL file through the existing download planner and shows a
 dry-run plan with URL count, the first URLs, output, filename, retries, and
 resume settings.
 
-The TUI does not execute downloads yet. CLI commands remain the execution path
-for real downloads:
+On the plan screen, enter starts the real download. The execution screen shows
+the current item, URL, target path when known, status, downloaded bytes, total
+bytes when known, percent, speed, recent messages, and a final batch summary.
+It consumes the same downloader event stream as the CLI and supports sequential
+batch execution for `.txt` input.
+
+CLI commands remain fully supported:
 
 ```bash
 daryaft https://example.com/file.zip
@@ -73,9 +79,9 @@ download files.
 
 ## Planned
 
-Future TUI work will add execution and a progress screen that consumes
-downloader events for progress, retry, resume, failure, and completion states.
-Queue persistence, concurrent downloads, history, and rich progress bars are not
+Cancellation is planned. While a TUI download is running, `q` indicates that
+cancellation is not implemented; ctrl+c can still terminate the program. Queue
+persistence, concurrent downloads, history, and rich progress bars are not
 implemented yet.
 
 ## Examples

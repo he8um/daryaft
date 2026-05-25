@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	"github.com/he8um/daryaft/internal/config"
+	"github.com/he8um/daryaft/internal/download"
+	"github.com/he8um/daryaft/internal/downloader"
 	"github.com/he8um/daryaft/pkg/version"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -113,8 +115,8 @@ func TestValidURLCreatesPlanScreen(t *testing.T) {
 	if !strings.Contains(model.View(), "Number of URLs: 1") {
 		t.Fatalf("plan view missing URL count:\n%s", model.View())
 	}
-	if !strings.Contains(model.View(), "TUI download execution is planned") {
-		t.Fatalf("plan view missing execution boundary:\n%s", model.View())
+	if !strings.Contains(model.View(), "enter start download") {
+		t.Fatalf("plan view missing start action:\n%s", model.View())
 	}
 }
 
@@ -217,6 +219,166 @@ func TestQQuits(t *testing.T) {
 	}
 }
 
+func TestEnterOnPlanStartsExecutionScreen(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model.screen = screenPlan
+	model.plan = download.Plan{}
+
+	model, cmd := updateWithKeyAndCmd(t, model, tea.KeyEnter)
+	if model.screen != screenExecution {
+		t.Fatalf("screen = %v, want execution", model.screen)
+	}
+	if !model.execution.Running {
+		t.Fatal("execution.Running = false, want true")
+	}
+	if cmd == nil {
+		t.Fatal("execution command is nil")
+	}
+}
+
+func TestExecutionScreenRendersProgressFields(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model.screen = screenExecution
+	model.execution = executionState{
+		Running:         true,
+		ItemIndex:       1,
+		ItemTotal:       2,
+		CurrentURL:      "https://example.com/file.zip",
+		TargetPath:      "file.zip",
+		Status:          "Downloading",
+		DownloadedBytes: 512,
+		TotalBytes:      1024,
+		Percent:         50,
+		Speed:           2048,
+		Message:         "Saving",
+	}
+
+	view := model.View()
+	for _, want := range []string{
+		"Downloading",
+		"Item 1 of 2",
+		"https://example.com/file.zip",
+		"Target path: file.zip",
+		"Status: Downloading",
+		"Downloaded: 512 B / 1.0 KB",
+		"Percent: 50.0%",
+		"Speed: 2.0 KB/s",
+		"Message: Saving",
+	} {
+		if !strings.Contains(view, want) {
+			t.Fatalf("execution view missing %q in:\n%s", want, view)
+		}
+	}
+}
+
+func TestDownloaderEventMessageUpdatesExecutionState(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model.screen = screenExecution
+
+	model = updateWithMsg(t, model, executionEventMsg{
+		Item: downloader.BatchItem{Index: 2, Total: 3, URL: "https://example.com/file.zip"},
+		Event: downloader.Event{
+			Type:                downloader.EventProgress,
+			URL:                 "https://example.com/file.zip",
+			TargetPath:          "file.zip",
+			DownloadedBytes:     100,
+			TotalBytes:          200,
+			Percent:             50,
+			SpeedBytesPerSecond: 1000,
+		},
+	})
+
+	if model.execution.ItemIndex != 2 || model.execution.ItemTotal != 3 {
+		t.Fatalf("item = %d/%d, want 2/3", model.execution.ItemIndex, model.execution.ItemTotal)
+	}
+	if model.execution.Status != "Downloading" {
+		t.Fatalf("status = %q, want Downloading", model.execution.Status)
+	}
+	if model.execution.TargetPath != "file.zip" {
+		t.Fatalf("target = %q, want file.zip", model.execution.TargetPath)
+	}
+	if model.execution.DownloadedBytes != 100 || model.execution.TotalBytes != 200 {
+		t.Fatalf("bytes = %d/%d, want 100/200", model.execution.DownloadedBytes, model.execution.TotalBytes)
+	}
+}
+
+func TestCompletedEventChangesStatus(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model.screen = screenExecution
+
+	model = updateWithMsg(t, model, executionEventMsg{
+		Item:  downloader.BatchItem{Index: 1, Total: 1},
+		Event: downloader.Event{Type: downloader.EventCompleted},
+	})
+
+	if model.execution.Status != "Completed" {
+		t.Fatalf("status = %q, want Completed", model.execution.Status)
+	}
+}
+
+func TestFailedEventChangesStatus(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model.screen = screenExecution
+
+	model = updateWithMsg(t, model, executionEventMsg{
+		Item:  downloader.BatchItem{Index: 1, Total: 1},
+		Event: downloader.Event{Type: downloader.EventFailed, Error: os.ErrNotExist},
+	})
+
+	if model.execution.Status != "Failed" {
+		t.Fatalf("status = %q, want Failed", model.execution.Status)
+	}
+	if model.execution.Message == "" {
+		t.Fatal("message is empty, want failure reason")
+	}
+}
+
+func TestBatchSummaryRendersCounts(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model.screen = screenExecution
+	model.execution = executionState{
+		Done:   true,
+		Status: "Failed",
+		Summary: executionSummary{
+			Total:     3,
+			Completed: 2,
+			Failed:    1,
+			Failures: []executionFailure{{
+				URL:   "https://example.com/missing.zip",
+				Error: "server returned 404 Not Found",
+			}},
+		},
+	}
+
+	view := model.View()
+	for _, want := range []string{
+		"Summary",
+		"Total: 3",
+		"Completed: 2",
+		"Failed: 1",
+		"https://example.com/missing.zip",
+		"server returned",
+	} {
+		if !strings.Contains(view, want) {
+			t.Fatalf("summary view missing %q in:\n%s", want, view)
+		}
+	}
+}
+
+func TestQWhileRunningDoesNotQuit(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model.screen = screenExecution
+	model.execution = executionState{Running: true}
+
+	model, cmd := updateWithRuneAndCmd(t, model, 'q')
+	if cmd != nil {
+		t.Fatal("q while running returned a command, want nil")
+	}
+	if !strings.Contains(model.execution.Message, "cancellation is planned") {
+		t.Fatalf("message = %q, want cancellation planned", model.execution.Message)
+	}
+}
+
 func TestFooterAppearsInView(t *testing.T) {
 	model := NewModel(Options{NoColor: true})
 
@@ -269,6 +431,16 @@ func updateWithRuneAndCmd(t *testing.T, model Model, key rune) (Model, tea.Cmd) 
 func updateWithString(t *testing.T, model Model, value string) Model {
 	t.Helper()
 	updated, _ := model.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune(value)})
+	next, ok := updated.(Model)
+	if !ok {
+		t.Fatalf("updated model type = %T, want tui.Model", updated)
+	}
+	return next
+}
+
+func updateWithMsg(t *testing.T, model Model, msg tea.Msg) Model {
+	t.Helper()
+	updated, _ := model.Update(msg)
 	next, ok := updated.(Model)
 	if !ok {
 		t.Fatalf("updated model type = %T, want tui.Model", updated)

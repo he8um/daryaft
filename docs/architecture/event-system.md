@@ -53,8 +53,10 @@ Events carry simple fields that can be tested and reused by later interfaces:
 - next delay, for retrying events
 - timestamp
 
-The CLI currently consumes these events for line-based progress output. Single
-URL output uses:
+The CLI consumes these events for line-based progress output. The TUI execution
+screen consumes the same events through a goroutine/channel bridge and renders
+status, target path, byte progress, percent, speed, recent messages, completion,
+failure, and batch summaries. Single URL CLI output uses:
 
 ```text
 Downloading: <url>
@@ -74,8 +76,8 @@ Progress: <downloaded> bytes | <speed>
 ```
 
 Sequential batch downloads reuse the same per-item downloader events. The batch
-runner adds item metadata so the CLI can print headers and collect summary
-counts:
+runner adds item metadata so the CLI can print headers and the TUI can show
+`Item N of M` while both interfaces collect summary counts:
 
 ```text
 [1/3] Downloading: <url>
@@ -89,13 +91,13 @@ contains completed and failed item counts plus failure reasons.
 
 ## Boundaries
 
-The event system is deliberately small. It does not implement Bubble Tea, a full
-terminal UI, JSON output, concurrent batch download orchestration, queue
-persistence, or segmented downloads yet.
+The event system is deliberately small. It does not implement cancellation,
+JSON output, concurrent batch download orchestration, queue persistence, or
+segmented downloads yet.
 
-Future TUI work should subscribe to the downloader event stream instead of
-reaching into downloader internals. Future automation output can use the same
-event data with a separate renderer.
+The TUI subscribes to the downloader event stream instead of reaching into
+downloader internals. Future automation output can use the same event data with
+a separate renderer.
 
 ## Examples
 

@@ -24,6 +24,8 @@ URL files are read line by line:
 
 Real batch execution is sequential in this milestone. Daryaft downloads one URL
 at a time, waits for it to complete or fail, then moves to the next URL.
+The TUI uses the same sequential batch runner after a `.txt` file is validated
+and confirmed from the plan screen.
 
 Each item uses the normal single URL behavior:
 
@@ -37,7 +39,8 @@ Each item uses the normal single URL behavior:
 - renames to the final path on success
 - rejects existing final files
 - retries transient network and server failures according to `--retries`
-- emits downloader events that the CLI renders as text progress
+- emits downloader events that the CLI renders as text progress and the TUI
+  renders as status/progress fields
 
 Batch output starts each item with a clear header:
 
@@ -77,7 +80,7 @@ cannot safely apply to multiple downloads.
 
 ## Planned
 
-Concurrency, persistent queue state, history, TUI rendering, and richer batch
+Concurrency, persistent queue state, history, TUI cancellation, and richer batch
 formats are planned. The current implementation deliberately does not do
 concurrent downloads or queue persistence.
 

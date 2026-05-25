@@ -7,6 +7,7 @@ const (
 	screenURLInput
 	screenFileInput
 	screenPlan
+	screenExecution
 	screenHelp
 	screenVersion
 )
@@ -32,6 +33,8 @@ func (s screen) title() string {
 		return "Download from .txt file"
 	case screenPlan:
 		return "Download plan"
+	case screenExecution:
+		return "Downloading"
 	case screenHelp:
 		return "Help"
 	case screenVersion:

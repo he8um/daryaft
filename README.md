@@ -16,7 +16,8 @@ for temporary network and server failures, and interrupted downloads can resume
 from `.part` files when the server supports HTTP Range requests. Running
 `daryaft` with no arguments opens the interactive TUI home screen. The TUI can
 collect a single URL or `.txt` file path and show the same dry-run download
-plan as the CLI, but it does not execute downloads yet.
+plan as the CLI, then start real single or sequential batch downloads from the
+plan screen.
 
 - Repository: https://github.com/he8um/daryaft
 - Website: https://xhesam.com
@@ -70,9 +71,8 @@ daryaft download -f urls.txt
 
 With no arguments, Daryaft opens a Bubble Tea home screen with menu entries for
 URL input, `.txt` file input, help, version information, and quit. Download
-actions inside the TUI validate input and show dry-run plans only; they do not
-start downloads yet. Existing CLI download commands remain the stable execution
-path for real downloads.
+actions inside the TUI validate input, show a dry-run plan, and can start real
+downloads from that plan. Existing CLI download commands remain fully supported.
 
 Download commands validate URLs and can print a dry-run plan. Real downloading
 is implemented for one URL and for multiple URLs sequentially. Batch downloads
@@ -91,16 +91,16 @@ always restarts the partial file from byte `0`.
 The downloader now emits structured started, progress, completed, and failed
 events plus retrying events. The CLI consumes those events for line-based
 progress and retry output for single and sequential batch downloads. The TUI
-input and dry-run planning flow is in place. TUI download execution and progress
-screens are planned next and will consume downloader events in a later
-milestone.
+execution screen consumes the same event stream for status, byte progress,
+speed, retry/resume/restart messages, completion, failure, and batch summaries.
+Cancellation from the TUI is planned; ctrl+c still exits the program.
 
 ## Planned Features
 
 - Concurrent batch downloads
 - Rich progress bars
 - Checksum-aware behavior
-- Download execution and progress inside the terminal UI
+- TUI cancellation controls
 - Queue persistence and history management
 - Structured automation output
 - Self-update support after the release model is ready

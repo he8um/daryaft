@@ -31,16 +31,15 @@ The current CLI consumes these events to print simple line-based progress,
 resume, restart, and retry messages for single and sequential batch downloads.
 The same event boundary is intended to support future TUI rendering and
 structured automation output without coupling those interfaces to downloader
-internals.
+internals. The TUI now consumes this event boundary for its execution screen.
 
 ## TUI Renderer
 
 Partly implemented. Running `daryaft` with no arguments opens a Bubble Tea home
 screen with Lip Gloss styling, simple menu navigation, URL and `.txt` file input
-forms, dry-run plan rendering, help, version, and clean quit handling. It does
-not start downloads yet. Future TUI execution and progress screens will
-subscribe to downloader events and display richer progress, queue state, errors,
-and history.
+forms, dry-run plan rendering, an execution/progress screen backed by downloader
+events, help, version, and clean quit handling. TUI cancellation, richer
+progress, queue state, errors, and history are planned.
 
 ## Updater
 

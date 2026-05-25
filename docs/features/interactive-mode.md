@@ -44,7 +44,13 @@ Pressing enter validates the input with the existing download planning logic and
 shows a dry-run plan. Invalid URLs or file paths keep the user on the input
 screen and show a validation error.
 
-The TUI does not execute downloads yet. Use these CLI forms for real downloads:
+Pressing enter on the plan screen starts a real download. The execution screen
+uses the same downloader event stream as the CLI and supports both one URL and
+sequential `.txt` batch downloads. It shows status, target path, byte progress,
+percent when known, speed, retry/resume/restart messages, failures, and final
+summary counts.
+
+CLI forms remain fully supported:
 
 ```bash
 daryaft https://example.com/file.zip
@@ -60,15 +66,17 @@ build metadata as `daryaft version`.
 - up/down arrows: move selection
 - `k`/`j`: move selection
 - enter: select
+- enter on plan: start download
+- enter after completion: return home
 - `esc` or backspace: return to home from a sub-screen
-- `q` or ctrl+c: quit from anywhere
+- `q`: quit unless a download is running
+- ctrl+c: quit from anywhere
 
 ## Boundaries
 
-Interactive mode does not implement download execution, queue persistence,
-concurrency, self-update, or packaging flows yet. It is the foundation that will
-later consume downloader events. TUI execution and the progress screen are
-planned next.
+Interactive mode does not implement cancellation, queue persistence,
+concurrency, self-update, or packaging flows yet. While a download is running,
+`q` reports that cancellation is planned instead of silently quitting.
 
 ## Examples
 

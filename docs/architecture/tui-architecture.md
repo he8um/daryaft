@@ -40,6 +40,9 @@ Current files:
 - `keys.go`: key classification helpers
 - `inputs.go`: Bubble Tea text input construction and prompt selection
 - `plan.go`: TUI dry-run plan helpers backed by `internal/download`
+- `messages.go`: Bubble Tea message types for downloader execution events
+- `execution.go`: goroutine/channel bridge from `internal/downloader` to the
+  TUI model
 
 `cmd/root.go` calls `tui.Run` only for no-argument execution. URL arguments,
 `--file`, and download flags continue through the existing CLI download path.
@@ -54,6 +57,7 @@ The model tracks:
 - validation error message
 - generated dry-run download plan
 - input screen to return to from the plan screen
+- execution state for the current item, event data, messages, and summary
 - style set
 - version details
 
@@ -63,11 +67,14 @@ The first implemented screens are:
 - Download from URL input
 - Download from .txt file input
 - dry-run download plan
+- execution/progress
 - help
 - version
 
 The TUI calls `internal/download.BuildPlan` for URL and file inputs. It does
-not import Cobra and does not call downloader execution code.
+not import Cobra. The plan screen starts downloads through
+`internal/downloader.DownloadBatch`, so single URL and `.txt` batch execution
+share the same sequential runner as the CLI.
 
 ## Styling
 
@@ -77,15 +84,23 @@ background colors while preserving layout.
 
 ## Event Boundary
 
-The current TUI does not start downloads. It validates input and shows dry-run
-plans only. Future execution and progress screens should subscribe to the
-existing downloader event stream instead of reaching into downloader internals.
+TUI execution starts a goroutine that runs the existing downloader. Downloader
+item and progress events are copied into a channel and received by Bubble Tea
+commands, keeping the update loop non-blocking and avoiding shared mutable
+state. The TUI uses those messages to render status, target path, downloaded
+bytes, percent, speed, retry/resume/restart messages, completion, failure, and
+batch summaries.
+
+Cancellation is not implemented yet. Pressing `q` while a download is running
+updates the message area instead of silently quitting; ctrl+c still exits the
+program.
 
 ## Testing
 
 Current tests cover menu navigation, wrap behavior, screen switching, input
-validation, dry-run plan creation, back navigation, quit handling, footer
-rendering, and version rendering without brittle snapshots.
+validation, dry-run plan creation, execution transitions, event message
+handling, summary rendering, running-state quit behavior, back navigation,
+footer rendering, and version rendering without brittle snapshots.
 
 ## Examples
 

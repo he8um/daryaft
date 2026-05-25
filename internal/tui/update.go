@@ -7,6 +7,20 @@ import (
 )
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case executionItemStartedMsg:
+		m.applyExecutionItemStarted(msg)
+		return m, waitForExecution(m.executionMessages)
+	case executionEventMsg:
+		m.applyExecutionEvent(msg)
+		return m, waitForExecution(m.executionMessages)
+	case executionFinishedMsg:
+		m.applyExecutionFinished(msg)
+		return m, nil
+	case executionClosedMsg:
+		return m, nil
+	}
+
 	key, ok := msg.(tea.KeyMsg)
 	if !ok {
 		if m.isInputScreen() {
@@ -15,12 +29,22 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
-	if isQuitKey(key) {
+	if key.String() == "ctrl+c" {
+		return m, tea.Quit
+	}
+	if key.String() == "q" {
+		if m.execution.Running {
+			m.execution.Message = "Download is running; cancellation is planned."
+			return m, nil
+		}
 		return m, tea.Quit
 	}
 
 	switch m.screen {
 	case screenPlan:
+		if key.String() == "enter" {
+			return m.startExecution()
+		}
 		if isBackKey(key) {
 			return m.back()
 		}
@@ -39,6 +63,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case screenHelp, screenVersion:
 		if isBackKey(key) {
 			return m.back()
+		}
+		return m, nil
+	case screenExecution:
+		if !m.execution.Running && (key.String() == "enter" || key.String() == "h") {
+			return m.home(), nil
 		}
 		return m, nil
 	}
@@ -91,4 +120,12 @@ func (m Model) submitInput() (Model, tea.Cmd) {
 	m.errorMessage = ""
 	m.input.Blur()
 	return m, nil
+}
+
+func (m Model) startExecution() (Model, tea.Cmd) {
+	m.screen = screenExecution
+	m.errorMessage = ""
+	m.execution = newExecutionState(m.plan)
+	m.executionMessages = runExecution(m.plan)
+	return m, waitForExecution(m.executionMessages)
 }

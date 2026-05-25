@@ -15,13 +15,12 @@ go run . download https://example.com/file.zip --dry-run
 ```
 
 `go run .` opens the interactive TUI home screen. Download actions inside the
-TUI can collect a URL or `.txt` file path and show a dry-run plan, but they do
-not start downloads yet.
+TUI can collect a URL or `.txt` file path, show a dry-run plan, and start a real
+download from the plan screen.
 
 The download command surface supports validation, dry-run planning, and real
 single URL downloads. Sequential batch downloads, text progress, retry, and
-resume are also implemented. Use the CLI download commands for real downloads
-until TUI download execution is implemented.
+resume are also implemented. CLI download commands remain fully supported.
 
 ## Build And Test
 

@@ -27,13 +27,15 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
   version, and clean quit handling.
 - TUI URL and `.txt` file input forms that validate existing download inputs
   and show dry-run plans without starting downloads.
+- TUI download execution screen that starts real single URL or sequential batch
+  downloads from the plan screen and consumes the downloader event stream.
 - Starter documentation, CI, Makefile, and future packaging configuration.
 
 ### Planned
 
 - Concurrent batch downloader engine.
 - Rich progress bars.
-- Download execution inside the terminal UI.
+- TUI cancellation controls.
 - Queue persistence.
 - Public installation channels from v1.0.0 onward.
 

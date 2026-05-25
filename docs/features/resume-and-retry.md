@@ -51,6 +51,9 @@ Retrying 2/4 in 1s: temporary server error: 503 Service Unavailable
 Attempt numbering includes the initial attempt. `Retrying 2/4` means the next
 attempt is attempt 2 of 4 total possible attempts.
 
+The TUI execution screen consumes the same retry events and renders `Retrying`
+status with the retry attempt, delay, and error message.
+
 ## Batch Downloads
 
 Sequential batch downloads use the same retry behavior for each item. One item
@@ -92,6 +95,9 @@ Resume not supported by server; restarting download
 ```
 
 and downloads from byte `0`.
+
+The TUI execution screen renders resume and restart events as `Resuming` and
+`Restarting` statuses with the same messages.
 
 If metadata contains an `ETag` or `Last-Modified` value and the resume response
 returns a different value, Daryaft treats the remote file as changed, emits:

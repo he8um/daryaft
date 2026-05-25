@@ -13,14 +13,16 @@ type Options struct {
 }
 
 type Model struct {
-	screen       screen
-	selected     int
-	styles       styles
-	version      version.Details
-	input        textinput.Model
-	errorMessage string
-	plan         download.Plan
-	planReturn   screen
+	screen            screen
+	selected          int
+	styles            styles
+	version           version.Details
+	input             textinput.Model
+	errorMessage      string
+	plan              download.Plan
+	planReturn        screen
+	execution         executionState
+	executionMessages <-chan tea.Msg
 }
 
 func NewModel(options Options) Model {
@@ -73,6 +75,8 @@ func (m Model) openInput(next screen) (Model, tea.Cmd) {
 	m.input = newTextInput(m.styles)
 	m.errorMessage = ""
 	m.plan = download.Plan{}
+	m.execution = executionState{}
+	m.executionMessages = nil
 	m.planReturn = next
 	return m, m.input.Focus()
 }
@@ -90,6 +94,8 @@ func (m Model) back() (Model, tea.Cmd) {
 func (m Model) home() Model {
 	m.screen = screenHome
 	m.errorMessage = ""
+	m.execution = executionState{}
+	m.executionMessages = nil
 	return m
 }
 
