@@ -10,6 +10,7 @@ type styles struct {
 	selected lipgloss.Style
 	muted    lipgloss.Style
 	body     lipgloss.Style
+	error    lipgloss.Style
 }
 
 func newStyles(noColor bool) styles {
@@ -30,6 +31,7 @@ func newStyles(noColor bool) styles {
 		muted: lipgloss.NewStyle(),
 		body: lipgloss.NewStyle().
 			MarginTop(1),
+		error: lipgloss.NewStyle(),
 	}
 
 	if noColor {
@@ -41,5 +43,6 @@ func newStyles(noColor bool) styles {
 	s.subtitle = s.subtitle.Foreground(lipgloss.Color("245"))
 	s.selected = s.selected.Foreground(lipgloss.Color("229")).Background(lipgloss.Color("63"))
 	s.muted = s.muted.Foreground(lipgloss.Color("242"))
+	s.error = s.error.Foreground(lipgloss.Color("203"))
 	return s
 }

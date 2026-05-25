@@ -36,10 +36,11 @@ internals.
 ## TUI Renderer
 
 Partly implemented. Running `daryaft` with no arguments opens a Bubble Tea home
-screen with Lip Gloss styling, simple menu navigation, help, version, planned
-download screens, and clean quit handling. It does not start downloads yet.
-Future TUI download screens will subscribe to downloader events and display
-richer progress, queue state, errors, and history.
+screen with Lip Gloss styling, simple menu navigation, URL and `.txt` file input
+forms, dry-run plan rendering, help, version, and clean quit handling. It does
+not start downloads yet. Future TUI execution and progress screens will
+subscribe to downloader events and display richer progress, queue state, errors,
+and history.
 
 ## Updater
 

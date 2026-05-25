@@ -24,7 +24,9 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
   metadata sidecars, HTTP Range requests, safe server fallback restarts, and
   retry continuation from partial files.
 - First TUI foundation with Lip Gloss styling, home menu navigation, help,
-  version, planned download screens, and clean quit handling.
+  version, and clean quit handling.
+- TUI URL and `.txt` file input forms that validate existing download inputs
+  and show dry-run plans without starting downloads.
 - Starter documentation, CI, Makefile, and future packaging configuration.
 
 ### Planned

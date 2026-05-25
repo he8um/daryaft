@@ -14,8 +14,10 @@ func (m Model) View() string {
 	switch m.screen {
 	case screenHome:
 		content = m.homeView()
-	case screenURLPlanned, screenFilePlanned:
-		content = m.plannedView()
+	case screenURLInput, screenFileInput:
+		content = m.inputView()
+	case screenPlan:
+		content = m.planView()
 	case screenHelp:
 		content = m.helpView()
 	case screenVersion:
@@ -57,13 +59,6 @@ func (m Model) homeView() string {
 	return strings.TrimRight(builder.String(), "\n")
 }
 
-func (m Model) plannedView() string {
-	return m.subscreenView(
-		m.screen.title(),
-		"Planned for the download TUI milestone.\n\nUse the existing CLI download commands for now.",
-	)
-}
-
 func (m Model) helpView() string {
 	return m.subscreenView(
 		"Help",
@@ -91,6 +86,61 @@ func (m Model) subscreenView(title, body string) string {
 	builder.WriteString("\n\n")
 	builder.WriteString(m.footerView())
 	return strings.TrimRight(builder.String(), "\n")
+}
+
+func (m Model) inputView() string {
+	var builder strings.Builder
+	builder.WriteString(m.headerView())
+	builder.WriteString("\n\n")
+	builder.WriteString(m.styles.title.Render(m.screen.title()))
+	builder.WriteString("\n\n")
+	builder.WriteString(m.styles.body.Render(m.inputPrompt()))
+	builder.WriteString("\n")
+	builder.WriteString(m.input.View())
+	builder.WriteString("\n\n")
+	if m.errorMessage != "" {
+		builder.WriteString(m.styles.error.Render("Error: " + m.errorMessage))
+	} else {
+		builder.WriteString(m.styles.muted.Render(" "))
+	}
+	builder.WriteString("\n\n")
+	builder.WriteString(m.styles.muted.Render("enter plan • esc/backspace home • q quit"))
+	builder.WriteString("\n\n")
+	builder.WriteString(m.footerView())
+	return strings.TrimRight(builder.String(), "\n")
+}
+
+func (m Model) planView() string {
+	var builder strings.Builder
+	builder.WriteString(m.headerView())
+	builder.WriteString("\n\n")
+	builder.WriteString(m.styles.title.Render("Download plan"))
+	builder.WriteString("\n\n")
+	builder.WriteString(m.styles.body.Render(m.planBody()))
+	builder.WriteString("\n\n")
+	builder.WriteString(m.styles.muted.Render("TUI download execution is planned. Use CLI commands to download for now."))
+	builder.WriteString("\n\n")
+	builder.WriteString(m.styles.muted.Render("esc/backspace input • h home • q quit"))
+	builder.WriteString("\n\n")
+	builder.WriteString(m.footerView())
+	return strings.TrimRight(builder.String(), "\n")
+}
+
+func (m Model) planBody() string {
+	var builder strings.Builder
+	fmt.Fprintf(&builder, "Number of URLs: %d\n", len(m.plan.URLs))
+	for index, rawURL := range m.plan.URLs {
+		if index >= 8 {
+			fmt.Fprintf(&builder, "... and %d more\n", len(m.plan.URLs)-index)
+			break
+		}
+		fmt.Fprintf(&builder, "%d. %s\n", index+1, rawURL)
+	}
+	fmt.Fprintf(&builder, "Output: %s\n", displayValue(m.plan.Output, "current directory"))
+	fmt.Fprintf(&builder, "Filename: %s\n", displayValue(m.plan.Name, "auto-detect"))
+	fmt.Fprintf(&builder, "Retries: %d\n", m.plan.Retries)
+	fmt.Fprintf(&builder, "Resume: %t", m.plan.Resume)
+	return builder.String()
 }
 
 func (m Model) footerView() string {

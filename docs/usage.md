@@ -23,8 +23,10 @@ daryaft
 
 Opens the first Bubble Tea interactive home screen. The home screen includes
 Download from URL, Download from .txt file, View help, Version, and Quit.
-Download actions inside the TUI show planned screens for now and do not start
-downloads yet. Existing CLI commands remain the stable way to download files.
+Download actions inside the TUI now open input forms. Entering a URL or a path
+to a `.txt` URL file validates the input with the existing download planning
+logic and shows a dry-run plan. TUI download execution is not implemented yet,
+so existing CLI commands remain the stable way to download files.
 
 ```bash
 daryaft https://example.com/file.zip --dry-run
@@ -192,8 +194,9 @@ daryaft update
 ```
 
 Concurrency, queue persistence, download execution inside the TUI, rich progress
-bars, segmented downloads, and self-update are planned. The current downloader
-event stream is the foundation for future TUI download screens.
+bars, segmented downloads, and self-update are planned. TUI execution and its
+progress screen are planned next; the current downloader event stream is the
+foundation for those future screens.
 
 Related docs:
 

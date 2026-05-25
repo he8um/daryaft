@@ -35,9 +35,16 @@ small:
 4. Version
 5. Quit
 
-The download menu entries are placeholders for now. They show a planned screen
-inside the TUI and do not start downloads. Use these CLI forms for real
-downloads:
+The download menu entries open Bubble Tea text input forms:
+
+- Download from URL prompts `Enter download URL`.
+- Download from .txt file prompts `Enter path to .txt file`.
+
+Pressing enter validates the input with the existing download planning logic and
+shows a dry-run plan. Invalid URLs or file paths keep the user on the input
+screen and show a validation error.
+
+The TUI does not execute downloads yet. Use these CLI forms for real downloads:
 
 ```bash
 daryaft https://example.com/file.zip
@@ -60,7 +67,8 @@ build metadata as `daryaft version`.
 
 Interactive mode does not implement download execution, queue persistence,
 concurrency, self-update, or packaging flows yet. It is the foundation that will
-later consume downloader events.
+later consume downloader events. TUI execution and the progress screen are
+planned next.
 
 ## Examples
 

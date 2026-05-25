@@ -38,6 +38,8 @@ Current files:
 - `styles.go`: Lip Gloss style construction
 - `screens.go`: screen and menu definitions
 - `keys.go`: key classification helpers
+- `inputs.go`: Bubble Tea text input construction and prompt selection
+- `plan.go`: TUI dry-run plan helpers backed by `internal/download`
 
 `cmd/root.go` calls `tui.Run` only for no-argument execution. URL arguments,
 `--file`, and download flags continue through the existing CLI download path.
@@ -48,16 +50,24 @@ The model tracks:
 
 - current screen
 - selected home menu index
+- Bubble Tea text input state
+- validation error message
+- generated dry-run download plan
+- input screen to return to from the plan screen
 - style set
 - version details
 
 The first implemented screens are:
 
 - home
-- planned Download from URL
-- planned Download from .txt file
+- Download from URL input
+- Download from .txt file input
+- dry-run download plan
 - help
 - version
+
+The TUI calls `internal/download.BuildPlan` for URL and file inputs. It does
+not import Cobra and does not call downloader execution code.
 
 ## Styling
 
@@ -67,14 +77,15 @@ background colors while preserving layout.
 
 ## Event Boundary
 
-The current TUI does not start downloads. Future download screens should
-subscribe to the existing downloader event stream instead of reaching into
-downloader internals.
+The current TUI does not start downloads. It validates input and shows dry-run
+plans only. Future execution and progress screens should subscribe to the
+existing downloader event stream instead of reaching into downloader internals.
 
 ## Testing
 
-Current tests cover menu navigation, wrap behavior, screen switching, back
-navigation, footer rendering, and version rendering without brittle snapshots.
+Current tests cover menu navigation, wrap behavior, screen switching, input
+validation, dry-run plan creation, back navigation, quit handling, footer
+rendering, and version rendering without brittle snapshots.
 
 ## Examples
 

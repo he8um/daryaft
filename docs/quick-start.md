@@ -14,8 +14,9 @@ go run . https://example.com/file.zip --output downloads
 go run . download https://example.com/file.zip --dry-run
 ```
 
-`go run .` opens the first interactive TUI home screen. Download actions inside
-the TUI are planned and do not start downloads yet.
+`go run .` opens the interactive TUI home screen. Download actions inside the
+TUI can collect a URL or `.txt` file path and show a dry-run plan, but they do
+not start downloads yet.
 
 The download command surface supports validation, dry-run planning, and real
 single URL downloads. Sequential batch downloads, text progress, retry, and

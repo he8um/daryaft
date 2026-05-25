@@ -1,7 +1,8 @@
 # Feature: Terminal UI
 
-The first Bubble Tea terminal UI foundation is implemented for no-argument
-startup. Full download progress screens are planned.
+The Bubble Tea terminal UI is implemented for no-argument startup. It can
+collect URL or `.txt` file input and show dry-run download plans. Full download
+execution and progress screens are planned next.
 
 ## Navigation
 
@@ -50,8 +51,19 @@ Navigation:
 - `q` or ctrl+c quits from anywhere
 
 The View help and Version menu items render simple in-TUI screens. Download
-from URL and Download from .txt file render planned screens and do not start
-downloads yet.
+from URL and Download from .txt file render text input forms. Pressing enter
+validates the URL or URL file through the existing download planner and shows a
+dry-run plan with URL count, the first URLs, output, filename, retries, and
+resume settings.
+
+The TUI does not execute downloads yet. CLI commands remain the execution path
+for real downloads:
+
+```bash
+daryaft https://example.com/file.zip
+daryaft -f urls.txt
+daryaft download https://example.com/file.zip
+```
 
 `--no-color` keeps the panel layout but avoids color styling. `--no-tui` skips
 the no-argument TUI and prints the non-interactive placeholder.
@@ -61,9 +73,10 @@ download files.
 
 ## Planned
 
-Future TUI work will consume downloader events for progress, retry, resume,
-failure, and completion states. Queue persistence, concurrent downloads,
-history, and rich progress bars are not implemented yet.
+Future TUI work will add execution and a progress screen that consumes
+downloader events for progress, retry, resume, failure, and completion states.
+Queue persistence, concurrent downloads, history, and rich progress bars are not
+implemented yet.
 
 ## Examples
 

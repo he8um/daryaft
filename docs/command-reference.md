@@ -17,8 +17,10 @@ The home screen shows:
 
 Use up/down arrows or `k`/`j` to move, enter to select, `esc` or backspace to
 return from sub-screens, and `q` or ctrl+c to quit. Download from URL and
-Download from .txt file show planned screens and do not start downloads yet.
-Existing CLI download commands remain the stable way to download files.
+Download from .txt file open input forms, validate with the existing download
+planner, and show dry-run plans. The TUI does not execute downloads yet.
+Existing CLI download commands remain the stable execution path for real
+downloads.
 
 When URL arguments or `--file` are provided, the root command enters the current
 download validation mode.
@@ -88,8 +90,8 @@ Progress: <downloaded> bytes | <speed>
 ```
 
 Progress lines are generated from structured downloader events. The current TUI
-home screen does not start downloads yet; future TUI download screens will
-consume the same event stream.
+input flow does not start downloads yet; future TUI execution and progress
+screens will consume the same event stream.
 
 `--retries` is implemented for transient failures. The value is the number of
 retry attempts after the first try, so `--retries 0` means one total attempt and
@@ -185,7 +187,8 @@ daryaft update
 ```
 
 Batch concurrency, queue persistence, rich progress bars, TUI download
-execution, segmented downloads, and self-update are planned.
+execution, the TUI progress screen, segmented downloads, and self-update are
+planned.
 
 Related docs:
 

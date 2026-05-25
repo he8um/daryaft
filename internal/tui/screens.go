@@ -4,8 +4,9 @@ type screen int
 
 const (
 	screenHome screen = iota
-	screenURLPlanned
-	screenFilePlanned
+	screenURLInput
+	screenFileInput
+	screenPlan
 	screenHelp
 	screenVersion
 )
@@ -16,8 +17,8 @@ type menuItem struct {
 }
 
 var homeMenu = []menuItem{
-	{title: "Download from URL", screen: screenURLPlanned},
-	{title: "Download from .txt file", screen: screenFilePlanned},
+	{title: "Download from URL", screen: screenURLInput},
+	{title: "Download from .txt file", screen: screenFileInput},
 	{title: "View help", screen: screenHelp},
 	{title: "Version", screen: screenVersion},
 	{title: "Quit", screen: screenHome},
@@ -25,10 +26,12 @@ var homeMenu = []menuItem{
 
 func (s screen) title() string {
 	switch s {
-	case screenURLPlanned:
+	case screenURLInput:
 		return "Download from URL"
-	case screenFilePlanned:
+	case screenFileInput:
 		return "Download from .txt file"
+	case screenPlan:
+		return "Download plan"
 	case screenHelp:
 		return "Help"
 	case screenVersion:
