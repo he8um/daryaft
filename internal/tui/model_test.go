@@ -379,6 +379,20 @@ func TestQWhileRunningDoesNotQuit(t *testing.T) {
 	}
 }
 
+func TestEnterAfterCompletionReturnsHome(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model.screen = screenExecution
+	model.execution = executionState{Done: true, Status: "Completed"}
+
+	model = updateWithKey(t, model, tea.KeyEnter)
+	if model.screen != screenHome {
+		t.Fatalf("screen after enter = %v, want home", model.screen)
+	}
+	if model.execution.Done {
+		t.Fatal("execution state was not cleared")
+	}
+}
+
 func TestFooterAppearsInView(t *testing.T) {
 	model := NewModel(Options{NoColor: true})
 

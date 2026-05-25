@@ -74,7 +74,8 @@ The first implemented screens are:
 The TUI calls `internal/download.BuildPlan` for URL and file inputs. It does
 not import Cobra. The plan screen starts downloads through
 `internal/downloader.DownloadBatch`, so single URL and `.txt` batch execution
-share the same sequential runner as the CLI.
+share the same sequential runner as the CLI. TUI plans do not expose output path
+input yet, so execution uses the current directory.
 
 ## Styling
 

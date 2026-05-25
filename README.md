@@ -72,7 +72,9 @@ daryaft download -f urls.txt
 With no arguments, Daryaft opens a Bubble Tea home screen with menu entries for
 URL input, `.txt` file input, help, version information, and quit. Download
 actions inside the TUI validate input, show a dry-run plan, and can start real
-downloads from that plan. Existing CLI download commands remain fully supported.
+downloads from that plan. TUI downloads currently use the current directory as
+the output path; output path input is planned for a later milestone. Existing
+CLI download commands remain fully supported.
 
 Download commands validate URLs and can print a dry-run plan. Real downloading
 is implemented for one URL and for multiple URLs sequentially. Batch downloads

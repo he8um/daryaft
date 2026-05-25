@@ -29,7 +29,8 @@ logic and shows a dry-run plan. Press enter on the plan screen to start a real
 download. The TUI supports one URL and sequential `.txt` batch execution using
 the same downloader event stream as the CLI. Cancellation is planned; while a
 download is running, `q` shows that cancellation is not implemented and ctrl+c
-can still terminate the program.
+can still terminate the program. TUI downloads use the current directory as the
+output path for now.
 
 ```bash
 daryaft https://example.com/file.zip --dry-run

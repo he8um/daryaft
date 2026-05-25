@@ -25,7 +25,8 @@ URL files are read line by line:
 Real batch execution is sequential in this milestone. Daryaft downloads one URL
 at a time, waits for it to complete or fail, then moves to the next URL.
 The TUI uses the same sequential batch runner after a `.txt` file is validated
-and confirmed from the plan screen.
+and confirmed from the plan screen. TUI batch downloads currently write to the
+current directory.
 
 Each item uses the normal single URL behavior:
 

@@ -20,7 +20,8 @@ to return from sub-screens. `q` quits unless a download is running; ctrl+c exits
 from anywhere. Download from URL and Download from .txt file open input forms,
 validate with the existing download planner, and show dry-run plans. Press enter
 on the plan screen to start a real download in the TUI. Existing CLI download
-commands remain fully supported.
+commands remain fully supported. TUI downloads use the current directory as the
+output path for now.
 
 When URL arguments or `--file` are provided, the root command enters the current
 download validation mode.

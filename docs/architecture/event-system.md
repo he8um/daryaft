@@ -56,7 +56,8 @@ Events carry simple fields that can be tested and reused by later interfaces:
 The CLI consumes these events for line-based progress output. The TUI execution
 screen consumes the same events through a goroutine/channel bridge and renders
 status, target path, byte progress, percent, speed, recent messages, completion,
-failure, and batch summaries. Single URL CLI output uses:
+failure, and batch summaries. TUI execution currently uses the current directory
+as the output path. Single URL CLI output uses:
 
 ```text
 Downloading: <url>

@@ -61,7 +61,8 @@ On the plan screen, enter starts the real download. The execution screen shows
 the current item, URL, target path when known, status, downloaded bytes, total
 bytes when known, percent, speed, recent messages, and a final batch summary.
 It consumes the same downloader event stream as the CLI and supports sequential
-batch execution for `.txt` input.
+batch execution for `.txt` input. TUI downloads use the current directory as
+the output path for now; output path input is planned.
 
 CLI commands remain fully supported:
 
