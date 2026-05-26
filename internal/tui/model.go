@@ -20,9 +20,11 @@ type Model struct {
 	styles            styles
 	version           version.Details
 	input             textinput.Model
+	sourceInput       string
+	sourceScreen      screen
+	outputDirInput    string
 	errorMessage      string
 	plan              download.Plan
-	planReturn        screen
 	execution         executionState
 	executionCancel   context.CancelFunc
 	executionMessages <-chan tea.Msg
@@ -31,11 +33,12 @@ type Model struct {
 func NewModel(options Options) Model {
 	styles := newStyles(options.NoColor)
 	return Model{
-		screen:     screenHome,
-		styles:     styles,
-		version:    version.Info(),
-		input:      newTextInput(styles),
-		planReturn: screenURLInput,
+		screen:         screenHome,
+		styles:         styles,
+		version:        version.Info(),
+		input:          newTextInput(styles),
+		sourceScreen:   screenURLInput,
+		outputDirInput: ".",
 	}
 }
 
@@ -76,18 +79,29 @@ func (m Model) enter() (Model, tea.Cmd) {
 func (m Model) openInput(next screen) (Model, tea.Cmd) {
 	m.screen = next
 	m.input = newTextInput(m.styles)
+	m.sourceInput = ""
+	m.sourceScreen = next
+	m.outputDirInput = "."
 	m.errorMessage = ""
 	m.plan = download.Plan{}
 	m.execution = executionState{}
 	m.executionCancel = nil
 	m.executionMessages = nil
-	m.planReturn = next
 	return m, m.input.Focus()
 }
 
 func (m Model) back() (Model, tea.Cmd) {
 	if m.screen == screenPlan {
-		m.screen = m.planReturn
+		m.screen = screenOutputInput
+		m.input = newOutputInput(m.styles, m.outputDirInput)
+		m.errorMessage = ""
+		return m, m.input.Focus()
+	}
+	if m.screen == screenOutputInput {
+		m.screen = m.sourceScreen
+		m.input = newTextInput(m.styles)
+		m.input.SetValue(m.sourceInput)
+		m.errorMessage = ""
 		return m, m.input.Focus()
 	}
 	m.screen = screenHome
@@ -105,5 +119,5 @@ func (m Model) home() Model {
 }
 
 func (m Model) isInputScreen() bool {
-	return m.screen == screenURLInput || m.screen == screenFileInput
+	return m.screen == screenURLInput || m.screen == screenFileInput || m.screen == screenOutputInput
 }

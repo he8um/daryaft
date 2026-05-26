@@ -18,10 +18,12 @@ The home screen shows:
 Use up/down arrows or `k`/`j` to move, enter to select, and `esc` or backspace
 to return from sub-screens. `q` quits unless a download is running; ctrl+c exits
 from anywhere. Download from URL and Download from .txt file open input forms,
-validate with the existing download planner, and show dry-run plans. Press enter
-on the plan screen to start a real download in the TUI. Existing CLI download
-commands remain fully supported. TUI downloads use the current directory as the
-output path for now. Pressing `q` while a TUI download is running cancels it and
+validate with the existing download planner, then ask for an output directory
+before showing dry-run plans. Leaving the output directory empty means `.`, the
+current directory. Press enter on the plan screen to start a real download in
+the TUI. Existing CLI download commands remain fully supported, and CLI
+`-o`/`--output` behavior is unchanged. Custom filename input is planned but not
+implemented yet. Pressing `q` while a TUI download is running cancels it and
 keeps partial state for resume.
 
 When URL arguments or `--file` are provided, the root command enters the current
@@ -193,8 +195,8 @@ These are planned and not implemented yet:
 daryaft update
 ```
 
-Batch concurrency, queue persistence, rich progress bars, TUI output path input,
-segmented downloads, and self-update are planned.
+Batch concurrency, queue persistence, rich progress bars, TUI custom filename
+input, segmented downloads, and self-update are planned.
 
 Related docs:
 

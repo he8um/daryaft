@@ -99,24 +99,69 @@ func TestInvalidURLShowsError(t *testing.T) {
 	}
 }
 
-func TestValidURLCreatesPlanScreen(t *testing.T) {
+func TestValidURLAdvancesToOutputInput(t *testing.T) {
 	model := NewModel(Options{NoColor: true})
 	model.selected = 0
 	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithString(t, model, "https://example.com/file.zip")
 	model = updateWithKey(t, model, tea.KeyEnter)
 
-	if model.screen != screenPlan {
-		t.Fatalf("screen = %v, want plan", model.screen)
+	if model.screen != screenOutputInput {
+		t.Fatalf("screen = %v, want output input", model.screen)
 	}
 	if len(model.plan.URLs) != 1 {
 		t.Fatalf("plan URL count = %d, want 1", len(model.plan.URLs))
 	}
+	if !strings.Contains(model.View(), "Enter output directory") {
+		t.Fatalf("output input view missing prompt:\n%s", model.View())
+	}
+	if !strings.Contains(model.View(), "Default/current value: .") {
+		t.Fatalf("output input view missing default:\n%s", model.View())
+	}
+}
+
+func TestEmptyOutputDirectoryCreatesPlanWithCurrentDirectory(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model.selected = 0
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithString(t, model, "https://example.com/file.zip")
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithKey(t, model, tea.KeyEnter)
+
+	if model.screen != screenPlan {
+		t.Fatalf("screen = %v, want plan", model.screen)
+	}
+	if model.plan.Output != "." {
+		t.Fatalf("plan.Output = %q, want .", model.plan.Output)
+	}
 	if !strings.Contains(model.View(), "Number of URLs: 1") {
 		t.Fatalf("plan view missing URL count:\n%s", model.View())
 	}
+	if !strings.Contains(model.View(), "Output: .") {
+		t.Fatalf("plan view missing current directory output:\n%s", model.View())
+	}
 	if !strings.Contains(model.View(), "enter start download") {
 		t.Fatalf("plan view missing start action:\n%s", model.View())
+	}
+}
+
+func TestCustomOutputDirectoryAppearsInPlan(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model.selected = 0
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithString(t, model, "https://example.com/file.zip")
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithString(t, model, "downloads")
+	model = updateWithKey(t, model, tea.KeyEnter)
+
+	if model.screen != screenPlan {
+		t.Fatalf("screen = %v, want plan", model.screen)
+	}
+	if model.plan.Output != "downloads" {
+		t.Fatalf("plan.Output = %q, want downloads", model.plan.Output)
+	}
+	if !strings.Contains(model.View(), "Output: downloads") {
+		t.Fatalf("plan view missing custom output:\n%s", model.View())
 	}
 }
 
@@ -150,7 +195,7 @@ func TestInvalidFilePathShowsError(t *testing.T) {
 	}
 }
 
-func TestValidFileCreatesPlanScreen(t *testing.T) {
+func TestValidFileAdvancesToOutputInput(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "urls.txt")
 	if err := os.WriteFile(path, []byte("https://example.com/a.txt\nhttps://example.com/b.txt\n"), 0o600); err != nil {
@@ -163,14 +208,43 @@ func TestValidFileCreatesPlanScreen(t *testing.T) {
 	model = updateWithString(t, model, path)
 	model = updateWithKey(t, model, tea.KeyEnter)
 
-	if model.screen != screenPlan {
-		t.Fatalf("screen = %v, want plan", model.screen)
+	if model.screen != screenOutputInput {
+		t.Fatalf("screen = %v, want output input", model.screen)
 	}
 	if len(model.plan.URLs) != 2 {
 		t.Fatalf("plan URL count = %d, want 2", len(model.plan.URLs))
 	}
+	if !strings.Contains(model.View(), "Enter output directory") {
+		t.Fatalf("output input view missing prompt:\n%s", model.View())
+	}
+}
+
+func TestFilePlanUsesCustomOutputDirectory(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "urls.txt")
+	if err := os.WriteFile(path, []byte("https://example.com/a.txt\nhttps://example.com/b.txt\n"), 0o600); err != nil {
+		t.Fatalf("write temp URL file: %v", err)
+	}
+
+	model := NewModel(Options{NoColor: true})
+	model.selected = 1
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithString(t, model, path)
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithString(t, model, "/tmp/daryaft-out")
+	model = updateWithKey(t, model, tea.KeyEnter)
+
+	if model.screen != screenPlan {
+		t.Fatalf("screen = %v, want plan", model.screen)
+	}
+	if model.plan.Output != "/tmp/daryaft-out" {
+		t.Fatalf("plan.Output = %q, want /tmp/daryaft-out", model.plan.Output)
+	}
 	if !strings.Contains(model.View(), "Number of URLs: 2") {
 		t.Fatalf("plan view missing URL count:\n%s", model.View())
+	}
+	if !strings.Contains(model.View(), "Output: /tmp/daryaft-out") {
+		t.Fatalf("plan view missing output:\n%s", model.View())
 	}
 }
 
@@ -189,12 +263,23 @@ func TestEscAndBackspaceNavigation(t *testing.T) {
 	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithKey(t, model, tea.KeyBackspace)
 	if model.screen != screenURLInput {
-		t.Fatalf("screen after plan backspace = %v, want URL input", model.screen)
+		t.Fatalf("screen after output backspace = %v, want URL input", model.screen)
 	}
 
 	model = updateWithKey(t, model, tea.KeyBackspace)
 	if model.screen != screenHome {
 		t.Fatalf("screen after input backspace = %v, want home", model.screen)
+	}
+
+	model.selected = 0
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithString(t, model, "https://example.com/file.zip")
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithString(t, model, "downloads")
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithKey(t, model, tea.KeyBackspace)
+	if model.screen != screenOutputInput {
+		t.Fatalf("screen after plan backspace = %v, want output input", model.screen)
 	}
 }
 
@@ -203,6 +288,7 @@ func TestPlanHomeKey(t *testing.T) {
 	model.selected = 0
 	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithString(t, model, "https://example.com/file.zip")
+	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithRune(t, model, 'h')
 
@@ -222,7 +308,7 @@ func TestQQuits(t *testing.T) {
 func TestEnterOnPlanStartsExecutionScreen(t *testing.T) {
 	model := NewModel(Options{NoColor: true})
 	model.screen = screenPlan
-	model.plan = download.Plan{}
+	model.plan = download.Plan{Output: "downloads"}
 
 	model, cmd := updateWithKeyAndCmd(t, model, tea.KeyEnter)
 	if model.screen != screenExecution {
@@ -233,6 +319,9 @@ func TestEnterOnPlanStartsExecutionScreen(t *testing.T) {
 	}
 	if cmd == nil {
 		t.Fatal("execution command is nil")
+	}
+	if model.plan.Output != "downloads" {
+		t.Fatalf("plan.Output = %q, want downloads", model.plan.Output)
 	}
 }
 

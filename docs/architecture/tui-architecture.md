@@ -54,9 +54,10 @@ The model tracks:
 - current screen
 - selected home menu index
 - Bubble Tea text input state
+- source input value and source screen
+- output directory input value
 - validation error message
 - generated dry-run download plan
-- input screen to return to from the plan screen
 - execution state for the current item, event data, messages, and summary
 - style set
 - version details
@@ -66,16 +67,20 @@ The first implemented screens are:
 - home
 - Download from URL input
 - Download from .txt file input
+- output directory input
 - dry-run download plan
 - execution/progress
 - help
 - version
 
 The TUI calls `internal/download.BuildPlan` for URL and file inputs. It does
-not import Cobra. The plan screen starts downloads through
+not import Cobra. After source validation, the TUI collects an output directory
+with minimal normalization: empty input becomes `.`, and directory creation is
+left to downloader execution. The plan screen starts downloads through
 `internal/downloader.DownloadBatch`, so single URL and `.txt` batch execution
-share the same sequential runner as the CLI. TUI plans do not expose output path
-input yet, so execution uses the current directory.
+share the same sequential runner as the CLI and both honor the selected output
+directory. CLI `-o`/`--output` behavior is unchanged. Custom filename input is
+planned but not implemented yet.
 
 ## Styling
 

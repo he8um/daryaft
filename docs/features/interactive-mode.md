@@ -39,9 +39,12 @@ The download menu entries open Bubble Tea text input forms:
 
 - Download from URL prompts `Enter download URL`.
 - Download from .txt file prompts `Enter path to .txt file`.
+- Both flows then prompt `Enter output directory`.
 
 Pressing enter validates the input with the existing download planning logic and
-shows a dry-run plan. Invalid URLs or file paths keep the user on the input
+opens the output directory input. Empty output means `.`, the current
+directory. Absolute and relative output paths are accepted and are not created
+during planning. Invalid URLs or file paths keep the user on the source input
 screen and show a validation error.
 
 Pressing enter on the plan screen starts a real download. The execution screen
@@ -49,8 +52,10 @@ uses the same downloader event stream as the CLI and supports both one URL and
 sequential `.txt` batch downloads. It shows status, target path, byte progress,
 percent when known, speed, retry/resume/restart messages, failures, and final
 summary counts. TUI downloads use the current directory as the output path for
-now. Pressing `q` while a download is running cancels it, keeps the `.part` file
-and metadata sidecar for resume, and stops without retrying.
+empty output, or the selected output directory when one is entered. Pressing
+`q` while a download is running cancels it, keeps the `.part` file and metadata
+sidecar for resume, and stops without retrying. CLI `-o`/`--output` behavior is
+unchanged.
 
 CLI forms remain fully supported:
 
@@ -68,15 +73,18 @@ build metadata as `daryaft version`.
 - up/down arrows: move selection
 - `k`/`j`: move selection
 - enter: select
+- enter from source input: continue to output directory input
+- enter from output directory input: review plan
 - enter on plan: start download
 - enter after completion: return home
-- `esc` or backspace: return to home from a sub-screen
+- `esc` or backspace: return to the previous input screen, or home from a
+  source input
 - `q`: quit, or cancel when a download is running
 - ctrl+c: quit from anywhere
 
 ## Boundaries
 
-Interactive mode does not implement output path input, queue persistence,
+Interactive mode does not implement custom filename input, queue persistence,
 concurrency, self-update, or packaging flows yet. CLI ctrl+c behavior is
 unchanged and may terminate the process directly.
 

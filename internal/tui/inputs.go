@@ -13,12 +13,23 @@ func newTextInput(s styles) textinput.Model {
 	return input
 }
 
+func newOutputInput(s styles, value string) textinput.Model {
+	input := newTextInput(s)
+	input.Placeholder = "."
+	if value != "." {
+		input.SetValue(value)
+	}
+	return input
+}
+
 func (m Model) inputPrompt() string {
 	switch m.screen {
 	case screenURLInput:
 		return "Enter download URL"
 	case screenFileInput:
 		return "Enter path to .txt file"
+	case screenOutputInput:
+		return "Enter output directory"
 	default:
 		return ""
 	}

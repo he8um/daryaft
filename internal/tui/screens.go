@@ -6,6 +6,7 @@ const (
 	screenHome screen = iota
 	screenURLInput
 	screenFileInput
+	screenOutputInput
 	screenPlan
 	screenExecution
 	screenHelp
@@ -31,6 +32,8 @@ func (s screen) title() string {
 		return "Download from URL"
 	case screenFileInput:
 		return "Download from .txt file"
+	case screenOutputInput:
+		return "Output directory"
 	case screenPlan:
 		return "Download plan"
 	case screenExecution:

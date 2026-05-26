@@ -63,7 +63,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m.back()
 		}
 		if key.String() == "enter" {
-			return m.submitInput()
+			return m.submitSourceInput()
+		}
+		return m.updateTextInput(msg)
+	case screenOutputInput:
+		if isBackKey(key) {
+			return m.back()
+		}
+		if key.String() == "enter" {
+			return m.submitOutputInput()
 		}
 		return m.updateTextInput(msg)
 	case screenHelp, screenVersion:
@@ -100,7 +108,7 @@ func (m Model) updateTextInput(msg tea.Msg) (Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m Model) submitInput() (Model, tea.Cmd) {
+func (m Model) submitSourceInput() (Model, tea.Cmd) {
 	var (
 		plan download.Plan
 		err  error
@@ -108,9 +116,9 @@ func (m Model) submitInput() (Model, tea.Cmd) {
 
 	switch m.screen {
 	case screenURLInput:
-		plan, err = planFromURL(m.input.Value())
+		plan, err = planFromURL(m.input.Value(), "")
 	case screenFileInput:
-		plan, err = planFromFile(m.input.Value())
+		plan, err = planFromFile(m.input.Value(), "")
 	default:
 		return m, nil
 	}
@@ -121,7 +129,18 @@ func (m Model) submitInput() (Model, tea.Cmd) {
 	}
 
 	m.plan = plan
-	m.planReturn = m.screen
+	m.sourceInput = m.input.Value()
+	m.sourceScreen = m.screen
+	m.outputDirInput = "."
+	m.screen = screenOutputInput
+	m.errorMessage = ""
+	m.input = newOutputInput(m.styles, m.outputDirInput)
+	return m, m.input.Focus()
+}
+
+func (m Model) submitOutputInput() (Model, tea.Cmd) {
+	m.outputDirInput = outputDirValue(m.input.Value())
+	m.plan.Output = m.outputDirInput
 	m.screen = screenPlan
 	m.errorMessage = ""
 	m.input.Blur()

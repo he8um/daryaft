@@ -25,13 +25,15 @@ Opens the first Bubble Tea interactive home screen. The home screen includes
 Download from URL, Download from .txt file, View help, Version, and Quit.
 Download actions inside the TUI now open input forms. Entering a URL or a path
 to a `.txt` URL file validates the input with the existing download planning
-logic and shows a dry-run plan. Press enter on the plan screen to start a real
-download. The TUI supports one URL and sequential `.txt` batch execution using
-the same downloader event stream as the CLI. Press `q` while a TUI download is
-running to cancel it. Cancelled downloads keep the `.part` file and sidecar
-metadata for resume and are not retried. TUI downloads use the current
-directory as the output path for now. CLI ctrl+c behavior is unchanged and may
-terminate the process directly.
+logic, then opens an output directory input before showing the dry-run plan.
+Leaving the output directory empty means `.`, the current directory. Press enter
+on the plan screen to start a real download. The TUI supports one URL and
+sequential `.txt` batch execution using the same downloader event stream as the
+CLI, and both flows honor the selected output directory. Press `q` while a TUI
+download is running to cancel it. Cancelled downloads keep the `.part` file and
+sidecar metadata for resume and are not retried. CLI `-o`/`--output` behavior
+is unchanged, and CLI ctrl+c behavior is unchanged and may terminate the
+process directly.
 
 ```bash
 daryaft https://example.com/file.zip --dry-run
@@ -198,7 +200,7 @@ These examples are roadmap examples and are not implemented yet:
 daryaft update
 ```
 
-Concurrency, queue persistence, TUI output path input, rich progress bars,
+Concurrency, queue persistence, TUI custom filename input, rich progress bars,
 segmented downloads, and self-update are planned. CLI download commands remain
 fully supported alongside the TUI.
 

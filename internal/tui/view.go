@@ -15,7 +15,7 @@ func (m Model) View() string {
 	switch m.screen {
 	case screenHome:
 		content = m.homeView()
-	case screenURLInput, screenFileInput:
+	case screenURLInput, screenFileInput, screenOutputInput:
 		content = m.inputView()
 	case screenPlan:
 		content = m.planView()
@@ -99,6 +99,10 @@ func (m Model) inputView() string {
 	builder.WriteString("\n\n")
 	builder.WriteString(m.styles.body.Render(m.inputPrompt()))
 	builder.WriteString("\n")
+	if m.screen == screenOutputInput {
+		builder.WriteString(m.styles.muted.Render("Default/current value: ."))
+		builder.WriteString("\n")
+	}
 	builder.WriteString(m.input.View())
 	builder.WriteString("\n\n")
 	if m.errorMessage != "" {
@@ -107,7 +111,7 @@ func (m Model) inputView() string {
 		builder.WriteString(m.styles.muted.Render(" "))
 	}
 	builder.WriteString("\n\n")
-	builder.WriteString(m.styles.muted.Render("enter plan • esc/backspace home • q quit"))
+	builder.WriteString(m.styles.muted.Render(m.inputHelp()))
 	builder.WriteString("\n\n")
 	builder.WriteString(m.footerView())
 	return strings.TrimRight(builder.String(), "\n")
@@ -139,11 +143,18 @@ func (m Model) planBody() string {
 		}
 		fmt.Fprintf(&builder, "%d. %s\n", index+1, rawURL)
 	}
-	fmt.Fprintf(&builder, "Output: %s\n", displayValue(m.plan.Output, "current directory"))
+	fmt.Fprintf(&builder, "Output: %s\n", displayValue(m.plan.Output, "."))
 	fmt.Fprintf(&builder, "Filename: %s\n", displayValue(m.plan.Name, "auto-detect"))
 	fmt.Fprintf(&builder, "Retries: %d\n", m.plan.Retries)
 	fmt.Fprintf(&builder, "Resume: %t", m.plan.Resume)
 	return builder.String()
+}
+
+func (m Model) inputHelp() string {
+	if m.screen == screenOutputInput {
+		return "enter plan • esc/backspace previous • q quit"
+	}
+	return "enter next • esc/backspace home • q quit"
 }
 
 func (m Model) executionView() string {
