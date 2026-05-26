@@ -592,6 +592,119 @@ func TestQWhileInjectedRunnerIsRunningCancelsContext(t *testing.T) {
 	waitForSignal(t, cancelled, "runner cancellation")
 }
 
+func TestInjectedRunnerForwardsExecutionEventsAndSummary(t *testing.T) {
+	item := downloader.BatchItem{Index: 2, Total: 3, URL: "https://example.com/b.zip"}
+	runner := func(ctx context.Context, plan download.Plan, handlers downloader.BatchHandlers) downloader.BatchResult {
+		handlers.ItemStarted(item)
+		handlers.Event(item, downloader.Event{
+			Type:                downloader.EventProgress,
+			URL:                 item.URL,
+			TargetPath:          "downloads/b.zip",
+			DownloadedBytes:     128,
+			TotalBytes:          512,
+			Percent:             25,
+			SpeedBytesPerSecond: 2048,
+		})
+		handlers.Event(item, downloader.Event{
+			Type:        downloader.EventRetrying,
+			Error:       context.DeadlineExceeded,
+			Attempt:     2,
+			MaxAttempts: 4,
+			NextDelay:   time.Second,
+		})
+		handlers.Event(item, downloader.Event{
+			Type:    downloader.EventCancelled,
+			Error:   downloader.ErrCancelled,
+			Message: "Download cancelled. Partial file kept for resume.",
+		})
+		return downloader.BatchResult{
+			Planned: 3,
+			Items: []downloader.BatchItemResult{
+				{Item: downloader.BatchItem{Index: 1, Total: 3, URL: "https://example.com/a.zip"}},
+				{Item: item, Err: downloader.ErrCancelled},
+			},
+		}
+	}
+
+	model := NewModelWithRunner(Options{NoColor: true}, runner)
+	model.plan = download.Plan{
+		URLs:    []string{"https://example.com/a.zip", item.URL, "https://example.com/c.zip"},
+		Output:  "downloads",
+		Retries: tuiDefaultRetries,
+		Resume:  tuiDefaultResume,
+	}
+	model.screen = screenPlan
+
+	model, cmd := updateWithKeyAndCmd(t, model, tea.KeyEnter)
+	if cmd == nil {
+		t.Fatal("execution command is nil")
+	}
+
+	model, cmd = updateWithExecutionCmd(t, model, cmd)
+	if model.execution.ItemIndex != 2 || model.execution.ItemTotal != 3 {
+		t.Fatalf("item = %d/%d, want 2/3", model.execution.ItemIndex, model.execution.ItemTotal)
+	}
+	if model.execution.CurrentURL != item.URL {
+		t.Fatalf("current URL = %q, want %q", model.execution.CurrentURL, item.URL)
+	}
+	if model.execution.Status != "Starting" {
+		t.Fatalf("status after item start = %q, want Starting", model.execution.Status)
+	}
+
+	model, cmd = updateWithExecutionCmd(t, model, cmd)
+	if model.execution.Status != "Downloading" {
+		t.Fatalf("status after progress = %q, want Downloading", model.execution.Status)
+	}
+	if model.execution.DownloadedBytes != 128 || model.execution.TotalBytes != 512 {
+		t.Fatalf("bytes = %d/%d, want 128/512", model.execution.DownloadedBytes, model.execution.TotalBytes)
+	}
+	if model.execution.Percent != 25 {
+		t.Fatalf("percent = %.1f, want 25.0", model.execution.Percent)
+	}
+	if model.execution.Speed != 2048 {
+		t.Fatalf("speed = %.1f, want 2048", model.execution.Speed)
+	}
+	if model.execution.TargetPath != "downloads/b.zip" {
+		t.Fatalf("target path = %q, want downloads/b.zip", model.execution.TargetPath)
+	}
+
+	model, cmd = updateWithExecutionCmd(t, model, cmd)
+	if model.execution.Status != "Retrying" {
+		t.Fatalf("status after retry = %q, want Retrying", model.execution.Status)
+	}
+	if !strings.Contains(model.execution.Message, "Retrying 2/4 in 1s") {
+		t.Fatalf("retry message = %q", model.execution.Message)
+	}
+
+	model, cmd = updateWithExecutionCmd(t, model, cmd)
+	if model.execution.Status != "Cancelled" {
+		t.Fatalf("status after cancelled event = %q, want Cancelled", model.execution.Status)
+	}
+	if model.execution.Message != "Download cancelled. Partial file kept for resume." {
+		t.Fatalf("cancel message = %q", model.execution.Message)
+	}
+
+	model, _ = updateWithExecutionCmd(t, model, cmd)
+	if model.execution.Running {
+		t.Fatal("execution.Running = true, want false after final result")
+	}
+	if !model.execution.Done {
+		t.Fatal("execution.Done = false, want true after final result")
+	}
+	if model.execution.Summary.Total != 3 {
+		t.Fatalf("summary total = %d, want 3", model.execution.Summary.Total)
+	}
+	if model.execution.Summary.Completed != 1 {
+		t.Fatalf("summary completed = %d, want 1", model.execution.Summary.Completed)
+	}
+	if model.execution.Summary.Cancelled != 1 {
+		t.Fatalf("summary cancelled = %d, want 1", model.execution.Summary.Cancelled)
+	}
+	if model.execution.Summary.Skipped != 1 {
+		t.Fatalf("summary skipped = %d, want 1", model.execution.Summary.Skipped)
+	}
+}
+
 func TestProductionConstructorCreatesUsableModel(t *testing.T) {
 	model := NewModel(Options{NoColor: true})
 	if model.screen != screenHome {
@@ -882,6 +995,15 @@ func waitForSignal(t *testing.T, signal <-chan struct{}, label string) {
 	}
 }
 
+func updateWithExecutionCmd(t *testing.T, model Model, cmd tea.Cmd) (Model, tea.Cmd) {
+	t.Helper()
+	if cmd == nil {
+		t.Fatal("execution command is nil")
+	}
+	msg := cmd()
+	return updateWithMsgAndCmd(t, model, msg)
+}
+
 func updateWithKey(t *testing.T, model Model, key tea.KeyType) Model {
 	t.Helper()
 	next, _ := updateWithKeyAndCmd(t, model, key)
@@ -926,10 +1048,16 @@ func updateWithString(t *testing.T, model Model, value string) Model {
 
 func updateWithMsg(t *testing.T, model Model, msg tea.Msg) Model {
 	t.Helper()
-	updated, _ := model.Update(msg)
+	next, _ := updateWithMsgAndCmd(t, model, msg)
+	return next
+}
+
+func updateWithMsgAndCmd(t *testing.T, model Model, msg tea.Msg) (Model, tea.Cmd) {
+	t.Helper()
+	updated, cmd := model.Update(msg)
 	next, ok := updated.(Model)
 	if !ok {
 		t.Fatalf("updated model type = %T, want tui.Model", updated)
 	}
-	return next
+	return next, cmd
 }
