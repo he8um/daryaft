@@ -15,7 +15,7 @@ func (m Model) View() string {
 	switch m.screen {
 	case screenHome:
 		content = m.homeView()
-	case screenURLInput, screenFileInput, screenOutputInput:
+	case screenURLInput, screenFileInput, screenOutputInput, screenFilenameInput:
 		content = m.inputView()
 	case screenPlan:
 		content = m.planView()
@@ -103,6 +103,10 @@ func (m Model) inputView() string {
 		builder.WriteString(m.styles.muted.Render("Default/current value: ."))
 		builder.WriteString("\n")
 	}
+	if m.screen == screenFilenameInput {
+		builder.WriteString(m.styles.muted.Render("Leave empty to auto-detect"))
+		builder.WriteString("\n")
+	}
 	builder.WriteString(m.input.View())
 	builder.WriteString("\n\n")
 	if m.errorMessage != "" {
@@ -152,6 +156,12 @@ func (m Model) planBody() string {
 
 func (m Model) inputHelp() string {
 	if m.screen == screenOutputInput {
+		if m.sourceScreen == screenURLInput {
+			return "enter next • esc/backspace previous • q quit"
+		}
+		return "enter plan • esc/backspace previous • q quit"
+	}
+	if m.screen == screenFilenameInput {
 		return "enter plan • esc/backspace previous • q quit"
 	}
 	return "enter next • esc/backspace home • q quit"

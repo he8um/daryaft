@@ -74,6 +74,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m.submitOutputInput()
 		}
 		return m.updateTextInput(msg)
+	case screenFilenameInput:
+		if isBackKey(key) {
+			return m.back()
+		}
+		if key.String() == "enter" {
+			return m.submitFilenameInput()
+		}
+		return m.updateTextInput(msg)
 	case screenHelp, screenVersion:
 		if isBackKey(key) {
 			return m.back()
@@ -116,7 +124,7 @@ func (m Model) submitSourceInput() (Model, tea.Cmd) {
 
 	switch m.screen {
 	case screenURLInput:
-		plan, err = planFromURL(m.input.Value(), "")
+		plan, err = planFromURL(m.input.Value(), "", "")
 	case screenFileInput:
 		plan, err = planFromFile(m.input.Value(), "")
 	default:
@@ -132,6 +140,7 @@ func (m Model) submitSourceInput() (Model, tea.Cmd) {
 	m.sourceInput = m.input.Value()
 	m.sourceScreen = m.screen
 	m.outputDirInput = "."
+	m.filenameInput = ""
 	m.screen = screenOutputInput
 	m.errorMessage = ""
 	m.input = newOutputInput(m.styles, m.outputDirInput)
@@ -140,7 +149,36 @@ func (m Model) submitSourceInput() (Model, tea.Cmd) {
 
 func (m Model) submitOutputInput() (Model, tea.Cmd) {
 	m.outputDirInput = outputDirValue(m.input.Value())
+	if m.sourceScreen == screenURLInput {
+		m.plan.Output = m.outputDirInput
+		m.screen = screenFilenameInput
+		m.errorMessage = ""
+		m.input = newFilenameInput(m.styles, m.filenameInput)
+		return m, m.input.Focus()
+	}
+
 	m.plan.Output = m.outputDirInput
+	m.screen = screenPlan
+	m.errorMessage = ""
+	m.input.Blur()
+	return m, nil
+}
+
+func (m Model) submitFilenameInput() (Model, tea.Cmd) {
+	filename, err := filenameValue(m.input.Value())
+	if err != nil {
+		m.errorMessage = err.Error()
+		return m, nil
+	}
+
+	plan, err := planFromURL(m.sourceInput, m.outputDirInput, filename)
+	if err != nil {
+		m.errorMessage = err.Error()
+		return m, nil
+	}
+
+	m.filenameInput = filename
+	m.plan = plan
 	m.screen = screenPlan
 	m.errorMessage = ""
 	m.input.Blur()

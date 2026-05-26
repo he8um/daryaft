@@ -17,7 +17,7 @@ from `.part` files when the server supports HTTP Range requests. Running
 `daryaft` with no arguments opens the interactive TUI home screen. The TUI can
 collect a single URL or `.txt` file path and show the same dry-run download
 plan as the CLI, then start real single or sequential batch downloads from the
-plan screen.
+plan screen. The single URL TUI flow can also set an optional custom filename.
 
 - Repository: https://github.com/he8um/daryaft
 - Website: https://xhesam.com
@@ -72,11 +72,13 @@ daryaft download -f urls.txt
 With no arguments, Daryaft opens a Bubble Tea home screen with menu entries for
 URL input, `.txt` file input, help, version information, and quit. Download
 actions inside the TUI validate input, then let you set an output directory
-before showing the dry-run plan. Leaving the output directory empty means `.`,
+before showing the dry-run plan. For single URL downloads, the TUI then asks
+for an optional custom filename; leaving it empty means auto-detect. The TUI
+does not offer one custom filename for `.txt` batch downloads, which continue
+to auto-detect each item filename. Leaving the output directory empty means `.`,
 the current directory. TUI downloads can start real single URL or sequential
-batch downloads from that plan. Custom filename input is planned but not
-implemented yet. Existing CLI download commands, including `-o`/`--output`,
-remain fully supported and unchanged.
+batch downloads from that plan. Existing CLI download commands, including
+`-o`/`--output` and `--name`, remain fully supported and unchanged.
 
 Download commands validate URLs and can print a dry-run plan. Real downloading
 is implemented for one URL and for multiple URLs sequentially. Batch downloads
@@ -106,7 +108,6 @@ CLI ctrl+c behavior is unchanged and may terminate the process directly.
 - Concurrent batch downloads
 - Rich progress bars
 - Checksum-aware behavior
-- TUI custom filename input
 - Queue persistence and history management
 - Structured automation output
 - Self-update support after the release model is ready

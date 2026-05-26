@@ -30,7 +30,9 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 - TUI download execution screen that starts real single URL or sequential batch
   downloads from the plan screen and consumes the downloader event stream.
 - TUI output directory input between source entry and plan review. Empty output
-  means the current directory, and custom filename input remains planned.
+  means the current directory.
+- Optional TUI custom filename input for single URL downloads. Empty filename
+  input means auto-detect, and `.txt` batch downloads keep per-item auto-detect.
 - Context-aware downloader cancellation with cancelled events, preserved
   partial files and metadata, no retry after cancellation, and TUI `q`
   cancellation from the progress screen.
@@ -40,7 +42,6 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 
 - Concurrent batch downloader engine.
 - Rich progress bars.
-- TUI custom filename input.
 - Queue persistence.
 - Public installation channels from v1.0.0 onward.
 

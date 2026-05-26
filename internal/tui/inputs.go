@@ -22,6 +22,13 @@ func newOutputInput(s styles, value string) textinput.Model {
 	return input
 }
 
+func newFilenameInput(s styles, value string) textinput.Model {
+	input := newTextInput(s)
+	input.Placeholder = "auto-detect"
+	input.SetValue(value)
+	return input
+}
+
 func (m Model) inputPrompt() string {
 	switch m.screen {
 	case screenURLInput:
@@ -30,6 +37,8 @@ func (m Model) inputPrompt() string {
 		return "Enter path to .txt file"
 	case screenOutputInput:
 		return "Enter output directory"
+	case screenFilenameInput:
+		return "Enter custom filename"
 	default:
 		return ""
 	}

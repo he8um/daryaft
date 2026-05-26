@@ -23,6 +23,7 @@ type Model struct {
 	sourceInput       string
 	sourceScreen      screen
 	outputDirInput    string
+	filenameInput     string
 	errorMessage      string
 	plan              download.Plan
 	execution         executionState
@@ -82,6 +83,7 @@ func (m Model) openInput(next screen) (Model, tea.Cmd) {
 	m.sourceInput = ""
 	m.sourceScreen = next
 	m.outputDirInput = "."
+	m.filenameInput = ""
 	m.errorMessage = ""
 	m.plan = download.Plan{}
 	m.execution = executionState{}
@@ -92,6 +94,17 @@ func (m Model) openInput(next screen) (Model, tea.Cmd) {
 
 func (m Model) back() (Model, tea.Cmd) {
 	if m.screen == screenPlan {
+		if m.sourceScreen == screenURLInput {
+			m.screen = screenFilenameInput
+			m.input = newFilenameInput(m.styles, m.filenameInput)
+		} else {
+			m.screen = screenOutputInput
+			m.input = newOutputInput(m.styles, m.outputDirInput)
+		}
+		m.errorMessage = ""
+		return m, m.input.Focus()
+	}
+	if m.screen == screenFilenameInput {
 		m.screen = screenOutputInput
 		m.input = newOutputInput(m.styles, m.outputDirInput)
 		m.errorMessage = ""
@@ -119,5 +132,5 @@ func (m Model) home() Model {
 }
 
 func (m Model) isInputScreen() bool {
-	return m.screen == screenURLInput || m.screen == screenFileInput || m.screen == screenOutputInput
+	return m.screen == screenURLInput || m.screen == screenFileInput || m.screen == screenOutputInput || m.screen == screenFilenameInput
 }

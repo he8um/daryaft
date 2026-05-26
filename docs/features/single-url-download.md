@@ -29,6 +29,7 @@ Current behavior:
 - Emits structured downloader events for started, progress, resuming,
   restarting, retrying, completed, and failed states.
 - Uses simple line-based text progress in the CLI.
+- Supports optional custom filename input in the TUI single URL flow.
 
 Example output with a known total:
 
@@ -61,14 +62,20 @@ Filename selection:
 2. URL path base name.
 3. `download.bin`.
 
+The CLI `--name` option remains the command-line custom filename path for a
+single URL. In the TUI, Download from URL follows URL input, output directory
+input, custom filename input, then the plan screen. Leaving the TUI filename
+field empty means auto-detect. A custom TUI filename is trimmed, lightly
+validated, shown on the plan screen, and passed to the same download plan used
+by execution.
+
 Filenames are sanitized so path traversal and directory separators cannot escape
 the output directory.
 
 ## Planned
 
-TUI download rendering, rich progress bars, checksum validation, and segmented
-downloads are planned. The Bubble Tea home screen is implemented, and future
-download screens should consume the existing downloader event stream.
+Rich progress bars, checksum validation, and segmented downloads are planned.
+The Bubble Tea execution screen consumes the existing downloader event stream.
 
 Related docs:
 

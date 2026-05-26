@@ -127,6 +127,13 @@ func TestEmptyOutputDirectoryCreatesPlanWithCurrentDirectory(t *testing.T) {
 	model = updateWithString(t, model, "https://example.com/file.zip")
 	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithKey(t, model, tea.KeyEnter)
+	if model.screen != screenFilenameInput {
+		t.Fatalf("screen = %v, want filename input", model.screen)
+	}
+	if !strings.Contains(model.View(), "Leave empty to auto-detect") {
+		t.Fatalf("filename input view missing help:\n%s", model.View())
+	}
+	model = updateWithKey(t, model, tea.KeyEnter)
 
 	if model.screen != screenPlan {
 		t.Fatalf("screen = %v, want plan", model.screen)
@@ -139,6 +146,9 @@ func TestEmptyOutputDirectoryCreatesPlanWithCurrentDirectory(t *testing.T) {
 	}
 	if !strings.Contains(model.View(), "Output: .") {
 		t.Fatalf("plan view missing current directory output:\n%s", model.View())
+	}
+	if !strings.Contains(model.View(), "Filename: auto-detect") {
+		t.Fatalf("plan view missing auto-detect filename:\n%s", model.View())
 	}
 	if !strings.Contains(model.View(), "enter start download") {
 		t.Fatalf("plan view missing start action:\n%s", model.View())
@@ -153,6 +163,7 @@ func TestCustomOutputDirectoryAppearsInPlan(t *testing.T) {
 	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithString(t, model, "downloads")
 	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithKey(t, model, tea.KeyEnter)
 
 	if model.screen != screenPlan {
 		t.Fatalf("screen = %v, want plan", model.screen)
@@ -162,6 +173,89 @@ func TestCustomOutputDirectoryAppearsInPlan(t *testing.T) {
 	}
 	if !strings.Contains(model.View(), "Output: downloads") {
 		t.Fatalf("plan view missing custom output:\n%s", model.View())
+	}
+}
+
+func TestURLFlowAdvancesThroughFilenameInput(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model.selected = 0
+
+	model = updateWithKey(t, model, tea.KeyEnter)
+	if model.screen != screenURLInput {
+		t.Fatalf("screen = %v, want URL input", model.screen)
+	}
+
+	model = updateWithString(t, model, "https://example.com/file.zip")
+	model = updateWithKey(t, model, tea.KeyEnter)
+	if model.screen != screenOutputInput {
+		t.Fatalf("screen = %v, want output input", model.screen)
+	}
+
+	model = updateWithString(t, model, "downloads")
+	model = updateWithKey(t, model, tea.KeyEnter)
+	if model.screen != screenFilenameInput {
+		t.Fatalf("screen = %v, want filename input", model.screen)
+	}
+	if !strings.Contains(model.View(), "Enter custom filename") {
+		t.Fatalf("filename input view missing prompt:\n%s", model.View())
+	}
+
+	model = updateWithString(t, model, "custom.zip")
+	model = updateWithKey(t, model, tea.KeyEnter)
+	if model.screen != screenPlan {
+		t.Fatalf("screen = %v, want plan", model.screen)
+	}
+	if model.plan.Output != "downloads" {
+		t.Fatalf("plan.Output = %q, want downloads", model.plan.Output)
+	}
+	if model.plan.Name != "custom.zip" {
+		t.Fatalf("plan.Name = %q, want custom.zip", model.plan.Name)
+	}
+}
+
+func TestCustomFilenameAppearsInPlan(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model.selected = 0
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithString(t, model, "https://example.com/file.zip")
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithString(t, model, "  custom.txt  ")
+	model = updateWithKey(t, model, tea.KeyEnter)
+
+	if model.screen != screenPlan {
+		t.Fatalf("screen = %v, want plan", model.screen)
+	}
+	if model.plan.Name != "custom.txt" {
+		t.Fatalf("plan.Name = %q, want custom.txt", model.plan.Name)
+	}
+	if !strings.Contains(model.View(), "Filename: custom.txt") {
+		t.Fatalf("plan view missing custom filename:\n%s", model.View())
+	}
+}
+
+func TestUnsafeFilenameShowsValidationError(t *testing.T) {
+	for _, value := range []string{"../file.zip", `nested\file.zip`, ".", ".."} {
+		t.Run(value, func(t *testing.T) {
+			model := NewModel(Options{NoColor: true})
+			model.selected = 0
+			model = updateWithKey(t, model, tea.KeyEnter)
+			model = updateWithString(t, model, "https://example.com/file.zip")
+			model = updateWithKey(t, model, tea.KeyEnter)
+			model = updateWithKey(t, model, tea.KeyEnter)
+			model = updateWithString(t, model, value)
+			model = updateWithKey(t, model, tea.KeyEnter)
+
+			if model.screen != screenFilenameInput {
+				t.Fatalf("screen = %v, want filename input", model.screen)
+			}
+			if model.errorMessage == "" {
+				t.Fatal("errorMessage is empty, want validation error")
+			}
+			if !strings.Contains(model.View(), "Error:") {
+				t.Fatalf("filename view missing validation error:\n%s", model.View())
+			}
+		})
 	}
 }
 
@@ -237,6 +331,9 @@ func TestFilePlanUsesCustomOutputDirectory(t *testing.T) {
 	if model.screen != screenPlan {
 		t.Fatalf("screen = %v, want plan", model.screen)
 	}
+	if model.plan.Name != "" {
+		t.Fatalf("plan.Name = %q, want empty for batch", model.plan.Name)
+	}
 	if model.plan.Output != "/tmp/daryaft-out" {
 		t.Fatalf("plan.Output = %q, want /tmp/daryaft-out", model.plan.Output)
 	}
@@ -245,6 +342,31 @@ func TestFilePlanUsesCustomOutputDirectory(t *testing.T) {
 	}
 	if !strings.Contains(model.View(), "Output: /tmp/daryaft-out") {
 		t.Fatalf("plan view missing output:\n%s", model.View())
+	}
+	if !strings.Contains(model.View(), "Filename: auto-detect") {
+		t.Fatalf("plan view missing auto-detect filename:\n%s", model.View())
+	}
+}
+
+func TestFileFlowSkipsFilenameInput(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "urls.txt")
+	if err := os.WriteFile(path, []byte("https://example.com/a.txt\nhttps://example.com/b.txt\n"), 0o600); err != nil {
+		t.Fatalf("write temp URL file: %v", err)
+	}
+
+	model := NewModel(Options{NoColor: true})
+	model.selected = 1
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithString(t, model, path)
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithKey(t, model, tea.KeyEnter)
+
+	if model.screen != screenPlan {
+		t.Fatalf("screen = %v, want plan", model.screen)
+	}
+	if strings.Contains(model.View(), "Enter custom filename") {
+		t.Fatalf("batch plan unexpectedly shows filename input prompt:\n%s", model.View())
 	}
 }
 
@@ -279,7 +401,19 @@ func TestEscAndBackspaceNavigation(t *testing.T) {
 	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithKey(t, model, tea.KeyBackspace)
 	if model.screen != screenOutputInput {
-		t.Fatalf("screen after plan backspace = %v, want output input", model.screen)
+		t.Fatalf("screen after filename backspace = %v, want output input", model.screen)
+	}
+
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithKey(t, model, tea.KeyBackspace)
+	if model.screen != screenFilenameInput {
+		t.Fatalf("screen after plan backspace = %v, want filename input", model.screen)
+	}
+
+	model = updateWithKey(t, model, tea.KeyEsc)
+	if model.screen != screenOutputInput {
+		t.Fatalf("screen after filename esc = %v, want output input", model.screen)
 	}
 }
 
@@ -288,6 +422,7 @@ func TestPlanHomeKey(t *testing.T) {
 	model.selected = 0
 	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithString(t, model, "https://example.com/file.zip")
+	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithRune(t, model, 'h')
@@ -322,6 +457,28 @@ func TestEnterOnPlanStartsExecutionScreen(t *testing.T) {
 	}
 	if model.plan.Output != "downloads" {
 		t.Fatalf("plan.Output = %q, want downloads", model.plan.Output)
+	}
+}
+
+func TestExecutionKeepsSelectedCustomFilename(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model.selected = 0
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithString(t, model, "https://example.com/file.zip")
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithString(t, model, "custom.zip")
+	model = updateWithKey(t, model, tea.KeyEnter)
+
+	model, cmd := updateWithKeyAndCmd(t, model, tea.KeyEnter)
+	if model.screen != screenExecution {
+		t.Fatalf("screen = %v, want execution", model.screen)
+	}
+	if cmd == nil {
+		t.Fatal("execution command is nil")
+	}
+	if model.plan.Name != "custom.zip" {
+		t.Fatalf("plan.Name = %q, want custom.zip", model.plan.Name)
 	}
 }
 

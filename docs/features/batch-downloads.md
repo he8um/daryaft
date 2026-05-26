@@ -25,8 +25,10 @@ URL files are read line by line:
 Real batch execution is sequential in this milestone. Daryaft downloads one URL
 at a time, waits for it to complete or fail, then moves to the next URL.
 The TUI uses the same sequential batch runner after a `.txt` file is validated
-and confirmed from the plan screen. TUI batch downloads currently write to the
-current directory.
+and confirmed from the plan screen. The TUI `.txt` batch flow is file input,
+output directory input, then plan screen. It honors the selected output
+directory, skips custom filename input, and keeps `Filename: auto-detect`
+because one custom filename cannot safely apply to multiple downloads.
 
 If a TUI batch is cancelled, Daryaft cancels the current item, keeps its partial
 state for resume, and does not start remaining URLs. The final TUI summary
@@ -81,13 +83,14 @@ failure and `--resume` is enabled, that item can continue from its current
 item fails without retrying and the batch continues.
 
 `--name` remains rejected when multiple URLs are present because one filename
-cannot safely apply to multiple downloads.
+cannot safely apply to multiple downloads. CLI `--name` behavior is unchanged
+for single URL commands.
 
 ## Planned
 
-Concurrency, persistent queue state, history, TUI output path input, and richer
-batch formats are planned. The current implementation deliberately does not do
-concurrent downloads or queue persistence.
+Concurrency, persistent queue state, history, and richer batch formats are
+planned. The current implementation deliberately does not do concurrent
+downloads, queue persistence, or one custom filename for batch downloads.
 
 Related docs:
 

@@ -19,12 +19,14 @@ Use up/down arrows or `k`/`j` to move, enter to select, and `esc` or backspace
 to return from sub-screens. `q` quits unless a download is running; ctrl+c exits
 from anywhere. Download from URL and Download from .txt file open input forms,
 validate with the existing download planner, then ask for an output directory
-before showing dry-run plans. Leaving the output directory empty means `.`, the
-current directory. Press enter on the plan screen to start a real download in
-the TUI. Existing CLI download commands remain fully supported, and CLI
-`-o`/`--output` behavior is unchanged. Custom filename input is planned but not
-implemented yet. Pressing `q` while a TUI download is running cancels it and
-keeps partial state for resume.
+before showing dry-run plans. The single URL flow then asks for an optional
+custom filename; leaving it empty means auto-detect. The `.txt` batch flow does
+not offer one custom filename and keeps per-item auto-detect. Leaving the
+output directory empty means `.`, the current directory. Press enter on the
+plan screen to start a real download in the TUI. Existing CLI download commands
+remain fully supported, and CLI `-o`/`--output` and `--name` behavior is
+unchanged. Pressing `q` while a TUI download is running cancels it and keeps
+partial state for resume.
 
 When URL arguments or `--file` are provided, the root command enters the current
 download validation mode.
@@ -195,8 +197,8 @@ These are planned and not implemented yet:
 daryaft update
 ```
 
-Batch concurrency, queue persistence, rich progress bars, TUI custom filename
-input, segmented downloads, and self-update are planned.
+Batch concurrency, queue persistence, rich progress bars, segmented downloads,
+and self-update are planned.
 
 Related docs:
 

@@ -7,6 +7,7 @@ const (
 	screenURLInput
 	screenFileInput
 	screenOutputInput
+	screenFilenameInput
 	screenPlan
 	screenExecution
 	screenHelp
@@ -34,6 +35,8 @@ func (s screen) title() string {
 		return "Download from .txt file"
 	case screenOutputInput:
 		return "Output directory"
+	case screenFilenameInput:
+		return "Custom filename"
 	case screenPlan:
 		return "Download plan"
 	case screenExecution:

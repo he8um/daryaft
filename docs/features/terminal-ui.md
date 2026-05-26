@@ -55,17 +55,21 @@ The View help and Version menu items render simple in-TUI screens. Download
 from URL and Download from .txt file render text input forms. Pressing enter
 validates the URL or URL file through the existing download planner, then opens
 an output directory input screen. The default/current value is `.`, and leaving
-the field empty means the current directory. Pressing enter from there shows a
-dry-run plan with URL count, the first URLs, selected output directory,
-filename, retries, and resume settings.
+the field empty means the current directory. The single URL flow then opens an
+`Enter custom filename` input screen with `Leave empty to auto-detect` help
+text. Empty filename input means auto-detect; a custom filename is shown on the
+plan and passed to the existing download plan. The `.txt` batch flow skips this
+filename screen and keeps `Filename: auto-detect`. Pressing enter from the last
+input shows a dry-run plan with URL count, the first URLs, selected output
+directory, filename, retries, and resume settings.
 
 On the plan screen, enter starts the real download. The execution screen shows
 the current item, URL, target path when known, status, downloaded bytes, total
 bytes when known, percent, speed, recent messages, and a final batch summary.
 It consumes the same downloader event stream as the CLI and supports sequential
 batch execution for `.txt` input. TUI downloads honor the selected output
-directory for both single URL and `.txt` batch flows. CLI `-o`/`--output`
-behavior is unchanged.
+directory for both single URL and `.txt` batch flows. CLI `-o`/`--output` and
+`--name` behavior is unchanged.
 
 While a download is running, `q` cancels it and shows `Cancelling...`. After the
 downloader stops, the status becomes `Cancelled` with the message
@@ -88,9 +92,9 @@ download files.
 
 ## Planned
 
-Custom filename input, queue persistence, concurrent downloads, history, and
-rich progress bars are not implemented yet. CLI ctrl+c behavior is unchanged
-and may terminate the process directly.
+Queue persistence, concurrent downloads, history, and rich progress bars are
+not implemented yet. CLI ctrl+c behavior is unchanged and may terminate the
+process directly.
 
 ## Examples
 
