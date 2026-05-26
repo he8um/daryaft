@@ -41,8 +41,8 @@ Current files:
 - `inputs.go`: Bubble Tea text input construction and prompt selection
 - `plan.go`: TUI dry-run plan helpers backed by `internal/download`
 - `messages.go`: Bubble Tea message types for downloader execution events
-- `execution.go`: goroutine/channel bridge from `internal/downloader` to the
-  TUI model
+- `execution.go`: injectable execution runner plus the goroutine/channel
+  bridge from `internal/downloader` to the TUI model
 
 `cmd/root.go` calls `tui.Run` only for no-argument execution. URL arguments,
 `--file`, and download flags continue through the existing CLI download path.
@@ -59,6 +59,7 @@ The model tracks:
 - filename input value for single URL downloads
 - validation error message
 - generated dry-run download plan
+- execution runner used to start downloads
 - execution state for the current item, event data, messages, and summary
 - style set
 - version details
@@ -83,10 +84,12 @@ optional custom filename. Empty filename input means auto-detect. Non-empty
 filename input is trimmed and rejects path separators, `.`, and `..`, then is
 passed into the existing `download.Plan`. The `.txt` batch flow skips filename
 input and keeps auto-detect for each item. The plan screen starts downloads
-through `internal/downloader.DownloadBatch`, so single URL and `.txt` batch
+through an `ExecutionRunner` function. The production runner calls
+`internal/downloader.DownloadBatchContext`, so single URL and `.txt` batch
 execution share the same sequential runner as the CLI and both honor the
-selected output directory. CLI `-o`/`--output` and `--name` behavior is
-unchanged.
+selected output directory. Tests can inject a runner to assert the exact
+`download.Plan` passed to execution without performing network downloads. CLI
+`-o`/`--output` and `--name` behavior is unchanged.
 
 ## Styling
 
@@ -96,12 +99,12 @@ background colors while preserving layout.
 
 ## Event Boundary
 
-TUI execution starts a goroutine that runs the existing downloader. Downloader
-item and progress events are copied into a channel and received by Bubble Tea
-commands, keeping the update loop non-blocking and avoiding shared mutable
-state. The TUI uses those messages to render status, target path, downloaded
-bytes, percent, speed, retry/resume/restart messages, completion, failure, and
-batch summaries.
+TUI execution starts a goroutine that runs the configured `ExecutionRunner`.
+The default runner uses the existing downloader. Downloader item and progress
+events are copied into a channel and received by Bubble Tea commands, keeping
+the update loop non-blocking and avoiding shared mutable state. The TUI uses
+those messages to render status, target path, downloaded bytes, percent, speed,
+retry/resume/restart messages, completion, failure, and batch summaries.
 
 Pressing `q` while a download is running calls the stored cancel function,
 moves the screen to `Cancelling...`, and continues receiving downloader events
@@ -111,9 +114,10 @@ terminate the process directly.
 ## Testing
 
 Current tests cover menu navigation, wrap behavior, screen switching, input
-validation, dry-run plan creation, execution transitions, event message
-handling, summary rendering, running-state quit behavior, back navigation,
-footer rendering, and version rendering without brittle snapshots.
+validation, dry-run plan creation, execution transitions, injected runner plan
+capture, injected runner cancellation, event message handling, summary
+rendering, running-state quit behavior, back navigation, footer rendering, and
+version rendering without brittle snapshots.
 
 ## Examples
 

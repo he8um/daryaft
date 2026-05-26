@@ -1,10 +1,13 @@
 package tui
 
 import (
+	"context"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/he8um/daryaft/internal/config"
 	"github.com/he8um/daryaft/internal/download"
@@ -460,8 +463,151 @@ func TestEnterOnPlanStartsExecutionScreen(t *testing.T) {
 	}
 }
 
-func TestExecutionKeepsSelectedCustomFilename(t *testing.T) {
+func TestSingleURLExecutionPassesSelectedOutputDirectory(t *testing.T) {
+	var received download.Plan
+	model := NewModelWithRunner(Options{NoColor: true}, capturePlanRunner(&received))
+
+	model = singleURLPlanModel(t, model, "https://example.com/file.zip", "downloads", "")
+	model, cmd := updateWithKeyAndCmd(t, model, tea.KeyEnter)
+	if model.screen != screenExecution {
+		t.Fatalf("screen = %v, want execution", model.screen)
+	}
+	if cmd == nil {
+		t.Fatal("execution command is nil")
+	}
+
+	_ = cmd()
+	if received.Output != "downloads" {
+		t.Fatalf("runner plan.Output = %q, want downloads", received.Output)
+	}
+	if !reflect.DeepEqual(received.URLs, []string{"https://example.com/file.zip"}) {
+		t.Fatalf("runner plan.URLs = %#v", received.URLs)
+	}
+	if received.Retries != tuiDefaultRetries {
+		t.Fatalf("runner plan.Retries = %d, want %d", received.Retries, tuiDefaultRetries)
+	}
+	if !received.Resume {
+		t.Fatal("runner plan.Resume = false, want true")
+	}
+}
+
+func TestSingleURLExecutionPassesSelectedCustomFilename(t *testing.T) {
+	var received download.Plan
+	model := NewModelWithRunner(Options{NoColor: true}, capturePlanRunner(&received))
+
+	model = singleURLPlanModel(t, model, "https://example.com/file.zip", "downloads", "custom.zip")
+	_, cmd := updateWithKeyAndCmd(t, model, tea.KeyEnter)
+	if cmd == nil {
+		t.Fatal("execution command is nil")
+	}
+
+	_ = cmd()
+	if received.Name != "custom.zip" {
+		t.Fatalf("runner plan.Name = %q, want custom.zip", received.Name)
+	}
+}
+
+func TestBatchExecutionPassesSelectedOutputDirectory(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "urls.txt")
+	if err := os.WriteFile(path, []byte("https://example.com/a.txt\nhttps://example.com/b.txt\n"), 0o600); err != nil {
+		t.Fatalf("write temp URL file: %v", err)
+	}
+
+	var received download.Plan
+	model := NewModelWithRunner(Options{NoColor: true}, capturePlanRunner(&received))
+	model = batchPlanModel(t, model, path, "/tmp/daryaft-out")
+	_, cmd := updateWithKeyAndCmd(t, model, tea.KeyEnter)
+	if cmd == nil {
+		t.Fatal("execution command is nil")
+	}
+
+	_ = cmd()
+	if received.Output != "/tmp/daryaft-out" {
+		t.Fatalf("runner plan.Output = %q, want /tmp/daryaft-out", received.Output)
+	}
+	if !reflect.DeepEqual(received.URLs, []string{"https://example.com/a.txt", "https://example.com/b.txt"}) {
+		t.Fatalf("runner plan.URLs = %#v", received.URLs)
+	}
+	if received.Retries != tuiDefaultRetries {
+		t.Fatalf("runner plan.Retries = %d, want %d", received.Retries, tuiDefaultRetries)
+	}
+	if !received.Resume {
+		t.Fatal("runner plan.Resume = false, want true")
+	}
+}
+
+func TestBatchExecutionDoesNotPassCustomFilename(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "urls.txt")
+	if err := os.WriteFile(path, []byte("https://example.com/a.txt\nhttps://example.com/b.txt\n"), 0o600); err != nil {
+		t.Fatalf("write temp URL file: %v", err)
+	}
+
+	var received download.Plan
+	model := NewModelWithRunner(Options{NoColor: true}, capturePlanRunner(&received))
+	model = batchPlanModel(t, model, path, "/tmp/daryaft-out")
+	_, cmd := updateWithKeyAndCmd(t, model, tea.KeyEnter)
+	if cmd == nil {
+		t.Fatal("execution command is nil")
+	}
+
+	_ = cmd()
+	if received.Name != "" {
+		t.Fatalf("runner plan.Name = %q, want empty for batch", received.Name)
+	}
+}
+
+func TestQWhileInjectedRunnerIsRunningCancelsContext(t *testing.T) {
+	started := make(chan struct{})
+	cancelled := make(chan struct{})
+	runner := func(ctx context.Context, plan download.Plan, handlers downloader.BatchHandlers) downloader.BatchResult {
+		close(started)
+		<-ctx.Done()
+		close(cancelled)
+		return downloader.BatchResult{
+			Planned: len(plan.URLs),
+			Items: []downloader.BatchItemResult{{
+				Item: downloader.BatchItem{Index: 1, Total: len(plan.URLs), URL: plan.URLs[0]},
+				Err:  downloader.ErrCancelled,
+			}},
+		}
+	}
+
+	model := NewModelWithRunner(Options{NoColor: true}, runner)
+	model = singleURLPlanModel(t, model, "https://example.com/file.zip", "downloads", "custom.zip")
+	model, cmd := updateWithKeyAndCmd(t, model, tea.KeyEnter)
+	if cmd == nil {
+		t.Fatal("execution command is nil")
+	}
+	waitForSignal(t, started, "runner start")
+
+	model, quitCmd := updateWithRuneAndCmd(t, model, 'q')
+	if quitCmd != nil {
+		t.Fatal("q while running returned a command, want nil")
+	}
+	if model.execution.Status != "Cancelling" {
+		t.Fatalf("status = %q, want Cancelling", model.execution.Status)
+	}
+	waitForSignal(t, cancelled, "runner cancellation")
+}
+
+func TestProductionConstructorCreatesUsableModel(t *testing.T) {
 	model := NewModel(Options{NoColor: true})
+	if model.screen != screenHome {
+		t.Fatalf("screen = %v, want home", model.screen)
+	}
+	if model.executionRunner == nil {
+		t.Fatal("executionRunner is nil")
+	}
+	if !strings.Contains(model.View(), "Download from URL") {
+		t.Fatalf("home view missing menu:\n%s", model.View())
+	}
+}
+
+func TestExecutionKeepsSelectedCustomFilename(t *testing.T) {
+	var received download.Plan
+	model := NewModelWithRunner(Options{NoColor: true}, capturePlanRunner(&received))
 	model.selected = 0
 	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithString(t, model, "https://example.com/file.zip")
@@ -477,8 +623,9 @@ func TestExecutionKeepsSelectedCustomFilename(t *testing.T) {
 	if cmd == nil {
 		t.Fatal("execution command is nil")
 	}
-	if model.plan.Name != "custom.zip" {
-		t.Fatalf("plan.Name = %q, want custom.zip", model.plan.Name)
+	_ = cmd()
+	if received.Name != "custom.zip" {
+		t.Fatalf("runner plan.Name = %q, want custom.zip", received.Name)
 	}
 }
 
@@ -686,6 +833,52 @@ func TestVersionScreenIncludesVersionValue(t *testing.T) {
 
 	if !strings.Contains(model.View(), version.Version) {
 		t.Fatalf("version view missing %q:\n%s", version.Version, model.View())
+	}
+}
+
+func capturePlanRunner(received *download.Plan) ExecutionRunner {
+	return func(ctx context.Context, plan download.Plan, handlers downloader.BatchHandlers) downloader.BatchResult {
+		*received = plan
+		return downloader.BatchResult{Planned: len(plan.URLs)}
+	}
+}
+
+func singleURLPlanModel(t *testing.T, model Model, rawURL, output, name string) Model {
+	t.Helper()
+	model.selected = 0
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithString(t, model, rawURL)
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithString(t, model, output)
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithString(t, model, name)
+	model = updateWithKey(t, model, tea.KeyEnter)
+	if model.screen != screenPlan {
+		t.Fatalf("screen = %v, want plan", model.screen)
+	}
+	return model
+}
+
+func batchPlanModel(t *testing.T, model Model, path, output string) Model {
+	t.Helper()
+	model.selected = 1
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithString(t, model, path)
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithString(t, model, output)
+	model = updateWithKey(t, model, tea.KeyEnter)
+	if model.screen != screenPlan {
+		t.Fatalf("screen = %v, want plan", model.screen)
+	}
+	return model
+}
+
+func waitForSignal(t *testing.T, signal <-chan struct{}, label string) {
+	t.Helper()
+	select {
+	case <-signal:
+	case <-time.After(2 * time.Second):
+		t.Fatalf("timed out waiting for %s", label)
 	}
 }
 

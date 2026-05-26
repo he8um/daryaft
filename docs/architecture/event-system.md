@@ -55,10 +55,12 @@ Events carry simple fields that can be tested and reused by later interfaces:
 - timestamp
 
 The CLI consumes these events for line-based progress output. The TUI execution
-screen consumes the same events through a goroutine/channel bridge and renders
-status, target path, byte progress, percent, speed, recent messages, completion,
-failure, and batch summaries. TUI execution currently uses the current directory
-as the output path. Single URL CLI output uses:
+screen consumes the same events through an injectable execution runner and a
+goroutine/channel bridge, then renders status, target path, byte progress,
+percent, speed, recent messages, completion, failure, and batch summaries. The
+production TUI runner calls the existing batch downloader path; tests can
+inject a runner to assert plans or cancellation without network downloads.
+User-facing event behavior is unchanged. Single URL CLI output uses:
 
 ```text
 Downloading: <url>

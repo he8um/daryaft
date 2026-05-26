@@ -41,6 +41,12 @@ type executionFailure struct {
 	Error string
 }
 
+type ExecutionRunner func(context.Context, download.Plan, downloader.BatchHandlers) downloader.BatchResult
+
+func defaultExecutionRunner(ctx context.Context, plan download.Plan, handlers downloader.BatchHandlers) downloader.BatchResult {
+	return downloader.New().DownloadBatchContext(ctx, plan, handlers)
+}
+
 func newExecutionState(plan download.Plan) executionState {
 	state := executionState{
 		Running:   true,
@@ -54,13 +60,16 @@ func newExecutionState(plan download.Plan) executionState {
 	return state
 }
 
-func runExecution(ctx context.Context, plan download.Plan) <-chan tea.Msg {
+func runExecution(ctx context.Context, plan download.Plan, runner ExecutionRunner) <-chan tea.Msg {
 	messages := make(chan tea.Msg, 64)
+	if runner == nil {
+		runner = defaultExecutionRunner
+	}
 
 	go func() {
 		defer close(messages)
 
-		result := downloader.New().DownloadBatchContext(ctx, plan, downloader.BatchHandlers{
+		result := runner(ctx, plan, downloader.BatchHandlers{
 			ItemStarted: func(item downloader.BatchItem) {
 				messages <- executionItemStartedMsg{Item: item}
 			},

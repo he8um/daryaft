@@ -26,20 +26,29 @@ type Model struct {
 	filenameInput     string
 	errorMessage      string
 	plan              download.Plan
+	executionRunner   ExecutionRunner
 	execution         executionState
 	executionCancel   context.CancelFunc
 	executionMessages <-chan tea.Msg
 }
 
 func NewModel(options Options) Model {
+	return NewModelWithRunner(options, defaultExecutionRunner)
+}
+
+func NewModelWithRunner(options Options, runner ExecutionRunner) Model {
 	styles := newStyles(options.NoColor)
+	if runner == nil {
+		runner = defaultExecutionRunner
+	}
 	return Model{
-		screen:         screenHome,
-		styles:         styles,
-		version:        version.Info(),
-		input:          newTextInput(styles),
-		sourceScreen:   screenURLInput,
-		outputDirInput: ".",
+		screen:          screenHome,
+		styles:          styles,
+		version:         version.Info(),
+		input:           newTextInput(styles),
+		sourceScreen:    screenURLInput,
+		outputDirInput:  ".",
+		executionRunner: runner,
 	}
 }
 

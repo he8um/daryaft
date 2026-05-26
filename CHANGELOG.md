@@ -36,6 +36,8 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 - Context-aware downloader cancellation with cancelled events, preserved
   partial files and metadata, no retry after cancellation, and TUI `q`
   cancellation from the progress screen.
+- Injectable TUI execution runner for deterministic plan and cancellation tests
+  without changing user-facing TUI behavior.
 - Starter documentation, CI, Makefile, and future packaging configuration.
 
 ### Planned

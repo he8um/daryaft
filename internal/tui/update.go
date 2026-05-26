@@ -191,6 +191,6 @@ func (m Model) startExecution() (Model, tea.Cmd) {
 	m.errorMessage = ""
 	m.execution = newExecutionState(m.plan)
 	m.executionCancel = cancel
-	m.executionMessages = runExecution(ctx, m.plan)
+	m.executionMessages = runExecution(ctx, m.plan, m.executionRunner)
 	return m, waitForExecution(m.executionMessages)
 }
