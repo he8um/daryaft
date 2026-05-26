@@ -12,31 +12,39 @@ const (
 	tuiDefaultResume  = true
 )
 
-func planFromURL(rawURL, output, name string) (download.Plan, error) {
+func planFromURL(rawURL, output, name string, retries int, resume bool) (download.Plan, error) {
 	return download.BuildPlan(download.Options{
 		URLs:    []string{strings.TrimSpace(rawURL)},
 		Output:  output,
 		Name:    name,
 		DryRun:  true,
-		Retries: tuiDefaultRetries,
-		Resume:  tuiDefaultResume,
+		Retries: retries,
+		Resume:  resume,
 	})
 }
 
-func planFromFile(path, output string) (download.Plan, error) {
+func planFromFile(path, output string, retries int, resume bool) (download.Plan, error) {
 	return download.BuildPlan(download.Options{
 		File:    strings.TrimSpace(path),
 		Output:  output,
 		DryRun:  true,
-		Retries: tuiDefaultRetries,
-		Resume:  tuiDefaultResume,
+		Retries: retries,
+		Resume:  resume,
 	})
 }
 
-func outputDirValue(value string) string {
+func defaultOutputDir(value string) string {
 	trimmed := strings.TrimSpace(value)
 	if trimmed == "" {
 		return "."
+	}
+	return trimmed
+}
+
+func outputDirValue(value, fallback string) string {
+	trimmed := strings.TrimSpace(value)
+	if trimmed == "" {
+		return defaultOutputDir(fallback)
 	}
 	return trimmed
 }

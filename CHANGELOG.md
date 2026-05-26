@@ -38,6 +38,9 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
   cancellation from the progress screen.
 - Injectable TUI execution runner for deterministic plan and cancellation tests
   without changing user-facing TUI behavior.
+- YAML user configuration with `config path`, `config show`, and `config init`
+  commands plus download directory, retry, resume, no-color, and no-TUI
+  defaults.
 - Starter documentation, CI, Makefile, and future packaging configuration.
 
 ### Planned

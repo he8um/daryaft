@@ -53,6 +53,47 @@ Implemented. Prints:
 
 Default local values are used unless release tooling injects build variables.
 
+## `daryaft config`
+
+Implemented. Shows help for the configuration command group.
+
+## `daryaft config path`
+
+Implemented. Prints the YAML config path:
+
+```text
+<UserConfigDir>/daryaft/config.yaml
+```
+
+On macOS this is usually
+`~/Library/Application Support/daryaft/config.yaml`. On Linux this is usually
+`~/.config/daryaft/config.yaml`.
+
+## `daryaft config show`
+
+Implemented. Prints the effective config as YAML. If the file does not exist,
+the output is the built-in defaults:
+
+```yaml
+download_dir: ""
+retries: 3
+resume: true
+no_color: false
+no_tui: false
+theme: default
+animations: true
+hyperlinks: true
+```
+
+## `daryaft config init`
+
+Implemented. Creates the default config file and fails clearly if it already
+exists.
+
+## `daryaft config init --force`
+
+Implemented. Rewrites the config file with default values.
+
 ## `daryaft [url...] --dry-run`
 
 Implemented. Validates one or more HTTP/HTTPS URLs and prints a dry-run plan.
@@ -116,6 +157,11 @@ If the server returns a full response instead, Daryaft truncates the `.part`
 file and restarts safely. If saved `ETag` or `Last-Modified` metadata shows the
 remote file changed, Daryaft also restarts from byte `0`. `--no-resume` ignores
 existing partial data and overwrites the partial file from byte `0`.
+
+Config precedence is CLI flags, then config file values, then built-in
+defaults. If `-o`/`--output` is omitted and `download_dir` is non-empty, Daryaft
+uses `download_dir`. If `--retries` is omitted, Daryaft uses config `retries`.
+If neither `--resume` nor `--no-resume` is set, Daryaft uses config `resume`.
 
 ## `daryaft download [url...] --dry-run`
 
@@ -188,6 +234,10 @@ Implemented:
 - `--no-color`: avoid color styling in the TUI.
 - `--no-tui`: skip the no-argument TUI and print the non-interactive placeholder.
 - `-v`, `--verbose`: enable verbose output when verbose logging exists.
+
+Config `no_color` and `no_tui` provide defaults for the no-argument TUI path.
+CLI flags still have priority. Config `theme`, `animations`, and `hyperlinks`
+are stored for future TUI support.
 
 ## Planned Commands And Forms
 

@@ -8,7 +8,22 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	appconfig "github.com/he8um/daryaft/internal/config"
+	"github.com/spf13/cobra"
 )
+
+func TestMain(m *testing.M) {
+	dir, err := os.MkdirTemp("", "daryaft-cmd-test-*")
+	if err != nil {
+		panic(err)
+	}
+	restore := appconfig.SetUserConfigDirForTest(dir)
+	code := m.Run()
+	restore()
+	_ = os.RemoveAll(dir)
+	os.Exit(code)
+}
 
 func TestRunDownloadDryRunDoesNotDownload(t *testing.T) {
 	requests := 0
@@ -40,6 +55,113 @@ func TestRunDownloadDryRunDoesNotDownload(t *testing.T) {
 	}
 	if _, err := os.Stat(outputDir); !os.IsNotExist(err) {
 		t.Fatalf("dry-run touched output directory, stat err = %v", err)
+	}
+}
+
+func TestRunDownloadUsesConfigDownloadDirWhenOutputNotProvided(t *testing.T) {
+	restore := appconfig.SetUserConfigDirForTest(t.TempDir())
+	t.Cleanup(restore)
+
+	cfg := appconfig.Default()
+	cfg.DownloadDir = filepath.Join(t.TempDir(), "configured-downloads")
+	if err := appconfig.Save(cfg); err != nil {
+		t.Fatalf("save config: %v", err)
+	}
+
+	var flags downloadFlagValues
+	cmd := &cobra.Command{Use: "download"}
+	addDownloadFlags(cmd, &flags)
+	if err := cmd.Flags().Set("dry-run", "true"); err != nil {
+		t.Fatalf("set dry-run: %v", err)
+	}
+
+	var output bytes.Buffer
+	cmd.SetOut(&output)
+	err := runDownload(cmd, []string{"https://example.com/file.zip"}, flags)
+	if err != nil {
+		t.Fatalf("runDownload returned error: %v", err)
+	}
+	if !strings.Contains(output.String(), "Output: "+cfg.DownloadDir) {
+		t.Fatalf("output missing configured download dir:\n%s", output.String())
+	}
+}
+
+func TestRunDownloadCLIFlagsOverrideConfigDefaults(t *testing.T) {
+	restore := appconfig.SetUserConfigDirForTest(t.TempDir())
+	t.Cleanup(restore)
+
+	cfg := appconfig.Default()
+	cfg.DownloadDir = filepath.Join(t.TempDir(), "configured-downloads")
+	cfg.Retries = 7
+	cfg.Resume = false
+	if err := appconfig.Save(cfg); err != nil {
+		t.Fatalf("save config: %v", err)
+	}
+
+	var flags downloadFlagValues
+	cmd := &cobra.Command{Use: "download"}
+	addDownloadFlags(cmd, &flags)
+	if err := cmd.Flags().Set("dry-run", "true"); err != nil {
+		t.Fatalf("set dry-run: %v", err)
+	}
+	if err := cmd.Flags().Set("output", "/tmp/explicit-daryaft"); err != nil {
+		t.Fatalf("set output: %v", err)
+	}
+	if err := cmd.Flags().Set("retries", "2"); err != nil {
+		t.Fatalf("set retries: %v", err)
+	}
+	if err := cmd.Flags().Set("resume", "true"); err != nil {
+		t.Fatalf("set resume: %v", err)
+	}
+
+	var output bytes.Buffer
+	cmd.SetOut(&output)
+	err := runDownload(cmd, []string{"https://example.com/file.zip"}, flags)
+	if err != nil {
+		t.Fatalf("runDownload returned error: %v", err)
+	}
+	for _, want := range []string{
+		"Output: /tmp/explicit-daryaft",
+		"Retries: 2",
+		"Resume: true",
+	} {
+		if !strings.Contains(output.String(), want) {
+			t.Fatalf("output missing %q in:\n%s", want, output.String())
+		}
+	}
+}
+
+func TestRunDownloadUsesConfigRetryAndResumeDefaults(t *testing.T) {
+	restore := appconfig.SetUserConfigDirForTest(t.TempDir())
+	t.Cleanup(restore)
+
+	cfg := appconfig.Default()
+	cfg.Retries = 0
+	cfg.Resume = false
+	if err := appconfig.Save(cfg); err != nil {
+		t.Fatalf("save config: %v", err)
+	}
+
+	var flags downloadFlagValues
+	cmd := &cobra.Command{Use: "download"}
+	addDownloadFlags(cmd, &flags)
+	if err := cmd.Flags().Set("dry-run", "true"); err != nil {
+		t.Fatalf("set dry-run: %v", err)
+	}
+
+	var output bytes.Buffer
+	cmd.SetOut(&output)
+	err := runDownload(cmd, []string{"https://example.com/file.zip"}, flags)
+	if err != nil {
+		t.Fatalf("runDownload returned error: %v", err)
+	}
+	for _, want := range []string{
+		"Retries: 0",
+		"Resume: false",
+	} {
+		if !strings.Contains(output.String(), want) {
+			t.Fatalf("output missing %q in:\n%s", want, output.String())
+		}
 	}
 }
 

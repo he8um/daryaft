@@ -100,7 +100,7 @@ func (m Model) inputView() string {
 	builder.WriteString(m.styles.body.Render(m.inputPrompt()))
 	builder.WriteString("\n")
 	if m.screen == screenOutputInput {
-		builder.WriteString(m.styles.muted.Render("Default/current value: ."))
+		builder.WriteString(m.styles.muted.Render(fmt.Sprintf("Default/current value: %s", displayValue(m.outputDirInput, "."))))
 		builder.WriteString("\n")
 	}
 	if m.screen == screenFilenameInput {

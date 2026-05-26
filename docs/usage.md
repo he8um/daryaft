@@ -18,6 +18,32 @@ daryaft version
 Prints the Daryaft version, commit, build date, and Go version.
 
 ```bash
+daryaft config path
+daryaft config show
+daryaft config init
+daryaft config init --force
+```
+
+Manages the YAML config file at `<UserConfigDir>/daryaft/config.yaml`.
+`config path` prints the exact path, `config show` prints the effective config,
+and `config init` creates the default file. `config init --force` overwrites an
+existing config. CLI flags have priority over config file values, and config
+file values have priority over built-in defaults.
+
+Default config:
+
+```yaml
+download_dir: ""
+retries: 3
+resume: true
+no_color: false
+no_tui: false
+theme: default
+animations: true
+hyperlinks: true
+```
+
+```bash
 daryaft
 ```
 
@@ -36,7 +62,8 @@ both flows honor the selected output directory. Press `q` while a TUI download
 is running to cancel it. Cancelled downloads keep the `.part` file and sidecar
 metadata for resume and are not retried. CLI `-o`/`--output` and `--name`
 behavior is unchanged, and CLI ctrl+c behavior is unchanged and may terminate
-the process directly.
+the process directly. If `download_dir` is set in config, the TUI output
+directory input starts with that value; otherwise it starts with `.`.
 
 ```bash
 daryaft https://example.com/file.zip --dry-run
@@ -60,11 +87,20 @@ Current flags:
 - `--resume`: resume interrupted `.part` files, default `true`.
 - `--no-resume`: ignore existing partial state and restart from byte `0`.
 
+If `-o`/`--output` is not provided and `download_dir` is set in config, Daryaft
+uses that directory. If `--retries` is not provided, Daryaft uses config
+`retries`. If neither `--resume` nor `--no-resume` is provided, Daryaft uses
+config `resume`.
+
 Common root flags:
 
 - `--no-color`: avoid color styling in the TUI.
 - `--no-tui`: skip the TUI and print the non-interactive placeholder.
 - `-v`, `--verbose`: reserved for future verbose output.
+
+If `no_color` is true in config, the TUI uses no-color styling by default. If
+`no_tui` is true in config, plain `daryaft` prints the non-interactive fallback
+instead of launching the TUI.
 
 ```bash
 daryaft https://example.com/file.zip

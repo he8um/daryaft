@@ -124,9 +124,9 @@ func (m Model) submitSourceInput() (Model, tea.Cmd) {
 
 	switch m.screen {
 	case screenURLInput:
-		plan, err = planFromURL(m.input.Value(), "", "")
+		plan, err = planFromURL(m.input.Value(), "", "", m.retries, m.resume)
 	case screenFileInput:
-		plan, err = planFromFile(m.input.Value(), "")
+		plan, err = planFromFile(m.input.Value(), "", m.retries, m.resume)
 	default:
 		return m, nil
 	}
@@ -139,7 +139,7 @@ func (m Model) submitSourceInput() (Model, tea.Cmd) {
 	m.plan = plan
 	m.sourceInput = m.input.Value()
 	m.sourceScreen = m.screen
-	m.outputDirInput = "."
+	m.outputDirInput = m.defaultOutputDir
 	m.filenameInput = ""
 	m.screen = screenOutputInput
 	m.errorMessage = ""
@@ -148,7 +148,7 @@ func (m Model) submitSourceInput() (Model, tea.Cmd) {
 }
 
 func (m Model) submitOutputInput() (Model, tea.Cmd) {
-	m.outputDirInput = outputDirValue(m.input.Value())
+	m.outputDirInput = outputDirValue(m.input.Value(), m.defaultOutputDir)
 	if m.sourceScreen == screenURLInput {
 		m.plan.Output = m.outputDirInput
 		m.screen = screenFilenameInput
@@ -171,7 +171,7 @@ func (m Model) submitFilenameInput() (Model, tea.Cmd) {
 		return m, nil
 	}
 
-	plan, err := planFromURL(m.sourceInput, m.outputDirInput, filename)
+	plan, err := planFromURL(m.sourceInput, m.outputDirInput, filename, m.retries, m.resume)
 	if err != nil {
 		m.errorMessage = err.Error()
 		return m, nil

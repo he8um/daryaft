@@ -179,6 +179,46 @@ func TestCustomOutputDirectoryAppearsInPlan(t *testing.T) {
 	}
 }
 
+func TestConfigDefaultsApplyToTUIPlan(t *testing.T) {
+	model := NewModel(Options{
+		NoColor:           true,
+		DownloadDir:       "/tmp/daryaft-configured",
+		Retries:           0,
+		Resume:            false,
+		UseConfigDefaults: true,
+	})
+	model.selected = 0
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithString(t, model, "https://example.com/file.zip")
+	model = updateWithKey(t, model, tea.KeyEnter)
+
+	if model.screen != screenOutputInput {
+		t.Fatalf("screen = %v, want output input", model.screen)
+	}
+	if model.outputDirInput != "/tmp/daryaft-configured" {
+		t.Fatalf("outputDirInput = %q", model.outputDirInput)
+	}
+	if model.input.Value() != "/tmp/daryaft-configured" {
+		t.Fatalf("input value = %q", model.input.Value())
+	}
+
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithKey(t, model, tea.KeyEnter)
+
+	if model.screen != screenPlan {
+		t.Fatalf("screen = %v, want plan", model.screen)
+	}
+	if model.plan.Output != "/tmp/daryaft-configured" {
+		t.Fatalf("plan.Output = %q", model.plan.Output)
+	}
+	if model.plan.Retries != 0 {
+		t.Fatalf("plan.Retries = %d, want 0", model.plan.Retries)
+	}
+	if model.plan.Resume {
+		t.Fatal("plan.Resume = true, want false")
+	}
+}
+
 func TestURLFlowAdvancesThroughFilenameInput(t *testing.T) {
 	model := NewModel(Options{NoColor: true})
 	model.selected = 0

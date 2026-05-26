@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/he8um/daryaft/internal/app"
-	"github.com/he8um/daryaft/internal/config"
+	appconfig "github.com/he8um/daryaft/internal/config"
 	"github.com/he8um/daryaft/internal/tui"
 	"github.com/spf13/cobra"
 )
@@ -17,7 +17,7 @@ var (
 )
 
 var rootCmd = &cobra.Command{
-	Use:           config.BinaryName,
+	Use:           appconfig.BinaryName,
 	Short:         "Daryaft is a modern terminal downloader.",
 	SilenceUsage:  true,
 	SilenceErrors: true,
@@ -35,12 +35,32 @@ downloader engine in future milestones.`,
   daryaft update`,
 	Args: cobra.ArbitraryArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		cfg, err := appconfig.Load()
+		if err != nil {
+			return err
+		}
+
 		if len(args) > 0 || hasDownloadFlagChanges(cmd) {
 			return runDownload(cmd, args, rootDownloadFlags)
 		}
 
-		if !noTUI {
-			return tui.Run(tui.Options{NoColor: noColor})
+		effectiveNoTUI := noTUI
+		if !persistentFlagChanged(cmd, "no-tui") && cfg.NoTUI {
+			effectiveNoTUI = true
+		}
+		effectiveNoColor := noColor
+		if !persistentFlagChanged(cmd, "no-color") && cfg.NoColor {
+			effectiveNoColor = true
+		}
+
+		if !effectiveNoTUI {
+			return tui.Run(tui.Options{
+				NoColor:           effectiveNoColor,
+				DownloadDir:       cfg.DownloadDir,
+				Retries:           cfg.Retries,
+				Resume:            cfg.Resume,
+				UseConfigDefaults: true,
+			})
 		}
 
 		fmt.Fprintln(cmd.OutOrStdout(), app.InteractivePlaceholder())
@@ -77,6 +97,11 @@ Common Flags:
 Examples:
 {{.Example}}
 
-` + config.FooterText + `
+` + appconfig.FooterText + `
 `)
+}
+
+func persistentFlagChanged(cmd *cobra.Command, name string) bool {
+	flag := cmd.Root().PersistentFlags().Lookup(name)
+	return flag != nil && flag.Changed
 }

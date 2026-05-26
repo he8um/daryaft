@@ -38,6 +38,8 @@ go mod download
 go run . --help
 go run . version
 go run .
+go run . config path
+go run . config show
 go run . https://example.com/file.zip --dry-run
 go run . https://example.com/file.zip
 go run . https://example.com/a.txt https://example.com/b.txt
@@ -58,6 +60,9 @@ make run
 daryaft --help
 daryaft version
 daryaft
+daryaft config path
+daryaft config show
+daryaft config init
 daryaft https://example.com/file.zip --dry-run
 daryaft https://example.com/file.zip
 daryaft https://example.com/a.txt https://example.com/b.txt
@@ -79,6 +84,14 @@ to auto-detect each item filename. Leaving the output directory empty means `.`,
 the current directory. TUI downloads can start real single URL or sequential
 batch downloads from that plan. Existing CLI download commands, including
 `-o`/`--output` and `--name`, remain fully supported and unchanged.
+
+Daryaft can read YAML configuration from the OS user config directory:
+`<UserConfigDir>/daryaft/config.yaml`. On macOS this is usually
+`~/Library/Application Support/daryaft/config.yaml`; on Linux it is usually
+`~/.config/daryaft/config.yaml`. Use `daryaft config path` to print the exact
+path, `daryaft config init` to create the default file, and
+`daryaft config show` to print the effective config. Precedence is CLI flags,
+then config file values, then built-in defaults.
 
 Download commands validate URLs and can print a dry-run plan. Real downloading
 is implemented for one URL and for multiple URLs sequentially. Batch downloads

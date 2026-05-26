@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	appconfig "github.com/he8um/daryaft/internal/config"
 	"github.com/he8um/daryaft/internal/download"
 	"github.com/he8um/daryaft/internal/downloader"
 	"github.com/he8um/daryaft/internal/utils"
@@ -62,6 +63,12 @@ func addDownloadFlags(command *cobra.Command, flags *downloadFlagValues) {
 }
 
 func runDownload(cmd *cobra.Command, args []string, flags downloadFlagValues) error {
+	cfg, err := appconfig.Load()
+	if err != nil {
+		return err
+	}
+	flags = applyConfigDefaultsToDownloadFlags(cmd, flags, cfg)
+
 	options := download.Options{
 		URLs:     args,
 		File:     flags.file,
@@ -141,6 +148,19 @@ func runDownload(cmd *cobra.Command, args []string, flags downloadFlagValues) er
 	return nil
 }
 
+func applyConfigDefaultsToDownloadFlags(cmd *cobra.Command, flags downloadFlagValues, cfg appconfig.Config) downloadFlagValues {
+	if !localFlagChanged(cmd, "output") && cfg.DownloadDir != "" {
+		flags.output = cfg.DownloadDir
+	}
+	if !localFlagChanged(cmd, "retries") {
+		flags.retries = cfg.Retries
+	}
+	if !localFlagChanged(cmd, "resume") && !localFlagChanged(cmd, "no-resume") {
+		flags.resume = cfg.Resume
+	}
+	return flags
+}
+
 func printProgress(cmd *cobra.Command, event downloader.Event) {
 	if event.TotalBytes > 0 {
 		fmt.Fprintf(
@@ -182,9 +202,14 @@ func printMessage(cmd *cobra.Command, event downloader.Event) {
 
 func hasDownloadFlagChanges(cmd *cobra.Command) bool {
 	for _, name := range []string{"file", "output", "name", "dry-run", "retries", "resume", "no-resume"} {
-		if cmd.Flags().Changed(name) {
+		if localFlagChanged(cmd, name) {
 			return true
 		}
 	}
 	return false
+}
+
+func localFlagChanged(cmd *cobra.Command, name string) bool {
+	flag := cmd.Flags().Lookup(name)
+	return flag != nil && flag.Changed
 }

@@ -54,14 +54,15 @@ Navigation:
 The View help and Version menu items render simple in-TUI screens. Download
 from URL and Download from .txt file render text input forms. Pressing enter
 validates the URL or URL file through the existing download planner, then opens
-an output directory input screen. The default/current value is `.`, and leaving
-the field empty means the current directory. The single URL flow then opens an
+an output directory input screen. The default/current value is config
+`download_dir` when set, otherwise `.`. The single URL flow then opens an
 `Enter custom filename` input screen with `Leave empty to auto-detect` help
 text. Empty filename input means auto-detect; a custom filename is shown on the
 plan and passed to the existing download plan. The `.txt` batch flow skips this
 filename screen and keeps `Filename: auto-detect`. Pressing enter from the last
 input shows a dry-run plan with URL count, the first URLs, selected output
-directory, filename, retries, and resume settings.
+directory, filename, retries, and resume settings. TUI retries and resume use
+config defaults unless the code path receives explicit values from the CLI.
 
 On the plan screen, enter starts the real download. The execution screen shows
 the current item, URL, target path when known, status, downloaded bytes, total
@@ -84,8 +85,10 @@ daryaft -f urls.txt
 daryaft download https://example.com/file.zip
 ```
 
-`--no-color` keeps the panel layout but avoids color styling. `--no-tui` skips
-the no-argument TUI and prints the non-interactive placeholder.
+`--no-color` keeps the panel layout but avoids color styling. Config `no_color`
+can provide the same default for plain `daryaft`. `--no-tui` skips the
+no-argument TUI and prints the non-interactive placeholder; config `no_tui` can
+also make that the default.
 
 Existing CLI download commands are unchanged and remain the stable way to
 download files.

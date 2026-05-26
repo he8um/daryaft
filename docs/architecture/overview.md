@@ -48,8 +48,11 @@ verify checksums, and replace the executable safely.
 
 ## Config
 
-Planned. Configuration should merge defaults, config files, environment
-variables, and flags in a predictable order.
+Partly implemented. `internal/config` owns YAML defaults, platform config path
+resolution through `os.UserConfigDir()`, load/save/init helpers, and config
+commands. The current precedence is CLI flags, then config file values, then
+built-in defaults. Environment-variable configuration and profiles are not
+implemented yet.
 
 ## Storage
 

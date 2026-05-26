@@ -11,7 +11,11 @@ import (
 )
 
 type Options struct {
-	NoColor bool
+	NoColor           bool
+	DownloadDir       string
+	Retries           int
+	Resume            bool
+	UseConfigDefaults bool
 }
 
 type Model struct {
@@ -23,6 +27,9 @@ type Model struct {
 	sourceInput       string
 	sourceScreen      screen
 	outputDirInput    string
+	defaultOutputDir  string
+	retries           int
+	resume            bool
 	filenameInput     string
 	errorMessage      string
 	plan              download.Plan
@@ -41,14 +48,24 @@ func NewModelWithRunner(options Options, runner ExecutionRunner) Model {
 	if runner == nil {
 		runner = defaultExecutionRunner
 	}
+	defaultOutput := defaultOutputDir(options.DownloadDir)
+	retries := tuiDefaultRetries
+	resume := tuiDefaultResume
+	if options.UseConfigDefaults {
+		retries = options.Retries
+		resume = options.Resume
+	}
 	return Model{
-		screen:          screenHome,
-		styles:          styles,
-		version:         version.Info(),
-		input:           newTextInput(styles),
-		sourceScreen:    screenURLInput,
-		outputDirInput:  ".",
-		executionRunner: runner,
+		screen:           screenHome,
+		styles:           styles,
+		version:          version.Info(),
+		input:            newTextInput(styles),
+		sourceScreen:     screenURLInput,
+		outputDirInput:   defaultOutput,
+		defaultOutputDir: defaultOutput,
+		retries:          retries,
+		resume:           resume,
+		executionRunner:  runner,
 	}
 }
 
@@ -91,7 +108,7 @@ func (m Model) openInput(next screen) (Model, tea.Cmd) {
 	m.input = newTextInput(m.styles)
 	m.sourceInput = ""
 	m.sourceScreen = next
-	m.outputDirInput = "."
+	m.outputDirInput = m.defaultOutputDir
 	m.filenameInput = ""
 	m.errorMessage = ""
 	m.plan = download.Plan{}
