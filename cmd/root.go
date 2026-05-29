@@ -35,7 +35,7 @@ downloader engine in future milestones.`,
   daryaft update`,
 	Args: cobra.ArbitraryArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		cfg, err := appconfig.Load()
+		cfg, err := appconfig.LoadEffective()
 		if err != nil {
 			return err
 		}

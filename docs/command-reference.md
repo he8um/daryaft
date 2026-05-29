@@ -71,8 +71,9 @@ On macOS this is usually
 
 ## `daryaft config show`
 
-Implemented. Prints the effective config as YAML. If the file does not exist,
-the output is the built-in defaults:
+Implemented. Prints the effective config as YAML, including `DARYAFT_*`
+environment overrides. If the file does not exist and no environment overrides
+are set, the output is the built-in defaults:
 
 ```yaml
 download_dir: ""
@@ -158,10 +159,12 @@ file and restarts safely. If saved `ETag` or `Last-Modified` metadata shows the
 remote file changed, Daryaft also restarts from byte `0`. `--no-resume` ignores
 existing partial data and overwrites the partial file from byte `0`.
 
-Config precedence is CLI flags, then config file values, then built-in
-defaults. If `-o`/`--output` is omitted and `download_dir` is non-empty, Daryaft
-uses `download_dir`. If `--retries` is omitted, Daryaft uses config `retries`.
-If neither `--resume` nor `--no-resume` is set, Daryaft uses config `resume`.
+Config precedence is CLI flags, then environment variables, then config file
+values, then built-in defaults. If `-o`/`--output` is omitted and
+`DARYAFT_DOWNLOAD_DIR` or `download_dir` is non-empty, Daryaft uses that
+directory. If `--retries` is omitted, Daryaft uses `DARYAFT_RETRIES` or config
+`retries`. If neither `--resume` nor `--no-resume` is set, Daryaft uses
+`DARYAFT_RESUME` or config `resume`.
 
 ## `daryaft download [url...] --dry-run`
 
@@ -235,9 +238,33 @@ Implemented:
 - `--no-tui`: skip the no-argument TUI and print the non-interactive placeholder.
 - `-v`, `--verbose`: enable verbose output when verbose logging exists.
 
-Config `no_color` and `no_tui` provide defaults for the no-argument TUI path.
-CLI flags still have priority. Config `theme`, `animations`, and `hyperlinks`
-are stored for future TUI support.
+Config `no_color` and `no_tui`, or `DARYAFT_NO_COLOR` and `DARYAFT_NO_TUI`,
+provide defaults for the no-argument TUI path. CLI flags still have priority.
+Config `theme`, `animations`, and `hyperlinks`, plus their `DARYAFT_*`
+environment variables, are stored for future TUI support.
+
+Environment variables:
+
+- `DARYAFT_DOWNLOAD_DIR`
+- `DARYAFT_RETRIES`
+- `DARYAFT_RESUME`
+- `DARYAFT_NO_COLOR`
+- `DARYAFT_NO_TUI`
+- `DARYAFT_THEME`
+- `DARYAFT_ANIMATIONS`
+- `DARYAFT_HYPERLINKS`
+
+Boolean environment values accept `true`, `1`, `yes`, `y`, `on`, `false`, `0`,
+`no`, `n`, and `off`, case-insensitively. Empty boolean and integer values are
+invalid.
+
+Examples:
+
+```bash
+DARYAFT_DOWNLOAD_DIR=~/Downloads daryaft https://example.com/file.zip
+DARYAFT_RETRIES=5 daryaft https://example.com/file.zip
+DARYAFT_NO_TUI=true daryaft
+```
 
 ## Planned Commands And Forms
 

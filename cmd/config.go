@@ -46,7 +46,7 @@ func newConfigShowCommand() *cobra.Command {
 		Short: "Print the effective configuration",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cfg, err := appconfig.Load()
+			cfg, err := appconfig.LoadEffective()
 			if err != nil {
 				return err
 			}

@@ -91,7 +91,14 @@ Daryaft can read YAML configuration from the OS user config directory:
 `~/.config/daryaft/config.yaml`. Use `daryaft config path` to print the exact
 path, `daryaft config init` to create the default file, and
 `daryaft config show` to print the effective config. Precedence is CLI flags,
-then config file values, then built-in defaults.
+then `DARYAFT_*` environment variables, then config file values, then built-in
+defaults. For example:
+
+```bash
+DARYAFT_DOWNLOAD_DIR=~/Downloads daryaft https://example.com/file.zip
+DARYAFT_RETRIES=5 daryaft https://example.com/file.zip
+DARYAFT_NO_TUI=true daryaft
+```
 
 Download commands validate URLs and can print a dry-run plan. Real downloading
 is implemented for one URL and for multiple URLs sequentially. Batch downloads

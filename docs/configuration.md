@@ -33,8 +33,9 @@ daryaft config init --force
 
 - `daryaft config` shows help for the config command group.
 - `daryaft config path` prints the config file path.
-- `daryaft config show` prints the effective config as YAML. If no file exists,
-  it prints built-in defaults.
+- `daryaft config show` prints the effective config as YAML, including
+  environment-variable overrides. If no file exists, it prints built-in
+  defaults plus any environment overrides.
 - `daryaft config init` creates a config file with defaults and refuses to
   overwrite an existing file.
 - `daryaft config init --force` overwrites the existing config with defaults.
@@ -57,8 +58,9 @@ hyperlinks: true
 Configuration is applied in this order:
 
 1. CLI flags
-2. Config file values
-3. Built-in defaults
+2. Environment variables
+3. Config file values
+4. Built-in defaults
 
 Examples:
 
@@ -67,6 +69,40 @@ Examples:
 - `--resume` and `--no-resume` win over `resume`.
 - `--no-color` wins over `no_color`.
 - `--no-tui` wins over `no_tui`.
+
+## Environment Variables
+
+Supported environment variables:
+
+- `DARYAFT_DOWNLOAD_DIR`
+- `DARYAFT_RETRIES`
+- `DARYAFT_RESUME`
+- `DARYAFT_NO_COLOR`
+- `DARYAFT_NO_TUI`
+- `DARYAFT_THEME`
+- `DARYAFT_ANIMATIONS`
+- `DARYAFT_HYPERLINKS`
+
+String values are trimmed. Empty string values are accepted for
+`DARYAFT_DOWNLOAD_DIR` and `DARYAFT_THEME`.
+
+`DARYAFT_RETRIES` must be an integer greater than or equal to `0`. Empty or
+invalid integer values return an error.
+
+Boolean values are case-insensitive:
+
+- true: `true`, `1`, `yes`, `y`, `on`
+- false: `false`, `0`, `no`, `n`, `off`
+
+Empty or invalid boolean values return an error.
+
+Examples:
+
+```bash
+DARYAFT_DOWNLOAD_DIR=~/Downloads daryaft https://example.com/file.zip
+DARYAFT_RETRIES=5 daryaft https://example.com/file.zip
+DARYAFT_NO_TUI=true daryaft
+```
 
 ## Fields
 

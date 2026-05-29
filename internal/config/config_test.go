@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -227,5 +228,163 @@ func TestSaveCreatesParentDirectories(t *testing.T) {
 	}
 	if _, err := os.Stat(path); err != nil {
 		t.Fatalf("stat config: %v", err)
+	}
+}
+
+func TestApplyEnvOverridesDownloadDir(t *testing.T) {
+	cfg := Default()
+	cfg.DownloadDir = "/config/downloads"
+
+	got, err := ApplyEnv(cfg, mapLookup(map[string]string{
+		envDownloadDir: "  /env/downloads  ",
+	}))
+	if err != nil {
+		t.Fatalf("ApplyEnv returned error: %v", err)
+	}
+	if got.DownloadDir != "/env/downloads" {
+		t.Fatalf("DownloadDir = %q", got.DownloadDir)
+	}
+}
+
+func TestApplyEnvOverridesRetries(t *testing.T) {
+	cfg := Default()
+	cfg.Retries = 2
+
+	got, err := ApplyEnv(cfg, mapLookup(map[string]string{
+		envRetries: "5",
+	}))
+	if err != nil {
+		t.Fatalf("ApplyEnv returned error: %v", err)
+	}
+	if got.Retries != 5 {
+		t.Fatalf("Retries = %d, want 5", got.Retries)
+	}
+}
+
+func TestApplyEnvInvalidRetriesReturnsError(t *testing.T) {
+	for _, value := range []string{"abc", "-1", ""} {
+		t.Run(strconv.Quote(value), func(t *testing.T) {
+			_, err := ApplyEnv(Default(), mapLookup(map[string]string{
+				envRetries: value,
+			}))
+			if err == nil {
+				t.Fatal("ApplyEnv returned nil error")
+			}
+			if !strings.Contains(err.Error(), envRetries) {
+				t.Fatalf("error = %q", err)
+			}
+		})
+	}
+}
+
+func TestApplyEnvBooleanTrueValues(t *testing.T) {
+	for _, value := range []string{"true", "TRUE", "1", "yes", "Y", "on"} {
+		t.Run(value, func(t *testing.T) {
+			got, err := ApplyEnv(Default(), mapLookup(map[string]string{
+				envNoTUI: value,
+			}))
+			if err != nil {
+				t.Fatalf("ApplyEnv returned error: %v", err)
+			}
+			if !got.NoTUI {
+				t.Fatalf("NoTUI = false for %q", value)
+			}
+		})
+	}
+}
+
+func TestApplyEnvBooleanFalseValues(t *testing.T) {
+	for _, value := range []string{"false", "FALSE", "0", "no", "N", "off"} {
+		t.Run(value, func(t *testing.T) {
+			cfg := Default()
+			cfg.NoTUI = true
+			got, err := ApplyEnv(cfg, mapLookup(map[string]string{
+				envNoTUI: value,
+			}))
+			if err != nil {
+				t.Fatalf("ApplyEnv returned error: %v", err)
+			}
+			if got.NoTUI {
+				t.Fatalf("NoTUI = true for %q", value)
+			}
+		})
+	}
+}
+
+func TestApplyEnvInvalidBooleanReturnsError(t *testing.T) {
+	for _, value := range []string{"maybe", ""} {
+		t.Run(strconv.Quote(value), func(t *testing.T) {
+			_, err := ApplyEnv(Default(), mapLookup(map[string]string{
+				envResume: value,
+			}))
+			if err == nil {
+				t.Fatal("ApplyEnv returned nil error")
+			}
+			if !strings.Contains(err.Error(), envResume) {
+				t.Fatalf("error = %q", err)
+			}
+		})
+	}
+}
+
+func TestLoadEffectiveAppliesEnvOverFileConfig(t *testing.T) {
+	dir := t.TempDir()
+	t.Cleanup(SetUserConfigDirForTest(dir))
+	t.Setenv(envDownloadDir, "/env/downloads")
+	t.Setenv(envRetries, "8")
+	t.Setenv(envResume, "false")
+	t.Setenv(envNoColor, "true")
+	t.Setenv(envNoTUI, "true")
+	t.Setenv(envTheme, " env-theme ")
+	t.Setenv(envAnimations, "false")
+	t.Setenv(envHyperlinks, "false")
+
+	cfg := Default()
+	cfg.DownloadDir = "/config/downloads"
+	cfg.Retries = 2
+	cfg.Resume = true
+	cfg.NoColor = false
+	cfg.NoTUI = false
+	cfg.Theme = "config-theme"
+	cfg.Animations = true
+	cfg.Hyperlinks = true
+	if err := Save(cfg); err != nil {
+		t.Fatalf("Save returned error: %v", err)
+	}
+
+	got, err := LoadEffective()
+	if err != nil {
+		t.Fatalf("LoadEffective returned error: %v", err)
+	}
+	if got.DownloadDir != "/env/downloads" {
+		t.Fatalf("DownloadDir = %q", got.DownloadDir)
+	}
+	if got.Retries != 8 {
+		t.Fatalf("Retries = %d, want 8", got.Retries)
+	}
+	if got.Resume {
+		t.Fatal("Resume = true, want false")
+	}
+	if !got.NoColor {
+		t.Fatal("NoColor = false, want true")
+	}
+	if !got.NoTUI {
+		t.Fatal("NoTUI = false, want true")
+	}
+	if got.Theme != "env-theme" {
+		t.Fatalf("Theme = %q", got.Theme)
+	}
+	if got.Animations {
+		t.Fatal("Animations = true, want false")
+	}
+	if got.Hyperlinks {
+		t.Fatal("Hyperlinks = true, want false")
+	}
+}
+
+func mapLookup(values map[string]string) LookupEnvFunc {
+	return func(key string) (string, bool) {
+		value, ok := values[key]
+		return value, ok
 	}
 }

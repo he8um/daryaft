@@ -50,6 +50,53 @@ func TestConfigShowCommandPrintsEffectiveConfig(t *testing.T) {
 	}
 }
 
+func TestConfigShowCommandReflectsEnvOverrides(t *testing.T) {
+	restore := appconfig.SetUserConfigDirForTest(t.TempDir())
+	t.Cleanup(restore)
+	t.Setenv("DARYAFT_DOWNLOAD_DIR", "/tmp/env-daryaft")
+	t.Setenv("DARYAFT_RETRIES", "9")
+	t.Setenv("DARYAFT_RESUME", "false")
+	t.Setenv("DARYAFT_NO_COLOR", "true")
+	t.Setenv("DARYAFT_NO_TUI", "true")
+	t.Setenv("DARYAFT_THEME", "env-theme")
+	t.Setenv("DARYAFT_ANIMATIONS", "false")
+	t.Setenv("DARYAFT_HYPERLINKS", "false")
+
+	output, err := executeConfigCommand(t, "show")
+	if err != nil {
+		t.Fatalf("config show returned error: %v", err)
+	}
+
+	for _, want := range []string{
+		"download_dir: /tmp/env-daryaft",
+		"retries: 9",
+		"resume: false",
+		"no_color: true",
+		"no_tui: true",
+		"theme: env-theme",
+		"animations: false",
+		"hyperlinks: false",
+	} {
+		if !strings.Contains(output, want) {
+			t.Fatalf("config show missing %q in:\n%s", want, output)
+		}
+	}
+}
+
+func TestConfigShowCommandReturnsEnvParseError(t *testing.T) {
+	restore := appconfig.SetUserConfigDirForTest(t.TempDir())
+	t.Cleanup(restore)
+	t.Setenv("DARYAFT_RETRIES", "abc")
+
+	_, err := executeConfigCommand(t, "show")
+	if err == nil {
+		t.Fatal("config show returned nil error")
+	}
+	if !strings.Contains(err.Error(), "DARYAFT_RETRIES") {
+		t.Fatalf("error = %q", err)
+	}
+}
+
 func TestConfigInitCommandCreatesConfig(t *testing.T) {
 	dir := t.TempDir()
 	restore := appconfig.SetUserConfigDirForTest(dir)

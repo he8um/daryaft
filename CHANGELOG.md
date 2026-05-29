@@ -41,6 +41,8 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 - YAML user configuration with `config path`, `config show`, and `config init`
   commands plus download directory, retry, resume, no-color, and no-TUI
   defaults.
+- `DARYAFT_*` environment variable overrides between CLI flags and config file
+  values.
 - Starter documentation, CI, Makefile, and future packaging configuration.
 
 ### Planned

@@ -63,7 +63,7 @@ func addDownloadFlags(command *cobra.Command, flags *downloadFlagValues) {
 }
 
 func runDownload(cmd *cobra.Command, args []string, flags downloadFlagValues) error {
-	cfg, err := appconfig.Load()
+	cfg, err := appconfig.LoadEffective()
 	if err != nil {
 		return err
 	}

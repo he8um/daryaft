@@ -27,8 +27,9 @@ daryaft config init --force
 Manages the YAML config file at `<UserConfigDir>/daryaft/config.yaml`.
 `config path` prints the exact path, `config show` prints the effective config,
 and `config init` creates the default file. `config init --force` overwrites an
-existing config. CLI flags have priority over config file values, and config
-file values have priority over built-in defaults.
+existing config. CLI flags have priority over environment variables,
+environment variables have priority over config file values, and config file
+values have priority over built-in defaults.
 
 Default config:
 
@@ -88,9 +89,10 @@ Current flags:
 - `--no-resume`: ignore existing partial state and restart from byte `0`.
 
 If `-o`/`--output` is not provided and `download_dir` is set in config, Daryaft
-uses that directory. If `--retries` is not provided, Daryaft uses config
+uses that directory. `DARYAFT_DOWNLOAD_DIR` can override the config file value.
+If `--retries` is not provided, Daryaft uses `DARYAFT_RETRIES` or config
 `retries`. If neither `--resume` nor `--no-resume` is provided, Daryaft uses
-config `resume`.
+`DARYAFT_RESUME` or config `resume`.
 
 Common root flags:
 
@@ -100,7 +102,17 @@ Common root flags:
 
 If `no_color` is true in config, the TUI uses no-color styling by default. If
 `no_tui` is true in config, plain `daryaft` prints the non-interactive fallback
-instead of launching the TUI.
+instead of launching the TUI. `DARYAFT_NO_COLOR` and `DARYAFT_NO_TUI` can
+override those config file values. Boolean environment values accept `true`,
+`1`, `yes`, `y`, `on`, `false`, `0`, `no`, `n`, and `off`.
+
+Environment examples:
+
+```bash
+DARYAFT_DOWNLOAD_DIR=~/Downloads daryaft https://example.com/file.zip
+DARYAFT_RETRIES=5 daryaft https://example.com/file.zip
+DARYAFT_NO_TUI=true daryaft
+```
 
 ```bash
 daryaft https://example.com/file.zip
