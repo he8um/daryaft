@@ -62,6 +62,7 @@ make run
 daryaft --help
 daryaft version
 daryaft
+daryaft doctor
 daryaft completion zsh
 daryaft config path
 daryaft config show
@@ -109,6 +110,12 @@ DARYAFT_DOWNLOAD_DIR=~/Downloads daryaft https://example.com/file.zip
 DARYAFT_RETRIES=5 daryaft https://example.com/file.zip
 DARYAFT_NO_TUI=true daryaft
 ```
+
+`daryaft doctor` prints a local diagnostic report for runtime details, version
+metadata, config path and loading, default download directory writability,
+terminal environment hints, and optional tools. `clamscan` is reported as an
+optional tool for future scan features. The GitHub release check is currently
+listed as skipped and does not make a network request.
 
 Daryaft can generate shell completion scripts with Cobra's standard completion
 command. Installation paths depend on your OS and shell setup:

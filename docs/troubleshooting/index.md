@@ -5,6 +5,7 @@ Common user and developer issues.
 ## Navigation
 
 - [Documentation Index](../index.md)
+- [Doctor Diagnostics](doctor.md)
 - [Implementation Plan](../engineering/implementation-plan.md)
 - [Agent Navigation](../engineering/agent-navigation.md)
 - [Versioning Policy](../roadmap/versioning-policy.md)
@@ -53,6 +54,7 @@ The agent must treat this file as a contract. If behavior is ambiguous, prefer t
 
 ```bash
 daryaft -h
+daryaft doctor
 daryaft https://example.com/file.zip
 daryaft -f urls.txt
 daryaft update --check

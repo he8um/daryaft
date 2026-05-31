@@ -31,6 +31,7 @@ downloader engine in future milestones.`,
   daryaft -f urls.txt --dry-run
   daryaft download https://example.com/file.zip
   daryaft download https://example.com/file.zip --dry-run
+  daryaft doctor
   daryaft version
   daryaft update`,
 	Args: cobra.ArbitraryArgs,

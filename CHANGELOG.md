@@ -47,6 +47,8 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
   supported config keys.
 - Shell completion generation for bash, zsh, fish, and PowerShell, with config
   key completion for `config get` and `config set`.
+- `doctor` diagnostics command for local runtime, config, download directory,
+  terminal, optional tool, and skipped release-check reporting.
 - Starter documentation, CI, Makefile, and future packaging configuration.
 
 ### Planned

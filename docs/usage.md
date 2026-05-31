@@ -18,6 +18,17 @@ daryaft version
 Prints the Daryaft version, commit, build date, and Go version.
 
 ```bash
+daryaft doctor
+```
+
+Prints a local diagnostic report. The report includes Go runtime details,
+Daryaft version metadata, config path and config loading, default download
+directory status, terminal environment values, optional `clamscan` detection,
+and a skipped GitHub release check. Invalid config and unwritable active output
+directories are critical failures. Missing configured output directories are
+warnings and are not created by `doctor`.
+
+```bash
 daryaft completion bash
 daryaft completion zsh
 daryaft completion fish

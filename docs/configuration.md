@@ -160,8 +160,15 @@ Shell completion suggests these keys for `daryaft config get` and
 
 Malformed YAML is reported as an error and is not silently ignored.
 
+Use `daryaft doctor` to verify that the config path can be resolved, the config
+directory is writable or appears creatable, and the effective config can be
+loaded. Invalid YAML is reported as a critical doctor failure. A configured
+`download_dir` that does not exist is reported as a warning; `doctor` does not
+create download directories.
+
 Related docs:
 
 - [Command Reference](command-reference.md)
 - [Usage](usage.md)
+- [Doctor Troubleshooting](troubleshooting/doctor.md)
 - [Architecture Overview](architecture/overview.md)

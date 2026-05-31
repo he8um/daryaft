@@ -53,6 +53,37 @@ Implemented. Prints:
 
 Default local values are used unless release tooling injects build variables.
 
+## `daryaft doctor`
+
+Implemented. Prints a local diagnostics report using simple text output.
+
+Checks include:
+
+- Go runtime OS, architecture, and version.
+- Daryaft version, commit, and build date.
+- Config path and whether the config directory is writable or appears
+  creatable.
+- Effective config loading. Invalid YAML is a critical failure.
+- Default download directory. If `download_dir` is empty, this checks the
+  current directory. Existing unwritable output directories are critical
+  failures. Missing configured output directories are warnings and are not
+  created.
+- Terminal environment hints: `TERM`, `NO_COLOR`, and stdout terminal status
+  when available.
+- Optional `clamscan` detection. Missing `clamscan` is informational only and
+  reserved for future scan features.
+- GitHub release check status. This foundation does not make a network request
+  and reports the check as skipped.
+
+Status markers:
+
+```text
+✓ ok
+✗ critical failure
+! warning
+- informational
+```
+
 ## `daryaft completion [bash|zsh|fish|powershell]`
 
 Implemented. Generates shell completion scripts using Cobra's standard
