@@ -35,6 +35,8 @@ func statusSymbol(status Status) string {
 		return "!"
 	case StatusInfo:
 		return "-"
+	case StatusSkipped:
+		return "-"
 	default:
 		return "?"
 	}

@@ -1,7 +1,9 @@
 # Doctor Diagnostics
 
-`daryaft doctor` prints a local environment report in plain text. It does not
-start the TUI and does not run network-heavy checks.
+`daryaft doctor` prints a local environment report in plain text.
+`daryaft doctor --json` prints the same checks as machine-readable JSON for
+automation and CI. It does not start the TUI and does not run network-heavy
+checks.
 
 ## Checks
 
@@ -33,6 +35,43 @@ writable.
 
 Warnings do not fail the command. A configured download directory that does not
 exist is a warning; `doctor` reports it but does not create it.
+
+## JSON Output
+
+Use JSON mode for scripts and CI:
+
+```bash
+daryaft doctor --json
+```
+
+The JSON structure is stable:
+
+```json
+{
+  "ok": true,
+  "summary": {
+    "failures": 0,
+    "warnings": 0,
+    "checks": 12
+  },
+  "sections": [
+    {
+      "name": "System",
+      "checks": [
+        {
+          "status": "ok",
+          "label": "OS",
+          "message": "darwin"
+        }
+      ]
+    }
+  ]
+}
+```
+
+Status values are `ok`, `warning`, `failure`, `info`, and `skipped`. JSON mode
+uses the same exit code behavior as the text report: non-zero for critical
+failures, zero for warnings and informational checks.
 
 ## Optional Tools
 

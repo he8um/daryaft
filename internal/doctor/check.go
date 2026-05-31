@@ -12,6 +12,7 @@ const (
 	StatusFail
 	StatusWarn
 	StatusInfo
+	StatusSkipped
 )
 
 type Check struct {

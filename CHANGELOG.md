@@ -49,6 +49,8 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
   key completion for `config get` and `config set`.
 - `doctor` diagnostics command for local runtime, config, download directory,
   terminal, optional tool, and skipped release-check reporting.
+- JSON output mode for `doctor` diagnostics with stable check status and summary
+  fields for automation.
 - Starter documentation, CI, Makefile, and future packaging configuration.
 
 ### Planned

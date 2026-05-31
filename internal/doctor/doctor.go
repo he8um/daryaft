@@ -41,7 +41,7 @@ func Run(options Options) Report {
 
 	addTerminalChecks(&report, options)
 	addOptionalToolChecks(&report, options)
-	report.Add("Skipped", StatusInfo, "GitHub release check", "skipped")
+	report.Add("Skipped", StatusSkipped, "GitHub release check", "skipped")
 
 	return report
 }

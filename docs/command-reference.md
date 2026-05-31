@@ -57,6 +57,9 @@ Default local values are used unless release tooling injects build variables.
 
 Implemented. Prints a local diagnostics report using simple text output.
 
+Use `daryaft doctor --json` to print the same diagnostics as machine-readable
+JSON for automation and CI. JSON mode does not print the human text report.
+
 Checks include:
 
 - Go runtime OS, architecture, and version.
@@ -83,6 +86,34 @@ Status markers:
 ! warning
 - informational
 ```
+
+JSON output uses this stable shape:
+
+```json
+{
+  "ok": true,
+  "summary": {
+    "failures": 0,
+    "warnings": 0,
+    "checks": 12
+  },
+  "sections": [
+    {
+      "name": "System",
+      "checks": [
+        {
+          "status": "ok",
+          "label": "OS",
+          "message": "darwin"
+        }
+      ]
+    }
+  ]
+}
+```
+
+JSON check statuses are `ok`, `warning`, `failure`, `info`, and `skipped`.
+Both text and JSON modes exit non-zero when any critical failure is present.
 
 ## `daryaft completion [bash|zsh|fish|powershell]`
 

@@ -7,25 +7,40 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var doctorCmd = &cobra.Command{
-	Use:   "doctor",
-	Short: "Run local environment diagnostics",
-	Long: `Run local diagnostics for the Daryaft environment.
+func newDoctorCommand() *cobra.Command {
+	var jsonOutput bool
+
+	command := &cobra.Command{
+		Use:          "doctor",
+		Short:        "Run local environment diagnostics",
+		SilenceUsage: true,
+		Long: `Run local diagnostics for the Daryaft environment.
 
 The doctor command checks runtime details, version metadata, config loading,
 default download directory writability, terminal environment hints, optional
 tools, and currently skipped remote checks.`,
-	Args: cobra.NoArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		report := doctor.Run(doctor.Options{})
-		fmt.Fprint(cmd.OutOrStdout(), doctor.Format(report))
-		if report.Failed() {
-			return fmt.Errorf("doctor found critical issues")
-		}
-		return nil
-	},
+		Args: cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			report := doctor.Run(doctor.Options{})
+			if jsonOutput {
+				data, err := doctor.FormatJSON(report)
+				if err != nil {
+					return fmt.Errorf("encode doctor report: %w", err)
+				}
+				fmt.Fprintln(cmd.OutOrStdout(), string(data))
+			} else {
+				fmt.Fprint(cmd.OutOrStdout(), doctor.Format(report))
+			}
+			if report.Failed() {
+				return fmt.Errorf("doctor found critical issues")
+			}
+			return nil
+		},
+	}
+	command.Flags().BoolVar(&jsonOutput, "json", false, "print diagnostics as JSON")
+	return command
 }
 
 func init() {
-	rootCmd.AddCommand(doctorCmd)
+	rootCmd.AddCommand(newDoctorCommand())
 }
