@@ -45,6 +45,8 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
   values.
 - Config management commands for reading, setting, resetting, and listing
   supported config keys.
+- Shell completion generation for bash, zsh, fish, and PowerShell, with config
+  key completion for `config get` and `config set`.
 - Starter documentation, CI, Makefile, and future packaging configuration.
 
 ### Planned

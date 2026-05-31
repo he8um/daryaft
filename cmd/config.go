@@ -85,9 +85,10 @@ func newConfigInitCommand() *cobra.Command {
 
 func newConfigGetCommand() *cobra.Command {
 	return &cobra.Command{
-		Use:   "get <key>",
-		Short: "Print an effective configuration value",
-		Args:  cobra.ExactArgs(1),
+		Use:               "get <key>",
+		Short:             "Print an effective configuration value",
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: configKeyCompletions,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cfg, err := appconfig.LoadEffective()
 			if err != nil {
@@ -105,9 +106,10 @@ func newConfigGetCommand() *cobra.Command {
 
 func newConfigSetCommand() *cobra.Command {
 	command := &cobra.Command{
-		Use:   "set <key> <value>",
-		Short: "Set a configuration file value",
-		Args:  cobra.ExactArgs(2),
+		Use:               "set <key> <value>",
+		Short:             "Set a configuration file value",
+		Args:              cobra.ExactArgs(2),
+		ValidArgsFunction: configSetCompletions,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cfg, err := appconfig.Load()
 			if err != nil {

@@ -62,6 +62,7 @@ make run
 daryaft --help
 daryaft version
 daryaft
+daryaft completion zsh
 daryaft config path
 daryaft config show
 daryaft config init
@@ -107,6 +108,15 @@ defaults. For example:
 DARYAFT_DOWNLOAD_DIR=~/Downloads daryaft https://example.com/file.zip
 DARYAFT_RETRIES=5 daryaft https://example.com/file.zip
 DARYAFT_NO_TUI=true daryaft
+```
+
+Daryaft can generate shell completion scripts with Cobra's standard completion
+command. Installation paths depend on your OS and shell setup:
+
+```bash
+daryaft completion zsh > "${fpath[1]}/_daryaft"
+daryaft completion bash > /etc/bash_completion.d/daryaft
+daryaft completion fish > ~/.config/fish/completions/daryaft.fish
 ```
 
 Download commands validate URLs and can print a dry-run plan. Real downloading

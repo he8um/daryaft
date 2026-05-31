@@ -53,6 +53,29 @@ Implemented. Prints:
 
 Default local values are used unless release tooling injects build variables.
 
+## `daryaft completion [bash|zsh|fish|powershell]`
+
+Implemented. Generates shell completion scripts using Cobra's standard
+generators.
+
+```bash
+daryaft completion bash
+daryaft completion zsh
+daryaft completion fish
+daryaft completion powershell
+```
+
+Example setup commands:
+
+```bash
+daryaft completion zsh > "${fpath[1]}/_daryaft"
+daryaft completion bash > /etc/bash_completion.d/daryaft
+daryaft completion fish > ~/.config/fish/completions/daryaft.fish
+```
+
+Completion installation paths vary by OS, shell, and user permissions.
+Unsupported shell names return a clear error.
+
 ## `daryaft config`
 
 Implemented. Shows help for the configuration command group.
@@ -107,6 +130,7 @@ daryaft config get download_dir
 ```
 
 Unknown keys fail clearly.
+Shell completion suggests all supported config keys.
 
 ## `daryaft config set <key> <value>`
 
@@ -122,6 +146,8 @@ daryaft config set resume off
 `retries` must be an integer greater than or equal to `0`. Boolean values
 accept `true`, `1`, `yes`, `y`, `on`, `false`, `0`, `no`, `n`, and `off`,
 case-insensitively.
+Shell completion suggests supported keys for the first argument and `true` or
+`false` for boolean value arguments.
 
 ## `daryaft config reset`
 

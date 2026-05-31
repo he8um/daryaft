@@ -154,6 +154,10 @@ hyperlinks bool
 values accept `true`, `1`, `yes`, `y`, `on`, `false`, `0`, `no`, `n`, and
 `off`, case-insensitively.
 
+Shell completion suggests these keys for `daryaft config get` and
+`daryaft config set`. For boolean fields, `daryaft config set` also suggests
+`true` and `false` as value completions.
+
 Malformed YAML is reported as an error and is not silently ignored.
 
 Related docs:

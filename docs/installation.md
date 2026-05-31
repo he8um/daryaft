@@ -19,6 +19,26 @@ make build
 ./bin/daryaft --help
 ```
 
+## Shell Completion
+
+Daryaft can generate completion scripts for bash, zsh, fish, and PowerShell.
+The commands print scripts to stdout; install locations vary by OS and shell
+setup.
+
+Examples:
+
+```bash
+daryaft completion zsh > "${fpath[1]}/_daryaft"
+daryaft completion bash > /etc/bash_completion.d/daryaft
+daryaft completion fish > ~/.config/fish/completions/daryaft.fish
+```
+
+For PowerShell:
+
+```powershell
+daryaft completion powershell
+```
+
 ## Public Install Policy
 
 Public install channels are planned for `v1.0.0` and later. Before `v1.0.0`,

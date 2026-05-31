@@ -18,6 +18,27 @@ daryaft version
 Prints the Daryaft version, commit, build date, and Go version.
 
 ```bash
+daryaft completion bash
+daryaft completion zsh
+daryaft completion fish
+daryaft completion powershell
+```
+
+Generates shell completion scripts using Cobra's standard generators. These
+commands do not require shell binaries to be present; they print the script to
+stdout.
+
+Example setup commands:
+
+```bash
+daryaft completion zsh > "${fpath[1]}/_daryaft"
+daryaft completion bash > /etc/bash_completion.d/daryaft
+daryaft completion fish > ~/.config/fish/completions/daryaft.fish
+```
+
+Installation paths vary by OS, shell, and user permissions.
+
+```bash
 daryaft config path
 daryaft config show
 daryaft config init
@@ -51,7 +72,9 @@ hyperlinks: true
 ```
 
 Supported set/get keys are `download_dir`, `retries`, `resume`, `no_color`,
-`no_tui`, `theme`, `animations`, and `hyperlinks`.
+`no_tui`, `theme`, `animations`, and `hyperlinks`. Shell completion suggests
+these keys for `config get` and `config set`; boolean `config set` values also
+suggest `true` and `false`.
 
 ```bash
 daryaft
