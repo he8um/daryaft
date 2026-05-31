@@ -382,6 +382,195 @@ func TestLoadEffectiveAppliesEnvOverFileConfig(t *testing.T) {
 	}
 }
 
+func TestGetSupportedKeys(t *testing.T) {
+	cfg := Config{
+		DownloadDir: "/downloads",
+		Retries:     7,
+		Resume:      false,
+		NoColor:     true,
+		NoTUI:       true,
+		Theme:       "plain",
+		Animations:  false,
+		Hyperlinks:  false,
+	}
+
+	tests := map[string]string{
+		keyDownloadDir: "/downloads",
+		keyRetries:     "7",
+		keyResume:      "false",
+		keyNoColor:     "true",
+		keyNoTUI:       "true",
+		keyTheme:       "plain",
+		keyAnimations:  "false",
+		keyHyperlinks:  "false",
+	}
+	for key, want := range tests {
+		t.Run(key, func(t *testing.T) {
+			got, err := Get(cfg, key)
+			if err != nil {
+				t.Fatalf("Get returned error: %v", err)
+			}
+			if got != want {
+				t.Fatalf("Get(%q) = %q, want %q", key, got, want)
+			}
+		})
+	}
+}
+
+func TestGetUnknownKeyReturnsError(t *testing.T) {
+	_, err := Get(Default(), "missing")
+	if err == nil {
+		t.Fatal("Get returned nil error")
+	}
+	if !strings.Contains(err.Error(), "unknown config key") {
+		t.Fatalf("error = %q", err)
+	}
+}
+
+func TestSetStringValues(t *testing.T) {
+	cfg, err := Set(Default(), keyDownloadDir, "  /downloads  ")
+	if err != nil {
+		t.Fatalf("Set download_dir returned error: %v", err)
+	}
+	if cfg.DownloadDir != "/downloads" {
+		t.Fatalf("DownloadDir = %q", cfg.DownloadDir)
+	}
+
+	cfg, err = Set(cfg, keyTheme, "  high-contrast  ")
+	if err != nil {
+		t.Fatalf("Set theme returned error: %v", err)
+	}
+	if cfg.Theme != "high-contrast" {
+		t.Fatalf("Theme = %q", cfg.Theme)
+	}
+}
+
+func TestSetIntValue(t *testing.T) {
+	cfg, err := Set(Default(), keyRetries, " 5 ")
+	if err != nil {
+		t.Fatalf("Set returned error: %v", err)
+	}
+	if cfg.Retries != 5 {
+		t.Fatalf("Retries = %d, want 5", cfg.Retries)
+	}
+}
+
+func TestSetInvalidIntReturnsError(t *testing.T) {
+	for _, value := range []string{"abc", "-1", ""} {
+		t.Run(strconv.Quote(value), func(t *testing.T) {
+			_, err := Set(Default(), keyRetries, value)
+			if err == nil {
+				t.Fatal("Set returned nil error")
+			}
+			if !strings.Contains(err.Error(), keyRetries) {
+				t.Fatalf("error = %q", err)
+			}
+		})
+	}
+}
+
+func TestSetBoolVariants(t *testing.T) {
+	for _, value := range []string{"true", "TRUE", "1", "yes", "Y", "on"} {
+		t.Run("true/"+value, func(t *testing.T) {
+			cfg, err := Set(Default(), keyNoTUI, value)
+			if err != nil {
+				t.Fatalf("Set returned error: %v", err)
+			}
+			if !cfg.NoTUI {
+				t.Fatalf("NoTUI = false for %q", value)
+			}
+		})
+	}
+	for _, value := range []string{"false", "FALSE", "0", "no", "N", "off"} {
+		t.Run("false/"+value, func(t *testing.T) {
+			cfg := Default()
+			cfg.NoTUI = true
+			got, err := Set(cfg, keyNoTUI, value)
+			if err != nil {
+				t.Fatalf("Set returned error: %v", err)
+			}
+			if got.NoTUI {
+				t.Fatalf("NoTUI = true for %q", value)
+			}
+		})
+	}
+}
+
+func TestSetInvalidBoolReturnsError(t *testing.T) {
+	for _, value := range []string{"maybe", ""} {
+		t.Run(strconv.Quote(value), func(t *testing.T) {
+			_, err := Set(Default(), keyResume, value)
+			if err == nil {
+				t.Fatal("Set returned nil error")
+			}
+			if !strings.Contains(err.Error(), keyResume) {
+				t.Fatalf("error = %q", err)
+			}
+		})
+	}
+}
+
+func TestSetUnknownKeyReturnsError(t *testing.T) {
+	_, err := Set(Default(), "missing", "value")
+	if err == nil {
+		t.Fatal("Set returned nil error")
+	}
+	if !strings.Contains(err.Error(), "unknown config key") {
+		t.Fatalf("error = %q", err)
+	}
+}
+
+func TestResetWritesDefaults(t *testing.T) {
+	dir := t.TempDir()
+	t.Cleanup(SetUserConfigDirForTest(dir))
+
+	cfg := Default()
+	cfg.Retries = 10
+	if err := Save(cfg); err != nil {
+		t.Fatalf("Save returned error: %v", err)
+	}
+
+	path, err := Reset()
+	if err != nil {
+		t.Fatalf("Reset returned error: %v", err)
+	}
+	wantPath := filepath.Join(dir, "daryaft", "config.yaml")
+	if path != wantPath {
+		t.Fatalf("path = %q, want %q", path, wantPath)
+	}
+
+	got, err := Load()
+	if err != nil {
+		t.Fatalf("Load returned error: %v", err)
+	}
+	if got != Default() {
+		t.Fatalf("Load = %#v, want defaults %#v", got, Default())
+	}
+}
+
+func TestSupportedKeysListsAllKeys(t *testing.T) {
+	keys := SupportedKeys()
+	want := []KeyInfo{
+		{Key: keyDownloadDir, Type: "string"},
+		{Key: keyRetries, Type: "int"},
+		{Key: keyResume, Type: "bool"},
+		{Key: keyNoColor, Type: "bool"},
+		{Key: keyNoTUI, Type: "bool"},
+		{Key: keyTheme, Type: "string"},
+		{Key: keyAnimations, Type: "bool"},
+		{Key: keyHyperlinks, Type: "bool"},
+	}
+
+	if len(keys) != len(want) {
+		t.Fatalf("len(SupportedKeys) = %d, want %d", len(keys), len(want))
+	}
+	for i := range want {
+		if keys[i] != want[i] {
+			t.Fatalf("SupportedKeys()[%d] = %#v, want %#v", i, keys[i], want[i])
+		}
+	}
+}
+
 func mapLookup(values map[string]string) LookupEnvFunc {
 	return func(key string) (string, bool) {
 		value, ok := values[key]

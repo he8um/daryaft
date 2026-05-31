@@ -43,6 +43,8 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
   defaults.
 - `DARYAFT_*` environment variable overrides between CLI flags and config file
   values.
+- Config management commands for reading, setting, resetting, and listing
+  supported config keys.
 - Starter documentation, CI, Makefile, and future packaging configuration.
 
 ### Planned

@@ -29,6 +29,10 @@ daryaft config path
 daryaft config show
 daryaft config init
 daryaft config init --force
+daryaft config get <key>
+daryaft config set <key> <value>
+daryaft config reset
+daryaft config keys
 ```
 
 - `daryaft config` shows help for the config command group.
@@ -39,6 +43,22 @@ daryaft config init --force
 - `daryaft config init` creates a config file with defaults and refuses to
   overwrite an existing file.
 - `daryaft config init --force` overwrites the existing config with defaults.
+- `daryaft config get <key>` prints one effective value, including environment
+  overrides.
+- `daryaft config set <key> <value>` writes one value to the config file. It
+  does not write environment-variable overrides.
+- `daryaft config reset` overwrites the config file with built-in defaults.
+- `daryaft config keys` lists supported keys and expected value types.
+
+Examples:
+
+```bash
+daryaft config keys
+daryaft config get retries
+daryaft config set retries 5
+daryaft config set download_dir ~/Downloads
+daryaft config reset
+```
 
 ## Default YAML
 
@@ -116,6 +136,23 @@ DARYAFT_NO_TUI=true daryaft
 - `theme`: stored for future theme support. Only `default` is meaningful now.
 - `animations`: stored for future TUI polish.
 - `hyperlinks`: stored for future TUI polish.
+
+## Supported Keys
+
+```text
+download_dir string
+retries int
+resume bool
+no_color bool
+no_tui bool
+theme string
+animations bool
+hyperlinks bool
+```
+
+`retries` must be an integer greater than or equal to `0`. Boolean config set
+values accept `true`, `1`, `yes`, `y`, `on`, `false`, `0`, `no`, `n`, and
+`off`, case-insensitively.
 
 Malformed YAML is reported as an error and is not silently ignored.
 

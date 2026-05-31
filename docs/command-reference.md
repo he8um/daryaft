@@ -95,6 +95,54 @@ exists.
 
 Implemented. Rewrites the config file with default values.
 
+## `daryaft config get <key>`
+
+Implemented. Prints one effective config value. Environment variables are
+reflected because `config get` reads the same effective config as
+`config show`.
+
+```bash
+daryaft config get retries
+daryaft config get download_dir
+```
+
+Unknown keys fail clearly.
+
+## `daryaft config set <key> <value>`
+
+Implemented. Sets one value in the YAML config file, creating the config
+directory if needed. Environment variables are not written to the file.
+
+```bash
+daryaft config set retries 5
+daryaft config set download_dir ~/Downloads
+daryaft config set resume off
+```
+
+`retries` must be an integer greater than or equal to `0`. Boolean values
+accept `true`, `1`, `yes`, `y`, `on`, `false`, `0`, `no`, `n`, and `off`,
+case-insensitively.
+
+## `daryaft config reset`
+
+Implemented. Overwrites the config file with built-in defaults and prints the
+path that was reset.
+
+## `daryaft config keys`
+
+Implemented. Lists supported config keys and expected types:
+
+```text
+download_dir string
+retries int
+resume bool
+no_color bool
+no_tui bool
+theme string
+animations bool
+hyperlinks bool
+```
+
 ## `daryaft [url...] --dry-run`
 
 Implemented. Validates one or more HTTP/HTTPS URLs and prints a dry-run plan.

@@ -162,6 +162,142 @@ func TestConfigInitCommandForceOverwrites(t *testing.T) {
 	}
 }
 
+func TestConfigGetCommandPrintsEffectiveValue(t *testing.T) {
+	restore := appconfig.SetUserConfigDirForTest(t.TempDir())
+	t.Cleanup(restore)
+	t.Setenv("DARYAFT_RETRIES", "8")
+
+	output, err := executeConfigCommand(t, "get", "retries")
+	if err != nil {
+		t.Fatalf("config get returned error: %v", err)
+	}
+	if strings.TrimSpace(output) != "8" {
+		t.Fatalf("output = %q, want 8", output)
+	}
+}
+
+func TestConfigGetCommandUnknownKey(t *testing.T) {
+	restore := appconfig.SetUserConfigDirForTest(t.TempDir())
+	t.Cleanup(restore)
+
+	_, err := executeConfigCommand(t, "get", "missing")
+	if err == nil {
+		t.Fatal("config get returned nil error")
+	}
+	if !strings.Contains(err.Error(), "unknown config key") {
+		t.Fatalf("error = %q", err)
+	}
+}
+
+func TestConfigSetCommandWritesFileConfig(t *testing.T) {
+	restore := appconfig.SetUserConfigDirForTest(t.TempDir())
+	t.Cleanup(restore)
+
+	output, err := executeConfigCommand(t, "set", "download_dir", " downloads ")
+	if err != nil {
+		t.Fatalf("config set returned error: %v", err)
+	}
+	if strings.TrimSpace(output) != "Updated config: download_dir=downloads" {
+		t.Fatalf("output = %q", output)
+	}
+
+	cfg, err := appconfig.Load()
+	if err != nil {
+		t.Fatalf("Load returned error: %v", err)
+	}
+	if cfg.DownloadDir != "downloads" {
+		t.Fatalf("DownloadDir = %q, want downloads", cfg.DownloadDir)
+	}
+}
+
+func TestConfigSetCommandRejectsInvalidValue(t *testing.T) {
+	restore := appconfig.SetUserConfigDirForTest(t.TempDir())
+	t.Cleanup(restore)
+
+	_, err := executeConfigCommand(t, "set", "retries", "-1")
+	if err == nil {
+		t.Fatal("config set returned nil error")
+	}
+	if !strings.Contains(err.Error(), "retries") {
+		t.Fatalf("error = %q", err)
+	}
+}
+
+func TestConfigSetCommandDoesNotWriteEnv(t *testing.T) {
+	restore := appconfig.SetUserConfigDirForTest(t.TempDir())
+	t.Cleanup(restore)
+	t.Setenv("DARYAFT_RETRIES", "9")
+
+	if _, err := executeConfigCommand(t, "set", "retries", "5"); err != nil {
+		t.Fatalf("config set returned error: %v", err)
+	}
+
+	fileCfg, err := appconfig.Load()
+	if err != nil {
+		t.Fatalf("Load returned error: %v", err)
+	}
+	if fileCfg.Retries != 5 {
+		t.Fatalf("file Retries = %d, want 5", fileCfg.Retries)
+	}
+
+	effective, err := appconfig.LoadEffective()
+	if err != nil {
+		t.Fatalf("LoadEffective returned error: %v", err)
+	}
+	if effective.Retries != 9 {
+		t.Fatalf("effective Retries = %d, want env override 9", effective.Retries)
+	}
+}
+
+func TestConfigResetCommandWritesDefaults(t *testing.T) {
+	restore := appconfig.SetUserConfigDirForTest(t.TempDir())
+	t.Cleanup(restore)
+
+	cfg := appconfig.Default()
+	cfg.Retries = 12
+	if err := appconfig.Save(cfg); err != nil {
+		t.Fatalf("Save returned error: %v", err)
+	}
+
+	output, err := executeConfigCommand(t, "reset")
+	if err != nil {
+		t.Fatalf("config reset returned error: %v", err)
+	}
+	if !strings.Contains(output, "Reset config: ") {
+		t.Fatalf("output = %q", output)
+	}
+
+	loaded, err := appconfig.Load()
+	if err != nil {
+		t.Fatalf("Load returned error: %v", err)
+	}
+	if loaded != appconfig.Default() {
+		t.Fatalf("Load = %#v, want defaults %#v", loaded, appconfig.Default())
+	}
+}
+
+func TestConfigKeysCommandListsSupportedKeys(t *testing.T) {
+	output, err := executeConfigCommand(t, "keys")
+	if err != nil {
+		t.Fatalf("config keys returned error: %v", err)
+	}
+
+	want := strings.Join([]string{
+		"download_dir string",
+		"retries int",
+		"resume bool",
+		"no_color bool",
+		"no_tui bool",
+		"theme string",
+		"animations bool",
+		"hyperlinks bool",
+		"",
+	}, "\n")
+	if output != want {
+		t.Fatalf("output = %q, want %q", output, want)
+	}
+}
+
 func executeConfigCommand(t *testing.T, args ...string) (string, error) {
 	t.Helper()
 

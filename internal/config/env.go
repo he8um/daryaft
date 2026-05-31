@@ -1,9 +1,7 @@
 package config
 
 import (
-	"fmt"
 	"os"
-	"strconv"
 	"strings"
 )
 
@@ -69,12 +67,7 @@ func envInt(lookup LookupEnvFunc, name string, fallback int) (int, error) {
 		return fallback, nil
 	}
 
-	trimmed := strings.TrimSpace(value)
-	parsed, err := strconv.Atoi(trimmed)
-	if err != nil || parsed < 0 {
-		return 0, fmt.Errorf("invalid %s %q: must be an integer greater than or equal to 0", name, value)
-	}
-	return parsed, nil
+	return parseNonNegativeInt(name, value)
 }
 
 func envBool(lookup LookupEnvFunc, name string, fallback bool) (bool, error) {
@@ -83,12 +76,5 @@ func envBool(lookup LookupEnvFunc, name string, fallback bool) (bool, error) {
 		return fallback, nil
 	}
 
-	switch strings.ToLower(strings.TrimSpace(value)) {
-	case "true", "1", "yes", "y", "on":
-		return true, nil
-	case "false", "0", "no", "n", "off":
-		return false, nil
-	default:
-		return false, fmt.Errorf("invalid %s %q: must be one of true, false, 1, 0, yes, no, y, n, on, off", name, value)
-	}
+	return parseBoolValue(name, value)
 }

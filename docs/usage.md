@@ -22,14 +22,20 @@ daryaft config path
 daryaft config show
 daryaft config init
 daryaft config init --force
+daryaft config get retries
+daryaft config set retries 5
+daryaft config reset
+daryaft config keys
 ```
 
 Manages the YAML config file at `<UserConfigDir>/daryaft/config.yaml`.
 `config path` prints the exact path, `config show` prints the effective config,
 and `config init` creates the default file. `config init --force` overwrites an
-existing config. CLI flags have priority over environment variables,
-environment variables have priority over config file values, and config file
-values have priority over built-in defaults.
+existing config. `config get` prints one effective value, `config set` writes
+one file value, `config reset` overwrites the file with defaults, and
+`config keys` lists supported keys and types. CLI flags have priority over
+environment variables, environment variables have priority over config file
+values, and config file values have priority over built-in defaults.
 
 Default config:
 
@@ -43,6 +49,9 @@ theme: default
 animations: true
 hyperlinks: true
 ```
+
+Supported set/get keys are `download_dir`, `retries`, `resume`, `no_color`,
+`no_tui`, `theme`, `animations`, and `hyperlinks`.
 
 ```bash
 daryaft

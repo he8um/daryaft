@@ -40,6 +40,8 @@ go run . version
 go run .
 go run . config path
 go run . config show
+go run . config get retries
+go run . config set retries 5
 go run . https://example.com/file.zip --dry-run
 go run . https://example.com/file.zip
 go run . https://example.com/a.txt https://example.com/b.txt
@@ -63,6 +65,10 @@ daryaft
 daryaft config path
 daryaft config show
 daryaft config init
+daryaft config get retries
+daryaft config set retries 5
+daryaft config reset
+daryaft config keys
 daryaft https://example.com/file.zip --dry-run
 daryaft https://example.com/file.zip
 daryaft https://example.com/a.txt https://example.com/b.txt
@@ -90,7 +96,10 @@ Daryaft can read YAML configuration from the OS user config directory:
 `~/Library/Application Support/daryaft/config.yaml`; on Linux it is usually
 `~/.config/daryaft/config.yaml`. Use `daryaft config path` to print the exact
 path, `daryaft config init` to create the default file, and
-`daryaft config show` to print the effective config. Precedence is CLI flags,
+`daryaft config show` to print the effective config. `daryaft config get <key>`
+prints one effective value, `daryaft config set <key> <value>` writes one file
+value, `daryaft config reset` overwrites the file with defaults, and
+`daryaft config keys` lists supported keys and types. Precedence is CLI flags,
 then `DARYAFT_*` environment variables, then config file values, then built-in
 defaults. For example:
 
