@@ -342,6 +342,121 @@ func TestRunDownloadBatchFromFileAndArgs(t *testing.T) {
 	}
 }
 
+func TestRunDownloadVerboseSingleURLAddsDiagnostics(t *testing.T) {
+	verbose = true
+	t.Cleanup(func() { verbose = false })
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Length", "2")
+		_, _ = w.Write([]byte("ok"))
+	}))
+	defer server.Close()
+
+	var output bytes.Buffer
+	cmd := &cobra.Command{Use: "download"}
+	cmd.SetOut(&output)
+	dir := t.TempDir()
+
+	err := runDownload(cmd, []string{server.URL + "/file.txt"}, downloadFlagValues{
+		output:  dir,
+		retries: 3,
+		resume:  true,
+	})
+	if err != nil {
+		t.Fatalf("runDownload returned error: %v", err)
+	}
+
+	for _, want := range []string{
+		"Verbose: output directory: " + dir,
+		"Verbose: effective URL: " + server.URL + "/file.txt",
+		"Verbose: HTTP status: 200 OK",
+		"Verbose: target path: " + filepath.Join(dir, "file.txt"),
+		"Verbose: selected filename: file.txt",
+		"Verbose: completion duration:",
+	} {
+		if !strings.Contains(output.String(), want) {
+			t.Fatalf("verbose output missing %q in:\n%s", want, output.String())
+		}
+	}
+	for _, notWant := range []string{"Authorization", "Cookie"} {
+		if strings.Contains(output.String(), notWant) {
+			t.Fatalf("verbose output contains sensitive header name %q:\n%s", notWant, output.String())
+		}
+	}
+}
+
+func TestRunDownloadNormalOutputDoesNotContainVerboseDiagnostics(t *testing.T) {
+	verbose = false
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte("ok"))
+	}))
+	defer server.Close()
+
+	var output bytes.Buffer
+	cmd := &cobra.Command{Use: "download"}
+	cmd.SetOut(&output)
+
+	err := runDownload(cmd, []string{server.URL + "/file.txt"}, downloadFlagValues{
+		output:  t.TempDir(),
+		retries: 3,
+		resume:  true,
+	})
+	if err != nil {
+		t.Fatalf("runDownload returned error: %v", err)
+	}
+	if strings.Contains(output.String(), "Verbose:") {
+		t.Fatalf("normal output contains verbose diagnostics:\n%s", output.String())
+	}
+}
+
+func TestRunDownloadVerboseBatchAddsItemDiagnostics(t *testing.T) {
+	verbose = true
+	t.Cleanup(func() { verbose = false })
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/a.txt", "/b.txt":
+			_, _ = w.Write([]byte("ok"))
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer server.Close()
+
+	var output bytes.Buffer
+	cmd := &cobra.Command{Use: "download"}
+	cmd.SetOut(&output)
+	dir := t.TempDir()
+
+	err := runDownload(cmd, []string{server.URL + "/a.txt", server.URL + "/b.txt"}, downloadFlagValues{
+		output:  dir,
+		retries: 3,
+		resume:  true,
+	})
+	if err != nil {
+		t.Fatalf("runDownload returned error: %v", err)
+	}
+
+	for _, want := range []string{
+		"Verbose: output directory: " + dir,
+		"Verbose: item 1/2 effective URL: " + server.URL + "/a.txt",
+		"Verbose: item 2/2 effective URL: " + server.URL + "/b.txt",
+		"Verbose: HTTP status: 200 OK",
+	} {
+		if !strings.Contains(output.String(), want) {
+			t.Fatalf("verbose batch output missing %q in:\n%s", want, output.String())
+		}
+	}
+}
+
+func TestVerboseURLDiagnosticsRedactUserInfoAndQuery(t *testing.T) {
+	got := redactURL("https://user:pass@example.com/file.zip?token=secret#section")
+	if got != "https://example.com/file.zip" {
+		t.Fatalf("redactURL = %q", got)
+	}
+}
+
 func TestRunDownloadRejectsNameWithMultipleURLs(t *testing.T) {
 	cmd := downloadCmd
 

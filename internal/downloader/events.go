@@ -27,6 +27,8 @@ type Event struct {
 	SpeedBytesPerSecond float64
 	Message             string
 	Error               error
+	StatusCode          int
+	Status              string
 	Attempt             int
 	MaxAttempts         int
 	NextDelay           time.Duration

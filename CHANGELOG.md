@@ -69,6 +69,15 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 
 ### Fixed
 
+- Added responsive TUI sizing from terminal window dimensions, including
+  adaptive input widths for narrow, normal, and wide terminals.
+- Fixed TUI Backspace behavior so it edits non-empty text inputs and navigates
+  back only when the current input is empty.
+- Implemented CLI `--verbose` download diagnostics for URL, output, filename,
+  HTTP status, target path, resume/retry decisions, and completion duration.
+- Made config `theme` truthful by supporting `default` and `mono`; `mono`
+  uses the same no-color TUI styling path. `animations` and `hyperlinks`
+  remain stored reserved fields.
 - Reworked downloader resume/restart response ownership to avoid in-place
   `http.Response` mutation and clarify body close responsibility.
 - Made retry backoff cancellation context-aware without leaving sleeper

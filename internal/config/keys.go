@@ -14,6 +14,9 @@ type KeyInfo struct {
 }
 
 const (
+	ThemeDefault = "default"
+	ThemeMono    = "mono"
+
 	keyDownloadDir = "download_dir"
 	keyRetries     = "retries"
 	keyResume      = "resume"
@@ -89,7 +92,11 @@ func Set(cfg Config, key string, value string) (Config, error) {
 		}
 		cfg.NoTUI = noTUI
 	case keyTheme:
-		cfg.Theme = strings.TrimSpace(value)
+		theme, err := NormalizeTheme(value)
+		if err != nil {
+			return Config{}, err
+		}
+		cfg.Theme = theme
 	case keyAnimations:
 		animations, err := parseBoolValue(key, value)
 		if err != nil {
@@ -106,6 +113,21 @@ func Set(cfg Config, key string, value string) (Config, error) {
 		return Config{}, unknownKeyError(key)
 	}
 	return cfg, nil
+}
+
+func NormalizeTheme(value string) (string, error) {
+	theme := strings.ToLower(strings.TrimSpace(value))
+	switch theme {
+	case ThemeDefault, ThemeMono:
+		return theme, nil
+	default:
+		return "", fmt.Errorf("invalid theme %q: must be one of default, mono", value)
+	}
+}
+
+func IsMonoTheme(value string) bool {
+	theme, err := NormalizeTheme(value)
+	return err == nil && theme == ThemeMono
 }
 
 func Reset() (string, error) {

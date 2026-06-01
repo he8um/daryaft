@@ -58,7 +58,7 @@ func TestConfigShowCommandReflectsEnvOverrides(t *testing.T) {
 	t.Setenv("DARYAFT_RESUME", "false")
 	t.Setenv("DARYAFT_NO_COLOR", "true")
 	t.Setenv("DARYAFT_NO_TUI", "true")
-	t.Setenv("DARYAFT_THEME", "env-theme")
+	t.Setenv("DARYAFT_THEME", "mono")
 	t.Setenv("DARYAFT_ANIMATIONS", "false")
 	t.Setenv("DARYAFT_HYPERLINKS", "false")
 
@@ -73,7 +73,7 @@ func TestConfigShowCommandReflectsEnvOverrides(t *testing.T) {
 		"resume: false",
 		"no_color: true",
 		"no_tui: true",
-		"theme: env-theme",
+		"theme: mono",
 		"animations: false",
 		"hyperlinks: false",
 	} {

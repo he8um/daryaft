@@ -50,13 +50,14 @@ downloader engine in future milestones.`,
 			effectiveNoTUI = true
 		}
 		effectiveNoColor := noColor
-		if !persistentFlagChanged(cmd, "no-color") && cfg.NoColor {
+		if !persistentFlagChanged(cmd, "no-color") && (cfg.NoColor || appconfig.IsMonoTheme(cfg.Theme)) {
 			effectiveNoColor = true
 		}
 
 		if !effectiveNoTUI {
 			return tui.Run(tui.Options{
 				NoColor:           effectiveNoColor,
+				Theme:             cfg.Theme,
 				DownloadDir:       cfg.DownloadDir,
 				Retries:           cfg.Retries,
 				Resume:            cfg.Resume,

@@ -134,9 +134,12 @@ DARYAFT_NO_TUI=true daryaft
 - `no_color`: default no-color preference for the TUI.
 - `no_tui`: when true, plain `daryaft` uses the non-TUI fallback unless command
   arguments or download flags are present.
-- `theme`: stored for future theme support. Only `default` is meaningful now.
-- `animations`: stored for future TUI polish.
-- `hyperlinks`: stored for future TUI polish.
+- `theme`: TUI theme. Supported values are `default` and `mono`; `mono` uses
+  monochrome styling like `no_color`.
+- `animations`: reserved for future TUI polish. Stored and shown in config, but
+  it does not currently change runtime behavior.
+- `hyperlinks`: reserved for future OSC 8 hyperlink support. Stored and shown
+  in config, but Daryaft does not currently emit terminal hyperlinks.
 
 ## Supported Keys
 
@@ -154,6 +157,9 @@ hyperlinks bool
 `retries` must be an integer from `0` through `20`. Boolean config set values
 accept `true`, `1`, `yes`, `y`, `on`, `false`, `0`, `no`, `n`, and `off`,
 case-insensitively.
+
+`theme` must be `default` or `mono`. Invalid `theme` values passed through
+`config set` or `DARYAFT_THEME` return a clear error.
 
 Config saves are written through a temporary file in the same directory and
 renamed into place with `0600` permissions. This keeps normal config updates

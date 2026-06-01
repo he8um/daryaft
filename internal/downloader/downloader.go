@@ -198,6 +198,8 @@ func (d *Downloader) downloadAttempt(ctx context.Context, plan download.Plan, ha
 		PartialPath:     prepared.target.Partial,
 		DownloadedBytes: prepared.startBytes,
 		TotalBytes:      prepared.totalBytes,
+		StatusCode:      response.StatusCode,
+		Status:          response.Status,
 		Attempt:         attempt,
 		MaxAttempts:     attempts,
 		Timestamp:       time.Now(),

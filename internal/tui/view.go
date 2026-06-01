@@ -29,7 +29,7 @@ func (m Model) View() string {
 		content = m.homeView()
 	}
 
-	return m.styles.panel.Render(content)
+	return m.styles.panel.Width(m.panelWidth()).Render(content)
 }
 
 func (m Model) headerView() string {
@@ -157,14 +157,14 @@ func (m Model) planBody() string {
 func (m Model) inputHelp() string {
 	if m.screen == screenOutputInput {
 		if m.sourceScreen == screenURLInput {
-			return "enter next • esc/backspace previous • q quit"
+			return "enter next • esc previous • backspace empty previous • q quit"
 		}
-		return "enter plan • esc/backspace previous • q quit"
+		return "enter plan • esc previous • backspace empty previous • q quit"
 	}
 	if m.screen == screenFilenameInput {
-		return "enter plan • esc/backspace previous • q quit"
+		return "enter plan • esc previous • backspace empty previous • q quit"
 	}
-	return "enter next • esc/backspace home • q quit"
+	return "enter next • esc home • backspace empty home • q quit"
 }
 
 func (m Model) executionView() string {

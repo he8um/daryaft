@@ -2,6 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"net/url"
+	"path/filepath"
+	"strings"
+	"time"
 
 	appconfig "github.com/he8um/daryaft/internal/config"
 	"github.com/he8um/daryaft/internal/download"
@@ -90,11 +94,16 @@ func runDownload(cmd *cobra.Command, args []string, flags downloadFlagValues) er
 		return nil
 	}
 
+	verboseMode := effectiveVerbose(cmd)
+	startedAt := time.Now()
+	printVerbosePlan(cmd, plan, verboseMode)
+
 	if len(plan.URLs) > 1 {
 		savingPrinted := make(map[int]bool)
 		result := downloader.New().DownloadBatch(plan, downloader.BatchHandlers{
 			ItemStarted: func(item downloader.BatchItem) {
 				fmt.Fprintf(cmd.OutOrStdout(), "[%d/%d] Downloading: %s\n", item.Index, item.Total, item.URL)
+				printVerboseItem(cmd, item, verboseMode)
 			},
 			Event: func(item downloader.BatchItem, event downloader.Event) {
 				switch event.Type {
@@ -114,6 +123,7 @@ func runDownload(cmd *cobra.Command, args []string, flags downloadFlagValues) er
 				case downloader.EventFailed:
 					fmt.Fprintf(cmd.OutOrStdout(), "Failed: %s\n", event.Error)
 				}
+				printVerboseEvent(cmd, event, verboseMode, startedAt)
 			},
 		})
 
@@ -140,12 +150,21 @@ func runDownload(cmd *cobra.Command, args []string, flags downloadFlagValues) er
 		case downloader.EventCompleted:
 			fmt.Fprintf(cmd.OutOrStdout(), "Completed: %s\n", event.TargetPath)
 		}
+		printVerboseEvent(cmd, event, verboseMode, startedAt)
 	})
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func effectiveVerbose(cmd *cobra.Command) bool {
+	flag := cmd.Root().PersistentFlags().Lookup("verbose")
+	if flag != nil {
+		return flag.Changed && verbose || !flag.Changed && verbose
+	}
+	return verbose
 }
 
 func applyConfigDefaultsToDownloadFlags(cmd *cobra.Command, flags downloadFlagValues, cfg appconfig.Config) downloadFlagValues {
@@ -198,6 +217,84 @@ func printMessage(cmd *cobra.Command, event downloader.Event) {
 		return
 	}
 	fmt.Fprintln(cmd.OutOrStdout(), event.Message)
+}
+
+func printVerbosePlan(cmd *cobra.Command, plan download.Plan, enabled bool) {
+	if !enabled {
+		return
+	}
+	fmt.Fprintf(cmd.OutOrStdout(), "Verbose: output directory: %s\n", displayOutput(plan.Output))
+	fmt.Fprintf(cmd.OutOrStdout(), "Verbose: selected filename: %s\n", displayFilename(plan.Name))
+	fmt.Fprintf(cmd.OutOrStdout(), "Verbose: retries: %d\n", plan.Retries)
+	fmt.Fprintf(cmd.OutOrStdout(), "Verbose: resume enabled: %t\n", plan.Resume)
+	if len(plan.URLs) == 1 {
+		fmt.Fprintf(cmd.OutOrStdout(), "Verbose: effective URL: %s\n", redactURL(plan.URLs[0]))
+	}
+}
+
+func printVerboseItem(cmd *cobra.Command, item downloader.BatchItem, enabled bool) {
+	if !enabled {
+		return
+	}
+	fmt.Fprintf(cmd.OutOrStdout(), "Verbose: item %d/%d effective URL: %s\n", item.Index, item.Total, redactURL(item.URL))
+}
+
+func printVerboseEvent(cmd *cobra.Command, event downloader.Event, enabled bool, startedAt time.Time) {
+	if !enabled {
+		return
+	}
+
+	switch event.Type {
+	case downloader.EventStarted:
+		if event.Status != "" {
+			fmt.Fprintf(cmd.OutOrStdout(), "Verbose: HTTP status: %s\n", event.Status)
+		}
+		if event.TargetPath != "" {
+			fmt.Fprintf(cmd.OutOrStdout(), "Verbose: target path: %s\n", event.TargetPath)
+			fmt.Fprintf(cmd.OutOrStdout(), "Verbose: selected filename: %s\n", filepath.Base(event.TargetPath))
+		}
+		if event.DownloadedBytes > 0 {
+			fmt.Fprintf(cmd.OutOrStdout(), "Verbose: resume offset: %d bytes\n", event.DownloadedBytes)
+		} else {
+			fmt.Fprintln(cmd.OutOrStdout(), "Verbose: resume decision: starting from byte 0")
+		}
+	case downloader.EventResuming, downloader.EventRestarting:
+		if event.Message != "" {
+			fmt.Fprintf(cmd.OutOrStdout(), "Verbose: resume decision: %s\n", event.Message)
+		}
+	case downloader.EventRetrying:
+		if event.Error != nil {
+			fmt.Fprintf(cmd.OutOrStdout(), "Verbose: retry reason: %v\n", event.Error)
+		}
+		fmt.Fprintf(cmd.OutOrStdout(), "Verbose: next retry delay: %s\n", event.NextDelay)
+	case downloader.EventCompleted:
+		fmt.Fprintf(cmd.OutOrStdout(), "Verbose: completion duration: %s\n", time.Since(startedAt).Round(time.Millisecond))
+	}
+}
+
+func displayOutput(output string) string {
+	if strings.TrimSpace(output) == "" {
+		return "."
+	}
+	return output
+}
+
+func displayFilename(name string) string {
+	if strings.TrimSpace(name) == "" {
+		return "auto-detect"
+	}
+	return strings.TrimSpace(name)
+}
+
+func redactURL(rawURL string) string {
+	parsed, err := url.Parse(rawURL)
+	if err != nil {
+		return rawURL
+	}
+	parsed.User = nil
+	parsed.RawQuery = ""
+	parsed.Fragment = ""
+	return parsed.String()
 }
 
 func hasDownloadFlagChanges(cmd *cobra.Command) bool {

@@ -53,6 +53,7 @@ The model tracks:
 
 - current screen
 - selected home menu index
+- terminal width and height from `tea.WindowSizeMsg`
 - Bubble Tea text input state
 - source input value and source screen
 - output directory input value
@@ -91,11 +92,19 @@ selected output directory. Tests can inject a runner to assert the exact
 `download.Plan` passed to execution without performing network downloads. CLI
 `-o`/`--output` and `--name` behavior is unchanged.
 
+Text input screens distinguish editing from navigation. Escape always navigates
+back. Backspace is sent to the text input when it contains text; it navigates
+back only when the current input is empty.
+
 ## Styling
 
 Lip Gloss renders a bordered panel, highlighted selected menu item, muted
-footer, and simple body text. `--no-color` builds styles without foreground or
-background colors while preserving layout.
+footer, and simple body text. The model computes panel width from the terminal
+width with a minimum of about 40 columns and a maximum of 80 columns; input
+width follows the computed panel width. `--no-color` builds styles without
+foreground or background colors while preserving layout. Config `theme: mono`
+uses the same monochrome styling path. `animations` and `hyperlinks` are
+reserved config fields and do not currently change TUI behavior.
 
 ## Event Boundary
 
@@ -116,8 +125,9 @@ terminate the process directly.
 Current tests cover menu navigation, wrap behavior, screen switching, input
 validation, dry-run plan creation, execution transitions, injected runner plan
 capture, injected runner cancellation, event message handling, summary
-rendering, running-state quit behavior, back navigation, footer rendering, and
-version rendering without brittle snapshots.
+rendering, running-state quit behavior, back navigation, Backspace editing
+semantics, responsive window sizing, footer rendering, and version rendering
+without brittle snapshots.
 
 ## Examples
 

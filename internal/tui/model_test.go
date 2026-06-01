@@ -84,6 +84,41 @@ func TestSelectURLInputScreen(t *testing.T) {
 	}
 }
 
+func TestWindowSizeUpdatesResponsiveDimensions(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model = updateWithMsg(t, model, tea.WindowSizeMsg{Width: 90, Height: 24})
+
+	if model.width != 90 || model.height != 24 {
+		t.Fatalf("size = %dx%d, want 90x24", model.width, model.height)
+	}
+	if got := model.panelWidth(); got != 80 {
+		t.Fatalf("panelWidth = %d, want 80", got)
+	}
+	if model.input.Width != 68 {
+		t.Fatalf("input width = %d, want 68", model.input.Width)
+	}
+}
+
+func TestResponsiveWidthsUseMinimumAndMaximum(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+
+	narrow := updateWithMsg(t, model, tea.WindowSizeMsg{Width: 35, Height: 20})
+	if got := narrow.panelWidth(); got != minPanelWidth {
+		t.Fatalf("narrow panelWidth = %d, want %d", got, minPanelWidth)
+	}
+	if narrow.input.Width != minPanelWidth-inputFrameWidth {
+		t.Fatalf("narrow input width = %d", narrow.input.Width)
+	}
+
+	wide := updateWithMsg(t, model, tea.WindowSizeMsg{Width: 200, Height: 50})
+	if got := wide.panelWidth(); got != maxPanelWidth {
+		t.Fatalf("wide panelWidth = %d, want %d", got, maxPanelWidth)
+	}
+	if wide.input.Width != maxPanelWidth-inputFrameWidth {
+		t.Fatalf("wide input width = %d", wide.input.Width)
+	}
+}
+
 func TestInvalidURLShowsError(t *testing.T) {
 	model := NewModel(Options{NoColor: true})
 	model.selected = 0
@@ -431,6 +466,7 @@ func TestEscAndBackspaceNavigation(t *testing.T) {
 		t.Fatalf("screen after output backspace = %v, want URL input", model.screen)
 	}
 
+	model.input.SetValue("")
 	model = updateWithKey(t, model, tea.KeyBackspace)
 	if model.screen != screenHome {
 		t.Fatalf("screen after input backspace = %v, want home", model.screen)
@@ -457,6 +493,94 @@ func TestEscAndBackspaceNavigation(t *testing.T) {
 	model = updateWithKey(t, model, tea.KeyEsc)
 	if model.screen != screenOutputInput {
 		t.Fatalf("screen after filename esc = %v, want output input", model.screen)
+	}
+}
+
+func TestBackspaceEditsNonEmptyInputs(t *testing.T) {
+	tests := []struct {
+		name       string
+		setup      func(Model) Model
+		wantScreen screen
+		wantValue  string
+	}{
+		{
+			name: "url input",
+			setup: func(model Model) Model {
+				model.selected = 0
+				model = updateWithKey(t, model, tea.KeyEnter)
+				return updateWithString(t, model, "abc")
+			},
+			wantScreen: screenURLInput,
+			wantValue:  "ab",
+		},
+		{
+			name: "file input",
+			setup: func(model Model) Model {
+				model.selected = 1
+				model = updateWithKey(t, model, tea.KeyEnter)
+				return updateWithString(t, model, "abc")
+			},
+			wantScreen: screenFileInput,
+			wantValue:  "ab",
+		},
+		{
+			name: "output input",
+			setup: func(model Model) Model {
+				model.selected = 0
+				model = updateWithKey(t, model, tea.KeyEnter)
+				model = updateWithString(t, model, "https://example.com/file.zip")
+				model = updateWithKey(t, model, tea.KeyEnter)
+				return updateWithString(t, model, "abc")
+			},
+			wantScreen: screenOutputInput,
+			wantValue:  "ab",
+		},
+		{
+			name: "filename input",
+			setup: func(model Model) Model {
+				model.selected = 0
+				model = updateWithKey(t, model, tea.KeyEnter)
+				model = updateWithString(t, model, "https://example.com/file.zip")
+				model = updateWithKey(t, model, tea.KeyEnter)
+				model = updateWithKey(t, model, tea.KeyEnter)
+				return updateWithString(t, model, "abc")
+			},
+			wantScreen: screenFilenameInput,
+			wantValue:  "ab",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			model := tt.setup(NewModel(Options{NoColor: true}))
+			model = updateWithKey(t, model, tea.KeyBackspace)
+
+			if model.screen != tt.wantScreen {
+				t.Fatalf("screen = %v, want %v", model.screen, tt.wantScreen)
+			}
+			if model.input.Value() != tt.wantValue {
+				t.Fatalf("input value = %q, want %q", model.input.Value(), tt.wantValue)
+			}
+		})
+	}
+}
+
+func TestEscapeNavigatesBackWithNonEmptyInput(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model.selected = 0
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithString(t, model, "abc")
+	model = updateWithKey(t, model, tea.KeyEsc)
+
+	if model.screen != screenHome {
+		t.Fatalf("screen after esc = %v, want home", model.screen)
+	}
+}
+
+func TestThemeMonoUsesNoColorStyles(t *testing.T) {
+	model := NewModel(Options{Theme: "mono"})
+	if strings.Contains(model.View(), "\x1b[") {
+		t.Fatalf("mono theme view contains ANSI color escapes:\n%q", model.View())
 	}
 }
 

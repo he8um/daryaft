@@ -112,8 +112,11 @@ for an optional custom filename; leaving it empty means auto-detect. The TUI
 does not offer one custom filename for `.txt` batch downloads, which continue
 to auto-detect each item filename. Leaving the output directory empty means `.`,
 the current directory. TUI downloads can start real single URL or sequential
-batch downloads from that plan. Existing CLI download commands, including
-`-o`/`--output` and `--name`, remain fully supported and unchanged.
+batch downloads from that plan. The TUI resizes its panel and text inputs to
+the terminal window. Backspace edits non-empty inputs and navigates back only
+when the input is empty; Escape always navigates back. Existing CLI download
+commands, including `-o`/`--output` and `--name`, remain fully supported and
+unchanged.
 
 Daryaft can read YAML configuration from the OS user config directory:
 `<UserConfigDir>/daryaft/config.yaml`. On macOS this is usually
@@ -132,6 +135,10 @@ DARYAFT_DOWNLOAD_DIR=~/Downloads daryaft https://example.com/file.zip
 DARYAFT_RETRIES=5 daryaft https://example.com/file.zip
 DARYAFT_NO_TUI=true daryaft
 ```
+
+`theme` supports `default` and `mono`; `mono` uses monochrome TUI styling like
+`no_color`. `animations` and `hyperlinks` are reserved config fields stored for
+future behavior and do not currently change runtime output.
 
 `daryaft doctor` prints a local diagnostic report for runtime details, version
 metadata, config path and loading, default download directory writability,
@@ -156,6 +163,11 @@ is implemented for one URL and for multiple URLs sequentially. Batch downloads
 continue after item failures and print a final summary. `--retries` controls
 retry attempts after the initial attempt; the default `3` means up to four total
 attempts. Valid retry values are `0` through `20`.
+
+Use `--verbose` or `-v` with CLI downloads to print additional diagnostic lines
+prefixed with `Verbose:`. Verbose output includes the effective URL with user
+info and query data redacted, output directory, selected filename, retry/resume
+details, HTTP status when known, target path, and completion duration.
 
 Downloads write to `<filename>.part` first and keep sidecar state in
 `<filename>.part.daryaft.json` while incomplete. `--resume` is enabled by

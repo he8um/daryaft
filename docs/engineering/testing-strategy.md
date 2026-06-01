@@ -72,7 +72,10 @@ Downloader stabilization tests cover resume restart cases for `416`, full
 metadata, context-aware retry backoff cancellation, HTTP response-header
 timeouts, long body streaming without a total timeout, retry bounds, and output
 directory traversal guards. Config tests cover atomic-style temp-file saves,
-private config permissions, retry bounds, and environment override validation.
+private config permissions, retry bounds, environment override validation, and
+theme validation. TUI behavior tests cover responsive window sizing,
+input-width adaptation, and Backspace editing versus empty-input navigation.
+CLI tests cover verbose download diagnostics and unchanged non-verbose output.
 
 If GoReleaser is not installed, `make ci` prints a warning and continues. The
 strict release snapshot target remains `make release-check`, which requires

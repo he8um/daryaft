@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"strings"
 )
@@ -35,7 +36,11 @@ func ApplyEnv(cfg Config, lookup LookupEnvFunc) (Config, error) {
 		cfg.DownloadDir = strings.TrimSpace(value)
 	}
 	if value, ok := lookup(envTheme); ok {
-		cfg.Theme = strings.TrimSpace(value)
+		theme, err := NormalizeTheme(value)
+		if err != nil {
+			return Config{}, fmt.Errorf("invalid %s %q: %w", envTheme, value, err)
+		}
+		cfg.Theme = theme
 	}
 
 	var err error

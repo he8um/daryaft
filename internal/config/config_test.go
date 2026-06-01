@@ -387,7 +387,7 @@ func TestLoadEffectiveAppliesEnvOverFileConfig(t *testing.T) {
 	t.Setenv(envResume, "false")
 	t.Setenv(envNoColor, "true")
 	t.Setenv(envNoTUI, "true")
-	t.Setenv(envTheme, " env-theme ")
+	t.Setenv(envTheme, " mono ")
 	t.Setenv(envAnimations, "false")
 	t.Setenv(envHyperlinks, "false")
 
@@ -397,7 +397,7 @@ func TestLoadEffectiveAppliesEnvOverFileConfig(t *testing.T) {
 	cfg.Resume = true
 	cfg.NoColor = false
 	cfg.NoTUI = false
-	cfg.Theme = "config-theme"
+	cfg.Theme = "default"
 	cfg.Animations = true
 	cfg.Hyperlinks = true
 	if err := Save(cfg); err != nil {
@@ -423,7 +423,7 @@ func TestLoadEffectiveAppliesEnvOverFileConfig(t *testing.T) {
 	if !got.NoTUI {
 		t.Fatal("NoTUI = false, want true")
 	}
-	if got.Theme != "env-theme" {
+	if got.Theme != "mono" {
 		t.Fatalf("Theme = %q", got.Theme)
 	}
 	if got.Animations {
@@ -488,12 +488,34 @@ func TestSetStringValues(t *testing.T) {
 		t.Fatalf("DownloadDir = %q", cfg.DownloadDir)
 	}
 
-	cfg, err = Set(cfg, keyTheme, "  high-contrast  ")
+	cfg, err = Set(cfg, keyTheme, "  mono  ")
 	if err != nil {
 		t.Fatalf("Set theme returned error: %v", err)
 	}
-	if cfg.Theme != "high-contrast" {
+	if cfg.Theme != "mono" {
 		t.Fatalf("Theme = %q", cfg.Theme)
+	}
+}
+
+func TestSetInvalidThemeReturnsError(t *testing.T) {
+	_, err := Set(Default(), keyTheme, "high-contrast")
+	if err == nil {
+		t.Fatal("Set returned nil error")
+	}
+	if !strings.Contains(err.Error(), "invalid theme") {
+		t.Fatalf("error = %q", err)
+	}
+}
+
+func TestApplyEnvInvalidThemeReturnsError(t *testing.T) {
+	_, err := ApplyEnv(Default(), mapLookup(map[string]string{
+		envTheme: "high-contrast",
+	}))
+	if err == nil {
+		t.Fatal("ApplyEnv returned nil error")
+	}
+	if !strings.Contains(err.Error(), envTheme) {
+		t.Fatalf("error = %q", err)
 	}
 }
 

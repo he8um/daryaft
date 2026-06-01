@@ -47,7 +47,9 @@ Navigation:
 
 - up/down arrows or `k`/`j` move through menu items
 - enter selects an item
-- `esc` or backspace returns from sub-screens to home
+- `esc` returns from sub-screens
+- backspace edits non-empty text inputs and returns only when the current input
+  is empty
 - `q` quits unless a download is running
 - ctrl+c quits from anywhere
 
@@ -63,6 +65,11 @@ filename screen and keeps `Filename: auto-detect`. Pressing enter from the last
 input shows a dry-run plan with URL count, the first URLs, selected output
 directory, filename, retries, and resume settings. TUI retries and resume use
 config defaults unless the code path receives explicit values from the CLI.
+
+The TUI handles terminal resize messages. Its bordered panel uses available
+terminal width with sensible lower and upper bounds, and text inputs resize
+with the panel so narrow terminals remain usable while wide terminals stay
+readable.
 
 On the plan screen, enter starts the real download. The execution screen shows
 the current item, URL, target path when known, status, downloaded bytes, total
@@ -86,9 +93,11 @@ daryaft download https://example.com/file.zip
 ```
 
 `--no-color` keeps the panel layout but avoids color styling. Config `no_color`
-can provide the same default for plain `daryaft`. `--no-tui` skips the
-no-argument TUI and prints the non-interactive placeholder; config `no_tui` can
-also make that the default.
+can provide the same default for plain `daryaft`. Config `theme: mono` also
+uses monochrome styling. `theme: default` is the normal styled mode.
+`animations` and `hyperlinks` are reserved config fields and do not currently
+change TUI behavior. `--no-tui` skips the no-argument TUI and prints the
+non-interactive placeholder; config `no_tui` can also make that the default.
 
 Existing CLI download commands are unchanged and remain the stable way to
 download files.

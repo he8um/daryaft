@@ -3,6 +3,7 @@ package tui
 import (
 	"context"
 
+	"github.com/he8um/daryaft/internal/config"
 	"github.com/he8um/daryaft/internal/download"
 	"github.com/he8um/daryaft/pkg/version"
 
@@ -12,6 +13,7 @@ import (
 
 type Options struct {
 	NoColor           bool
+	Theme             string
 	DownloadDir       string
 	Retries           int
 	Resume            bool
@@ -22,6 +24,8 @@ type Model struct {
 	screen            screen
 	selected          int
 	styles            styles
+	width             int
+	height            int
 	version           version.Details
 	input             textinput.Model
 	sourceInput       string
@@ -44,7 +48,7 @@ func NewModel(options Options) Model {
 }
 
 func NewModelWithRunner(options Options, runner ExecutionRunner) Model {
-	styles := newStyles(options.NoColor)
+	styles := newStyles(options.NoColor || config.IsMonoTheme(options.Theme))
 	if runner == nil {
 		runner = defaultExecutionRunner
 	}
@@ -55,11 +59,10 @@ func NewModelWithRunner(options Options, runner ExecutionRunner) Model {
 		retries = options.Retries
 		resume = options.Resume
 	}
-	return Model{
+	model := Model{
 		screen:           screenHome,
 		styles:           styles,
 		version:          version.Info(),
-		input:            newTextInput(styles),
 		sourceScreen:     screenURLInput,
 		outputDirInput:   defaultOutput,
 		defaultOutputDir: defaultOutput,
@@ -67,6 +70,8 @@ func NewModelWithRunner(options Options, runner ExecutionRunner) Model {
 		resume:           resume,
 		executionRunner:  runner,
 	}
+	model.input = model.newTextInput()
+	return model
 }
 
 func (m Model) Init() tea.Cmd {
@@ -105,7 +110,7 @@ func (m Model) enter() (Model, tea.Cmd) {
 
 func (m Model) openInput(next screen) (Model, tea.Cmd) {
 	m.screen = next
-	m.input = newTextInput(m.styles)
+	m.input = m.newTextInput()
 	m.sourceInput = ""
 	m.sourceScreen = next
 	m.outputDirInput = m.defaultOutputDir
@@ -122,23 +127,23 @@ func (m Model) back() (Model, tea.Cmd) {
 	if m.screen == screenPlan {
 		if m.sourceScreen == screenURLInput {
 			m.screen = screenFilenameInput
-			m.input = newFilenameInput(m.styles, m.filenameInput)
+			m.input = m.newFilenameInput(m.filenameInput)
 		} else {
 			m.screen = screenOutputInput
-			m.input = newOutputInput(m.styles, m.outputDirInput)
+			m.input = m.newOutputInput(m.outputDirInput)
 		}
 		m.errorMessage = ""
 		return m, m.input.Focus()
 	}
 	if m.screen == screenFilenameInput {
 		m.screen = screenOutputInput
-		m.input = newOutputInput(m.styles, m.outputDirInput)
+		m.input = m.newOutputInput(m.outputDirInput)
 		m.errorMessage = ""
 		return m, m.input.Focus()
 	}
 	if m.screen == screenOutputInput {
 		m.screen = m.sourceScreen
-		m.input = newTextInput(m.styles)
+		m.input = m.newTextInput()
 		m.input.SetValue(m.sourceInput)
 		m.errorMessage = ""
 		return m, m.input.Focus()

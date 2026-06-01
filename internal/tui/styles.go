@@ -18,8 +18,7 @@ func newStyles(noColor bool) styles {
 		panel: lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
 			Padding(1, 3).
-			Margin(1, 2).
-			Width(56),
+			Margin(1, 2),
 		title: lipgloss.NewStyle().
 			Bold(true),
 		subtitle: lipgloss.NewStyle(),

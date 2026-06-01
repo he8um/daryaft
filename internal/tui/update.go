@@ -10,6 +10,8 @@ import (
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		return m.withWindowSize(msg.Width, msg.Height), nil
 	case executionItemStartedMsg:
 		m.applyExecutionItemStarted(msg)
 		return m, waitForExecution(m.executionMessages)
@@ -59,7 +61,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 	case screenURLInput, screenFileInput:
-		if isBackKey(key) {
+		if key.String() == "esc" || key.String() == "backspace" && m.input.Value() == "" {
 			return m.back()
 		}
 		if key.String() == "enter" {
@@ -67,7 +69,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m.updateTextInput(msg)
 	case screenOutputInput:
-		if isBackKey(key) {
+		if key.String() == "esc" || key.String() == "backspace" && m.input.Value() == "" {
 			return m.back()
 		}
 		if key.String() == "enter" {
@@ -75,7 +77,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m.updateTextInput(msg)
 	case screenFilenameInput:
-		if isBackKey(key) {
+		if key.String() == "esc" || key.String() == "backspace" && m.input.Value() == "" {
 			return m.back()
 		}
 		if key.String() == "enter" {
@@ -143,7 +145,7 @@ func (m Model) submitSourceInput() (Model, tea.Cmd) {
 	m.filenameInput = ""
 	m.screen = screenOutputInput
 	m.errorMessage = ""
-	m.input = newOutputInput(m.styles, m.outputDirInput)
+	m.input = m.newOutputInput(m.outputDirInput)
 	return m, m.input.Focus()
 }
 
@@ -153,7 +155,7 @@ func (m Model) submitOutputInput() (Model, tea.Cmd) {
 		m.plan.Output = m.outputDirInput
 		m.screen = screenFilenameInput
 		m.errorMessage = ""
-		m.input = newFilenameInput(m.styles, m.filenameInput)
+		m.input = m.newFilenameInput(m.filenameInput)
 		return m, m.input.Focus()
 	}
 

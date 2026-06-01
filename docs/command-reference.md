@@ -15,18 +15,20 @@ The home screen shows:
 - Version
 - Quit
 
-Use up/down arrows or `k`/`j` to move, enter to select, and `esc` or backspace
-to return from sub-screens. `q` quits unless a download is running; ctrl+c exits
-from anywhere. Download from URL and Download from .txt file open input forms,
+Use up/down arrows or `k`/`j` to move and enter to select. Escape navigates
+back from sub-screens. Backspace edits text when the current input has content
+and navigates back only when the input is empty. `q` quits unless a download is
+running; ctrl+c exits from anywhere. Download from URL and Download from .txt file open input forms,
 validate with the existing download planner, then ask for an output directory
 before showing dry-run plans. The single URL flow then asks for an optional
 custom filename; leaving it empty means auto-detect. The `.txt` batch flow does
 not offer one custom filename and keeps per-item auto-detect. Leaving the
 output directory empty means `.`, the current directory. Press enter on the
-plan screen to start a real download in the TUI. Existing CLI download commands
-remain fully supported, and CLI `-o`/`--output` and `--name` behavior is
-unchanged. Pressing `q` while a TUI download is running cancels it and keeps
-partial state for resume.
+plan screen to start a real download in the TUI. The TUI panel and input width
+adapt to terminal resize messages with bounded minimum and maximum widths.
+Existing CLI download commands remain fully supported, and CLI
+`-o`/`--output` and `--name` behavior is unchanged. Pressing `q` while a TUI
+download is running cancels it and keeps partial state for resume.
 
 When URL arguments or `--file` are provided, the root command enters the current
 download validation mode.
@@ -334,6 +336,12 @@ directory. If `--retries` is omitted, Daryaft uses `DARYAFT_RETRIES` or config
 `retries`. If neither `--resume` nor `--no-resume` is set, Daryaft uses
 `DARYAFT_RESUME` or config `resume`.
 
+With `--verbose` or `-v`, CLI downloads print additional diagnostic lines
+prefixed with `Verbose:`. These include the effective URL with user info,
+query, and fragment redacted, output directory, selected filename, retry/resume
+details, HTTP status when known, target path, and completion duration. Normal
+non-verbose output is unchanged.
+
 ## `daryaft download [url...] --dry-run`
 
 Implemented. Explicit form of the same download validation and dry-run planner.
@@ -405,12 +413,14 @@ Implemented:
 
 - `--no-color`: avoid color styling in the TUI.
 - `--no-tui`: skip the no-argument TUI and print the non-interactive placeholder.
-- `-v`, `--verbose`: enable verbose output when verbose logging exists.
+- `-v`, `--verbose`: enable extra CLI download diagnostics.
 
 Config `no_color` and `no_tui`, or `DARYAFT_NO_COLOR` and `DARYAFT_NO_TUI`,
 provide defaults for the no-argument TUI path. CLI flags still have priority.
-Config `theme`, `animations`, and `hyperlinks`, plus their `DARYAFT_*`
-environment variables, are stored for future TUI support.
+Config `theme` supports `default` and `mono`; `mono` uses monochrome TUI
+styling like `no_color`. Config `animations` and `hyperlinks`, plus their
+`DARYAFT_*` environment variables, are reserved fields stored for future
+behavior and do not currently change runtime output.
 
 Environment variables:
 
@@ -423,9 +433,10 @@ Environment variables:
 - `DARYAFT_ANIMATIONS`
 - `DARYAFT_HYPERLINKS`
 
-`DARYAFT_RETRIES` must be from `0` through `20`. Boolean environment values
-accept `true`, `1`, `yes`, `y`, `on`, `false`, `0`, `no`, `n`, and `off`,
-case-insensitively. Empty boolean and integer values are invalid.
+`DARYAFT_RETRIES` must be from `0` through `20`. `DARYAFT_THEME` must be
+`default` or `mono`. Boolean environment values accept `true`, `1`, `yes`, `y`,
+`on`, `false`, `0`, `no`, `n`, and `off`, case-insensitively. Empty boolean and
+integer values are invalid.
 
 Examples:
 

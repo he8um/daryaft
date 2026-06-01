@@ -16,7 +16,7 @@ func Default() Config {
 		Resume:      true,
 		NoColor:     false,
 		NoTUI:       false,
-		Theme:       "default",
+		Theme:       ThemeDefault,
 		Animations:  true,
 		Hyperlinks:  true,
 	}
