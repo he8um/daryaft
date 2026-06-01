@@ -60,6 +60,8 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
   `0.5.0-dev-SNAPSHOT-<short-commit>` snapshot naming.
 - CI GoReleaser config validation with `goreleaser check`, without publishing
   releases.
+- Hardened pre-release CI with Linux/macOS Go test-build matrix, tidy check,
+  TUI race test, and local `make ci`.
 - Starter documentation, CI, Makefile, and future packaging configuration.
 
 ### Planned

@@ -49,6 +49,44 @@ The agent must treat this file as a contract. If behavior is ambiguous, prefer t
 - The command help reflects the implemented behavior.
 - The documentation includes examples and known limitations.
 
+## Local CI
+
+Run the local CI target before opening a PR:
+
+```bash
+make ci
+```
+
+This runs:
+
+- `go mod tidy`
+- `git diff --exit-code go.mod go.sum`
+- `go test ./...`
+- `go build ./...`
+- `go test -race ./internal/tui`
+- `git diff --check`
+- `goreleaser check` when GoReleaser is installed
+
+If GoReleaser is not installed, `make ci` prints a warning and continues. The
+strict release snapshot target remains `make release-check`, which requires
+GoReleaser and does not publish.
+
+## GitHub Actions
+
+The test workflow runs on push and pull request. The Go test/build job runs on
+Linux and macOS using the Go version declared in `go.mod`. It verifies module
+tidiness, runs all Go tests, builds all packages, and runs the TUI race test.
+
+The separate `goreleaser-check` job validates `.goreleaser.yml` with
+`goreleaser check` only. It does not run snapshot builds, publish releases,
+create tags, or use publishing secrets.
+
+Recommended branch protection checks:
+
+- `Go test/build (ubuntu-latest)`
+- `Go test/build (macos-latest)`
+- `goreleaser-check`
+
 ## Examples
 
 ```bash

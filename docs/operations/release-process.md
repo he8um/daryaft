@@ -15,6 +15,16 @@ goreleaser check
 This validates `.goreleaser.yml` only. It does not run `goreleaser release`,
 does not publish, does not create tags, and does not use publishing secrets.
 
+The Go test/build workflow runs on both Linux and macOS. It checks module
+tidiness, runs `go test ./...`, runs `go build ./...`, and runs
+`go test -race ./internal/tui`.
+
+Recommended branch protection checks:
+
+- `Go test/build (ubuntu-latest)`
+- `Go test/build (macos-latest)`
+- `goreleaser-check`
+
 ## Local Snapshot Check
 
 Use the local release check before changing release configuration:

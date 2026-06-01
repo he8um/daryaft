@@ -56,6 +56,7 @@ Build and test locally:
 
 ```bash
 make test
+make ci
 make build
 make build-local
 make version
@@ -69,6 +70,12 @@ Install GoReleaser with `brew install goreleaser` if the command is missing.
 Snapshot versions are named like `0.5.0-dev-SNAPSHOT-<short-commit>`, and any
 snapshot artifacts are written under ignored local build directories such as
 `dist/`.
+
+`make ci` runs the same local pre-release checks expected before opening a PR:
+module tidy verification, tests, build, TUI race test, whitespace diff check,
+and `goreleaser check` when GoReleaser is installed. GitHub Actions runs the Go
+test/build/race matrix on Linux and macOS, plus a separate `goreleaser-check`
+job that validates release configuration without publishing.
 
 ## Current Commands
 
