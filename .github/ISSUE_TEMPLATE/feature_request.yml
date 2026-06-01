@@ -1,0 +1,51 @@
+name: Feature request
+description: Suggest an improvement or new capability for Daryaft.
+title: "feat: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Daryaft is pre-1.0. Public stable install/release channels are planned for v1.0.0, not before.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Feature summary
+      description: What should Daryaft do?
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem/use case
+      description: What user workflow or limitation does this address?
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: textarea
+    id: cli_tui_impact
+    attributes:
+      label: CLI/TUI impact
+      description: Should this affect CLI flags, TUI flow, or both?
+  - type: textarea
+    id: config_impact
+    attributes:
+      label: Config impact
+      description: Does this need config file or environment variable support?
+  - type: textarea
+    id: packaging_release_impact
+    attributes:
+      label: Packaging/release impact
+      description: Mention package, release, or install implications if relevant.
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context

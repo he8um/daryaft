@@ -14,6 +14,9 @@ commands only.
 - [Command Reference](command-reference.md): current command behavior.
 - [Configuration](configuration.md): default metadata and planned config locations.
 - [Architecture Overview](architecture/overview.md): planned high-level components.
+- [Testing Strategy](engineering/testing-strategy.md): local and CI checks.
+- [Release Process](operations/release-process.md): local release readiness checks.
+- [Branch Protection](operations/branch-protection.md): recommended `main` protection.
 
 ## Roadmap
 

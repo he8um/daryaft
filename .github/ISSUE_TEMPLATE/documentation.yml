@@ -1,0 +1,36 @@
+name: Documentation issue
+description: Report unclear, wrong, or missing documentation.
+title: "docs: "
+labels:
+  - documentation
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for documentation fixes only. Daryaft is pre-1.0, so docs should avoid presenting public install channels as stable before v1.0.0.
+  - type: input
+    id: document
+    attributes:
+      label: Document/page involved
+      placeholder: "README.md, docs/usage.md, docs/features/..."
+    validations:
+      required: true
+  - type: textarea
+    id: issue
+    attributes:
+      label: What is unclear, wrong, or missing?
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested improvement
+  - type: input
+    id: related
+    attributes:
+      label: Related command/feature
+      placeholder: "daryaft doctor, TUI, resume downloads, config, etc."
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context

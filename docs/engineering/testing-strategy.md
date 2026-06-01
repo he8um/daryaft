@@ -91,6 +91,9 @@ Recommended branch protection checks:
 - `Go test/build (macos-latest)`
 - `goreleaser-check`
 
+See [Branch Protection](../operations/branch-protection.md) for the full
+recommended `main` settings.
+
 ## Examples
 
 ```bash

@@ -63,6 +63,8 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 - Hardened pre-release CI with Linux/macOS Go test-build matrix, tidy check,
   TUI race test, and local `make ci`.
 - Updated GitHub Actions workflow actions to newer Node 24-compatible majors.
+- GitHub issue templates, pull request template, and branch protection
+  documentation.
 - Starter documentation, CI, Makefile, and future packaging configuration.
 
 ### Planned

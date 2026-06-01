@@ -25,6 +25,9 @@ Recommended branch protection checks:
 - `Go test/build (macos-latest)`
 - `goreleaser-check`
 
+See [Branch Protection](branch-protection.md) for recommended `main` branch
+settings.
+
 ## Local Snapshot Check
 
 Use the local release check before changing release configuration:
