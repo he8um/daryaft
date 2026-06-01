@@ -58,6 +58,8 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
   publishing.
 - GoReleaser v2 configuration with non-deprecated archive fields and
   `0.5.0-dev-SNAPSHOT-<short-commit>` snapshot naming.
+- CI GoReleaser config validation with `goreleaser check`, without publishing
+  releases.
 - Starter documentation, CI, Makefile, and future packaging configuration.
 
 ### Planned

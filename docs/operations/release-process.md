@@ -3,6 +3,18 @@
 Daryaft is still pre-1.0. Public stable install channels and public release
 publishing remain planned for `v1.0.0` and later.
 
+## CI Validation
+
+The test workflow includes a `goreleaser-check` job on push and pull request.
+It installs GoReleaser v2 and runs:
+
+```bash
+goreleaser check
+```
+
+This validates `.goreleaser.yml` only. It does not run `goreleaser release`,
+does not publish, does not create tags, and does not use publishing secrets.
+
 ## Local Snapshot Check
 
 Use the local release check before changing release configuration:
