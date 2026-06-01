@@ -81,6 +81,10 @@ The separate `goreleaser-check` job validates `.goreleaser.yml` with
 `goreleaser check` only. It does not run snapshot builds, publish releases,
 create tags, or use publishing secrets.
 
+Workflow actions should stay on stable majors supported by GitHub-hosted
+runners. The current workflow uses Node 24-compatible action majors for
+checkout, Go setup, and GoReleaser validation.
+
 Recommended branch protection checks:
 
 - `Go test/build (ubuntu-latest)`
