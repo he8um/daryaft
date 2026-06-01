@@ -193,6 +193,112 @@ func TestServerWithoutRangeSupportRestartsSafely(t *testing.T) {
 	}
 }
 
+func TestRequestedRangeNotSatisfiableRestartsSafely(t *testing.T) {
+	requests := 0
+	var ranges []string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests++
+		ranges = append(ranges, r.Header.Get("Range"))
+		if requests == 1 {
+			w.Header().Set("Content-Range", "bytes */4")
+			w.WriteHeader(http.StatusRequestedRangeNotSatisfiable)
+			return
+		}
+		_, _ = w.Write([]byte("fresh"))
+	}))
+	defer server.Close()
+
+	dir := t.TempDir()
+	partial := filepath.Join(dir, "file.txt.part")
+	if err := os.WriteFile(partial, []byte("stale"), 0o600); err != nil {
+		t.Fatalf("write partial: %v", err)
+	}
+
+	var events []Event
+	result, err := New().DownloadWithEvents(download.Plan{
+		URLs:   []string{server.URL + "/file.txt"},
+		Output: dir,
+		Resume: true,
+	}, func(event Event) {
+		events = append(events, event)
+	})
+	if err != nil {
+		t.Fatalf("DownloadWithEvents returned error: %v", err)
+	}
+
+	if requests != 2 {
+		t.Fatalf("requests = %d, want 2", requests)
+	}
+	if strings.Join(ranges, ",") != "bytes=5-," {
+		t.Fatalf("ranges = %#v, want first range then full", ranges)
+	}
+	assertFileContent(t, result.Path, "fresh")
+	restarting := findEvent(events, EventRestarting)
+	if restarting.Message != resumeNotSupportedMessage {
+		t.Fatalf("restart message = %q", restarting.Message)
+	}
+}
+
+func TestRestartWithNewRequestClosesOldAndActiveResponsesOnce(t *testing.T) {
+	oldCloses := 0
+	newCloses := 0
+	requests := 0
+	var ranges []string
+
+	client := &http.Client{
+		Transport: roundTripFunc(func(request *http.Request) (*http.Response, error) {
+			requests++
+			ranges = append(ranges, request.Header.Get("Range"))
+			if requests == 1 {
+				return &http.Response{
+					StatusCode: http.StatusRequestedRangeNotSatisfiable,
+					Status:     "416 Requested Range Not Satisfiable",
+					Header:     make(http.Header),
+					Body:       &countingReadCloser{reader: strings.NewReader("stale range"), closes: &oldCloses},
+					Request:    request,
+				}, nil
+			}
+
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Status:     "200 OK",
+				Header:     http.Header{"Content-Length": []string{"5"}},
+				Body:       &countingReadCloser{reader: strings.NewReader("fresh"), closes: &newCloses},
+				Request:    request,
+			}, nil
+		}),
+	}
+
+	dir := t.TempDir()
+	partial := filepath.Join(dir, "file.txt.part")
+	if err := os.WriteFile(partial, []byte("stale"), 0o600); err != nil {
+		t.Fatalf("write partial: %v", err)
+	}
+
+	result, err := NewWithClient(client).Download(download.Plan{
+		URLs:   []string{"https://example.com/file.txt"},
+		Output: dir,
+		Resume: true,
+	})
+	if err != nil {
+		t.Fatalf("Download returned error: %v", err)
+	}
+
+	if requests != 2 {
+		t.Fatalf("requests = %d, want 2", requests)
+	}
+	if strings.Join(ranges, ",") != "bytes=5-," {
+		t.Fatalf("ranges = %#v, want first range then full", ranges)
+	}
+	if oldCloses != 1 {
+		t.Fatalf("old response closes = %d, want 1", oldCloses)
+	}
+	if newCloses != 1 {
+		t.Fatalf("new response closes = %d, want 1", newCloses)
+	}
+	assertFileContent(t, result.Path, "fresh")
+}
+
 func TestNoResumeRestartsFromByteZero(t *testing.T) {
 	var gotRange string
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -394,6 +500,67 @@ func TestChangedETagRestartsSafely(t *testing.T) {
 	}
 }
 
+func TestChangedLastModifiedRestartsSafely(t *testing.T) {
+	requests := 0
+	var ranges []string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests++
+		ranges = append(ranges, r.Header.Get("Range"))
+		if requests == 1 {
+			w.Header().Set("Last-Modified", "Mon, 01 Jun 2026 00:00:00 GMT")
+			w.Header().Set("Content-Range", "bytes 5-7/8")
+			w.WriteHeader(http.StatusPartialContent)
+			_, _ = w.Write([]byte("bad"))
+			return
+		}
+
+		w.Header().Set("Last-Modified", "Mon, 01 Jun 2026 00:00:00 GMT")
+		_, _ = w.Write([]byte("new body"))
+	}))
+	defer server.Close()
+
+	dir := t.TempDir()
+	target := filepath.Join(dir, "file.txt")
+	partial := target + ".part"
+	if err := os.WriteFile(partial, []byte("hello"), 0o600); err != nil {
+		t.Fatalf("write partial: %v", err)
+	}
+	if err := savePartialMetadata(metadataPathForPartial(partial), partialMetadata{
+		URL:             server.URL + "/file.txt",
+		TargetPath:      target,
+		PartialPath:     partial,
+		DownloadedBytes: 5,
+		TotalBytes:      8,
+		LastModified:    "Sun, 31 May 2026 00:00:00 GMT",
+	}); err != nil {
+		t.Fatalf("save metadata: %v", err)
+	}
+
+	var events []Event
+	result, err := New().DownloadWithEvents(download.Plan{
+		URLs:   []string{server.URL + "/file.txt"},
+		Output: dir,
+		Resume: true,
+	}, func(event Event) {
+		events = append(events, event)
+	})
+	if err != nil {
+		t.Fatalf("DownloadWithEvents returned error: %v", err)
+	}
+
+	if requests != 2 {
+		t.Fatalf("requests = %d, want 2", requests)
+	}
+	if strings.Join(ranges, ",") != "bytes=5-," {
+		t.Fatalf("ranges = %#v, want first range then full", ranges)
+	}
+	assertFileContent(t, result.Path, "new body")
+	restarting := findEvent(events, EventRestarting)
+	if restarting.Message != remoteChangedMessage {
+		t.Fatalf("restart message = %q", restarting.Message)
+	}
+}
+
 func findEvent(events []Event, eventType EventType) Event {
 	for _, event := range events {
 		if event.Type == eventType {
@@ -408,4 +575,24 @@ func assertMissing(t *testing.T, path string) {
 	if _, err := os.Stat(path); !os.IsNotExist(err) {
 		t.Fatalf("%s exists or stat failed: %v", path, err)
 	}
+}
+
+type roundTripFunc func(*http.Request) (*http.Response, error)
+
+func (fn roundTripFunc) RoundTrip(request *http.Request) (*http.Response, error) {
+	return fn(request)
+}
+
+type countingReadCloser struct {
+	reader *strings.Reader
+	closes *int
+}
+
+func (body *countingReadCloser) Read(p []byte) (int, error) {
+	return body.reader.Read(p)
+}
+
+func (body *countingReadCloser) Close() error {
+	(*body.closes)++
+	return nil
 }

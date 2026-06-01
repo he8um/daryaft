@@ -8,13 +8,15 @@ import (
 	"github.com/he8um/daryaft/internal/input"
 )
 
+const MaxRetries = 20
+
 func BuildPlan(options Options) (Plan, error) {
 	if options.NoResume {
 		options.Resume = false
 	}
 
-	if options.Retries < 0 {
-		return Plan{}, fmt.Errorf("retries must be greater than or equal to 0")
+	if err := ValidateRetries(options.Retries); err != nil {
+		return Plan{}, err
 	}
 
 	urls, err := collectURLs(options)
@@ -43,6 +45,13 @@ func BuildPlan(options Options) (Plan, error) {
 		Retries: options.Retries,
 		Resume:  options.Resume,
 	}, nil
+}
+
+func ValidateRetries(retries int) error {
+	if retries < 0 || retries > MaxRetries {
+		return fmt.Errorf("retries must be between 0 and %d", MaxRetries)
+	}
+	return nil
 }
 
 func collectURLs(options Options) ([]string, error) {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type targetPaths struct {
@@ -58,7 +59,8 @@ func ensureInsideOutputDir(outputDir, target string) error {
 	if err != nil {
 		return fmt.Errorf("validate target path %q: %w", target, err)
 	}
-	if rel == ".." || len(rel) >= 3 && rel[:3] == "../" {
+	cleanRel := filepath.ToSlash(filepath.Clean(rel))
+	if cleanRel == ".." || strings.HasPrefix(cleanRel, "../") {
 		return fmt.Errorf("target path escapes output directory: %s", target)
 	}
 	return nil

@@ -67,6 +67,13 @@ This runs:
 - `git diff --check`
 - `goreleaser check` when GoReleaser is installed
 
+Downloader stabilization tests cover resume restart cases for `416`, full
+`200` responses after Range requests, changed `ETag` and `Last-Modified`
+metadata, context-aware retry backoff cancellation, HTTP response-header
+timeouts, long body streaming without a total timeout, retry bounds, and output
+directory traversal guards. Config tests cover atomic-style temp-file saves,
+private config permissions, retry bounds, and environment override validation.
+
 If GoReleaser is not installed, `make ci` prints a warning and continues. The
 strict release snapshot target remains `make release-check`, which requires
 GoReleaser and does not publish.

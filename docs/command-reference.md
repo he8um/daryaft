@@ -237,8 +237,8 @@ daryaft config set download_dir ~/Downloads
 daryaft config set resume off
 ```
 
-`retries` must be an integer greater than or equal to `0`. Boolean values
-accept `true`, `1`, `yes`, `y`, `on`, `false`, `0`, `no`, `n`, and `off`,
+`retries` must be an integer from `0` through `20`. Boolean values accept
+`true`, `1`, `yes`, `y`, `on`, `false`, `0`, `no`, `n`, and `off`,
 case-insensitively.
 Shell completion suggests supported keys for the first argument and `true` or
 `false` for boolean value arguments.
@@ -316,9 +316,9 @@ does not rename to the final target, and does not retry.
 
 `--retries` is implemented for transient failures. The value is the number of
 retry attempts after the first try, so `--retries 0` means one total attempt and
-`--retries 3` means up to four total attempts. Daryaft retries network errors,
-timeouts, interrupted response bodies, HTTP `429`, `500`, `502`, `503`, and
-`504`.
+`--retries 3` means up to four total attempts. Values must be from `0` through
+`20`. Daryaft retries network errors, timeouts, interrupted response bodies,
+HTTP `429`, `500`, `502`, `503`, and `504`.
 
 `--resume` is enabled by default. If a partial file exists, Daryaft sends
 `Range: bytes=<partial_size>-` and appends only after `206 Partial Content`.
@@ -385,7 +385,8 @@ Implemented. Explicit form of sequential batch download.
 - `-o`, `--output string`: output directory.
 - `--name string`: filename for a single URL.
 - `--dry-run`: validate inputs and print the download plan.
-- `--retries int`: retry attempts after the initial attempt, default `3`.
+- `--retries int`: retry attempts after the initial attempt, default `3`,
+  valid range `0` through `20`.
 - `--resume`: resume interrupted `.part` files with HTTP Range, default `true`.
 - `--no-resume`: disable resume and restart partial files from byte `0`.
 
@@ -396,7 +397,7 @@ Validation rules:
 - Only `http` and `https` URLs are accepted.
 - Empty lines and `#` comments are ignored in URL files.
 - `--name` is rejected when more than one URL is provided.
-- `--retries` must be greater than or equal to `0`.
+- `--retries` must be from `0` through `20`.
 
 ## Common Flags
 
@@ -422,9 +423,9 @@ Environment variables:
 - `DARYAFT_ANIMATIONS`
 - `DARYAFT_HYPERLINKS`
 
-Boolean environment values accept `true`, `1`, `yes`, `y`, `on`, `false`, `0`,
-`no`, `n`, and `off`, case-insensitively. Empty boolean and integer values are
-invalid.
+`DARYAFT_RETRIES` must be from `0` through `20`. Boolean environment values
+accept `true`, `1`, `yes`, `y`, `on`, `false`, `0`, `no`, `n`, and `off`,
+case-insensitively. Empty boolean and integer values are invalid.
 
 Examples:
 

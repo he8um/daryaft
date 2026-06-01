@@ -38,3 +38,36 @@ func TestPrepareTargetRejectsExistingTarget(t *testing.T) {
 		t.Fatalf("prepareTarget error = %v, want ErrTargetExists", err)
 	}
 }
+
+func TestEnsureInsideOutputDirRejectsTraversal(t *testing.T) {
+	dir := t.TempDir()
+	target := filepath.Clean(filepath.Join(dir, "..", "escape.txt"))
+
+	err := ensureInsideOutputDir(dir, target)
+	if err == nil {
+		t.Fatal("ensureInsideOutputDir returned nil error")
+	}
+}
+
+func TestEnsureInsideOutputDirAcceptsNestedPath(t *testing.T) {
+	dir := t.TempDir()
+	target := filepath.Join(dir, "nested", "file.zip")
+
+	if err := ensureInsideOutputDir(dir, target); err != nil {
+		t.Fatalf("ensureInsideOutputDir returned error: %v", err)
+	}
+}
+
+func TestWindowsStyleSeparatorFilenameStaysInsideOutputDir(t *testing.T) {
+	dir := t.TempDir()
+
+	target, err := targetPathsFor(dir, `..\escape.txt`)
+	if err != nil {
+		t.Fatalf("targetPathsFor returned error: %v", err)
+	}
+
+	want := filepath.Join(dir, fallbackFilename)
+	if target.Final != want {
+		t.Fatalf("target.Final = %q, want sanitized fallback %q", target.Final, want)
+	}
+}

@@ -231,6 +231,58 @@ func TestSaveCreatesParentDirectories(t *testing.T) {
 	}
 }
 
+func TestSaveWritesValidYAMLWithPrivatePermissions(t *testing.T) {
+	dir := t.TempDir()
+	t.Cleanup(SetUserConfigDirForTest(dir))
+
+	cfg := Default()
+	cfg.Retries = 4
+	if err := Save(cfg); err != nil {
+		t.Fatalf("Save returned error: %v", err)
+	}
+
+	path, err := Path()
+	if err != nil {
+		t.Fatalf("Path returned error: %v", err)
+	}
+	loaded, err := Load()
+	if err != nil {
+		t.Fatalf("Load returned error: %v", err)
+	}
+	if loaded.Retries != 4 {
+		t.Fatalf("Retries = %d, want 4", loaded.Retries)
+	}
+
+	info, err := os.Stat(path)
+	if err != nil {
+		t.Fatalf("stat config: %v", err)
+	}
+	if got := info.Mode().Perm(); got != 0o600 {
+		t.Fatalf("config mode = %o, want 600", got)
+	}
+}
+
+func TestSaveDoesNotLeaveTemporaryFiles(t *testing.T) {
+	dir := t.TempDir()
+	t.Cleanup(SetUserConfigDirForTest(dir))
+
+	if err := Save(Default()); err != nil {
+		t.Fatalf("Save returned error: %v", err)
+	}
+
+	path, err := Path()
+	if err != nil {
+		t.Fatalf("Path returned error: %v", err)
+	}
+	matches, err := filepath.Glob(filepath.Join(filepath.Dir(path), ".config-*.tmp"))
+	if err != nil {
+		t.Fatalf("glob temp files: %v", err)
+	}
+	if len(matches) != 0 {
+		t.Fatalf("temporary files left behind: %#v", matches)
+	}
+}
+
 func TestApplyEnvOverridesDownloadDir(t *testing.T) {
 	cfg := Default()
 	cfg.DownloadDir = "/config/downloads"
@@ -262,7 +314,7 @@ func TestApplyEnvOverridesRetries(t *testing.T) {
 }
 
 func TestApplyEnvInvalidRetriesReturnsError(t *testing.T) {
-	for _, value := range []string{"abc", "-1", ""} {
+	for _, value := range []string{"abc", "-1", "21", ""} {
 		t.Run(strconv.Quote(value), func(t *testing.T) {
 			_, err := ApplyEnv(Default(), mapLookup(map[string]string{
 				envRetries: value,
@@ -455,8 +507,18 @@ func TestSetIntValue(t *testing.T) {
 	}
 }
 
+func TestSetRetriesAllowsUpperBound(t *testing.T) {
+	cfg, err := Set(Default(), keyRetries, "20")
+	if err != nil {
+		t.Fatalf("Set returned error: %v", err)
+	}
+	if cfg.Retries != 20 {
+		t.Fatalf("Retries = %d, want 20", cfg.Retries)
+	}
+}
+
 func TestSetInvalidIntReturnsError(t *testing.T) {
-	for _, value := range []string{"abc", "-1", ""} {
+	for _, value := range []string{"abc", "-1", "21", ""} {
 		t.Run(strconv.Quote(value), func(t *testing.T) {
 			_, err := Set(Default(), keyRetries, value)
 			if err == nil {

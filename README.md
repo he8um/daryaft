@@ -155,7 +155,7 @@ Download commands validate URLs and can print a dry-run plan. Real downloading
 is implemented for one URL and for multiple URLs sequentially. Batch downloads
 continue after item failures and print a final summary. `--retries` controls
 retry attempts after the initial attempt; the default `3` means up to four total
-attempts.
+attempts. Valid retry values are `0` through `20`.
 
 Downloads write to `<filename>.part` first and keep sidecar state in
 `<filename>.part.daryaft.json` while incomplete. `--resume` is enabled by

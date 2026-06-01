@@ -106,8 +106,8 @@ Supported environment variables:
 String values are trimmed. Empty string values are accepted for
 `DARYAFT_DOWNLOAD_DIR` and `DARYAFT_THEME`.
 
-`DARYAFT_RETRIES` must be an integer greater than or equal to `0`. Empty or
-invalid integer values return an error.
+`DARYAFT_RETRIES` must be an integer from `0` through `20`. Empty, negative,
+too-large, or otherwise invalid integer values return an error.
 
 Boolean values are case-insensitive:
 
@@ -128,7 +128,8 @@ DARYAFT_NO_TUI=true daryaft
 
 - `download_dir`: default output directory. Empty means current directory unless
   the CLI or TUI explicitly sets output.
-- `retries`: default retry attempts after the initial attempt.
+- `retries`: default retry attempts after the initial attempt. Valid range:
+  `0` through `20`.
 - `resume`: default resume behavior for interrupted `.part` files.
 - `no_color`: default no-color preference for the TUI.
 - `no_tui`: when true, plain `daryaft` uses the non-TUI fallback unless command
@@ -150,9 +151,14 @@ animations bool
 hyperlinks bool
 ```
 
-`retries` must be an integer greater than or equal to `0`. Boolean config set
-values accept `true`, `1`, `yes`, `y`, `on`, `false`, `0`, `no`, `n`, and
-`off`, case-insensitively.
+`retries` must be an integer from `0` through `20`. Boolean config set values
+accept `true`, `1`, `yes`, `y`, `on`, `false`, `0`, `no`, `n`, and `off`,
+case-insensitively.
+
+Config saves are written through a temporary file in the same directory and
+renamed into place with `0600` permissions. This keeps normal config updates
+atomic on local filesystems and avoids leaving partially written config files
+behind after successful saves.
 
 Shell completion suggests these keys for `daryaft config get` and
 `daryaft config set`. For boolean fields, `daryaft config set` also suggests

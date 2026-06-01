@@ -1,6 +1,8 @@
 package downloader
 
 import (
+	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -86,6 +88,53 @@ func TestDownloadRetriesTransient503AndSucceeds(t *testing.T) {
 	}
 	if event.Error == nil || !strings.Contains(event.Error.Error(), "temporary server error: 503") {
 		t.Fatalf("retry event error = %v", event.Error)
+	}
+}
+
+func TestDownloadCancelDuringRetryBackoffReturnsPromptly(t *testing.T) {
+	requests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests++
+		http.Error(w, "try later", http.StatusServiceUnavailable)
+	}))
+	defer server.Close()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	sleepStarted := make(chan struct{})
+	d := NewWithClient(server.Client())
+	d.sleeper = func(ctx context.Context, delay time.Duration) error {
+		close(sleepStarted)
+		<-ctx.Done()
+		return ctx.Err()
+	}
+
+	errCh := make(chan error, 1)
+	go func() {
+		_, err := d.DownloadWithEventsContext(ctx, download.Plan{
+			URLs:    []string{server.URL + "/file.txt"},
+			Output:  t.TempDir(),
+			Retries: 1,
+		}, nil)
+		errCh <- err
+	}()
+
+	select {
+	case <-sleepStarted:
+	case <-time.After(500 * time.Millisecond):
+		t.Fatal("retry sleep did not start")
+	}
+	cancel()
+
+	select {
+	case err := <-errCh:
+		if !errors.Is(err, ErrCancelled) {
+			t.Fatalf("error = %v, want ErrCancelled", err)
+		}
+	case <-time.After(500 * time.Millisecond):
+		t.Fatal("DownloadWithEventsContext did not return promptly after cancellation")
+	}
+	if requests != 1 {
+		t.Fatalf("requests = %d, want 1", requests)
 	}
 }
 
@@ -227,12 +276,21 @@ func TestBackoffDelayCapsAtEightSeconds(t *testing.T) {
 	}
 }
 
+func TestCancellationErrorsAreNotRetryable(t *testing.T) {
+	if IsRetryableError(ErrCancelled) {
+		t.Fatal("ErrCancelled classified as retryable")
+	}
+	if IsRetryableError(context.Canceled) {
+		t.Fatal("context.Canceled classified as retryable")
+	}
+}
+
 func newTestDownloader(server *httptest.Server) *Downloader {
 	var client *http.Client
 	if server != nil {
 		client = server.Client()
 	}
 	d := NewWithClient(client)
-	d.sleeper = func(time.Duration) {}
+	d.sleeper = func(context.Context, time.Duration) error { return nil }
 	return d
 }

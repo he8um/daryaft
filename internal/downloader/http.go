@@ -2,6 +2,7 @@ package downloader
 
 import (
 	"context"
+	"net"
 	"net/http"
 	"time"
 
@@ -9,11 +10,25 @@ import (
 	"github.com/he8um/daryaft/pkg/version"
 )
 
-const DefaultHTTPTimeout = 30 * time.Second
+const (
+	DefaultDialTimeout           = 30 * time.Second
+	DefaultTLSHandshakeTimeout   = 10 * time.Second
+	DefaultResponseHeaderTimeout = 30 * time.Second
+	DefaultIdleConnTimeout       = 90 * time.Second
+)
 
 func defaultHTTPClient() *http.Client {
+	transport := http.DefaultTransport.(*http.Transport).Clone()
+	transport.DialContext = (&net.Dialer{
+		Timeout:   DefaultDialTimeout,
+		KeepAlive: 30 * time.Second,
+	}).DialContext
+	transport.TLSHandshakeTimeout = DefaultTLSHandshakeTimeout
+	transport.ResponseHeaderTimeout = DefaultResponseHeaderTimeout
+	transport.IdleConnTimeout = DefaultIdleConnTimeout
+
 	return &http.Client{
-		Timeout: DefaultHTTPTimeout,
+		Transport: transport,
 	}
 }
 

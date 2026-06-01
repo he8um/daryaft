@@ -253,6 +253,33 @@ func TestRunDownloadUsesConfigRetryAndResumeDefaults(t *testing.T) {
 	}
 }
 
+func TestRunDownloadRejectsRetriesOutOfRange(t *testing.T) {
+	for _, value := range []string{"-1", "21"} {
+		t.Run(value, func(t *testing.T) {
+			restore := appconfig.SetUserConfigDirForTest(t.TempDir())
+			t.Cleanup(restore)
+
+			var flags downloadFlagValues
+			cmd := &cobra.Command{Use: "download"}
+			addDownloadFlags(cmd, &flags)
+			if err := cmd.Flags().Set("dry-run", "true"); err != nil {
+				t.Fatalf("set dry-run: %v", err)
+			}
+			if err := cmd.Flags().Set("retries", value); err != nil {
+				t.Fatalf("set retries: %v", err)
+			}
+
+			err := runDownload(cmd, []string{"https://example.com/file.zip"}, flags)
+			if err == nil {
+				t.Fatal("runDownload returned nil error")
+			}
+			if !strings.Contains(err.Error(), "retries") {
+				t.Fatalf("error = %q, want retries context", err)
+			}
+		})
+	}
+}
+
 func clearDaryaftEnv() {
 	for _, name := range []string{
 		"DARYAFT_DOWNLOAD_DIR",

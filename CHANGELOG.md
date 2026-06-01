@@ -67,6 +67,20 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
   documentation.
 - Starter documentation, CI, Makefile, and future packaging configuration.
 
+### Fixed
+
+- Reworked downloader resume/restart response ownership to avoid in-place
+  `http.Response` mutation and clarify body close responsibility.
+- Made retry backoff cancellation context-aware without leaving sleeper
+  goroutines behind.
+- Replaced the default total HTTP client timeout with transport phase timeouts
+  so large downloads are not killed by a fixed overall duration.
+- Saved YAML config files through same-directory temporary files plus rename
+  with private `0600` permissions.
+- Hardened output-directory traversal checks with normalized relative paths.
+- Added a retry upper bound of `20` across CLI planning, config values, and
+  environment overrides.
+
 ### Planned
 
 - Concurrent batch downloader engine.

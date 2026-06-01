@@ -22,7 +22,8 @@ type Downloader struct {
 
 func New() *Downloader {
 	return &Downloader{
-		client: defaultHTTPClient(),
+		client:  defaultHTTPClient(),
+		sleeper: timerSleep,
 	}
 }
 
@@ -32,7 +33,7 @@ func NewWithClient(client *http.Client) *Downloader {
 	}
 	return &Downloader{
 		client:  client,
-		sleeper: time.Sleep,
+		sleeper: timerSleep,
 	}
 }
 
@@ -128,30 +129,10 @@ func (d *Downloader) retryPolicy(retries int) RetryPolicy {
 }
 
 func sleepWithContext(ctx context.Context, sleep Sleeper, delay time.Duration) error {
-	if delay <= 0 {
-		return ctx.Err()
-	}
 	if sleep == nil {
-		timer := time.NewTimer(delay)
-		defer timer.Stop()
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-timer.C:
-			return nil
-		}
+		sleep = timerSleep
 	}
-	done := make(chan struct{})
-	go func() {
-		sleep(delay)
-		close(done)
-	}()
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case <-done:
-		return nil
-	}
+	return sleep(ctx, delay)
 }
 
 func (d *Downloader) downloadAttempt(ctx context.Context, plan download.Plan, handler EventHandler, attempt, attempts int) (Result, error) {
@@ -182,9 +163,8 @@ func (d *Downloader) downloadAttempt(ctx context.Context, plan download.Plan, ha
 		}
 		return Result{}, fmt.Errorf("download %q: %w", rawURL, err)
 	}
-	defer response.Body.Close()
 
-	downloadMode, target, metadataPath, startBytes, totalBytes, err := d.prepareDownloadResponse(ctx, plan, rawURL, response, candidate, resumeOffset, handler)
+	prepared, err := d.prepareDownloadResponse(ctx, plan, rawURL, response, candidate, resumeOffset, handler)
 	if err != nil {
 		if isCancellationError(err) {
 			emitCancelledEvent(handler, rawURL, candidate.Target.Final, candidate.Target.Partial, candidate.PartialSize, 0)
@@ -192,19 +172,21 @@ func (d *Downloader) downloadAttempt(ctx context.Context, plan download.Plan, ha
 		}
 		return Result{}, err
 	}
+	response = prepared.response
+	defer response.Body.Close()
 
 	var partial *os.File
-	if downloadMode == downloadModeAppend {
-		partial, err = os.OpenFile(target.Partial, os.O_WRONLY|os.O_APPEND, 0o600)
+	if prepared.mode == downloadModeAppend {
+		partial, err = os.OpenFile(prepared.target.Partial, os.O_WRONLY|os.O_APPEND, 0o600)
 	} else {
-		partial, err = os.Create(target.Partial)
+		partial, err = os.Create(prepared.target.Partial)
 	}
 	if err != nil {
-		return Result{}, fmt.Errorf("open partial file %q: %w", target.Partial, err)
+		return Result{}, fmt.Errorf("open partial file %q: %w", prepared.target.Partial, err)
 	}
 
-	metadata := metadataFromResponse(rawURL, target, response, totalBytes, startBytes, candidate)
-	if err := savePartialMetadata(metadataPath, metadata); err != nil {
+	metadata := metadataFromResponse(rawURL, prepared.target, response, prepared.totalBytes, prepared.startBytes, candidate)
+	if err := savePartialMetadata(prepared.metadataPath, metadata); err != nil {
 		_ = partial.Close()
 		return Result{}, err
 	}
@@ -212,10 +194,10 @@ func (d *Downloader) downloadAttempt(ctx context.Context, plan download.Plan, ha
 	emitEvent(handler, Event{
 		Type:            EventStarted,
 		URL:             rawURL,
-		TargetPath:      target.Final,
-		PartialPath:     target.Partial,
-		DownloadedBytes: startBytes,
-		TotalBytes:      totalBytes,
+		TargetPath:      prepared.target.Final,
+		PartialPath:     prepared.target.Partial,
+		DownloadedBytes: prepared.startBytes,
+		TotalBytes:      prepared.totalBytes,
 		Attempt:         attempt,
 		MaxAttempts:     attempts,
 		Timestamp:       time.Now(),
@@ -223,42 +205,42 @@ func (d *Downloader) downloadAttempt(ctx context.Context, plan download.Plan, ha
 
 	downloadedBytes, copyErr := copyAndClose(partial, response.Body, copyEvents{
 		URL:          rawURL,
-		TargetPath:   target.Final,
-		PartialPath:  target.Partial,
-		InitialBytes: startBytes,
-		TotalBytes:   totalBytes,
+		TargetPath:   prepared.target.Final,
+		PartialPath:  prepared.target.Partial,
+		InitialBytes: prepared.startBytes,
+		TotalBytes:   prepared.totalBytes,
 		Handler:      handler,
 		Context:      ctx,
 	})
 	if copyErr != nil {
 		metadata.DownloadedBytes = downloadedBytes
-		_ = savePartialMetadata(metadataPath, metadata)
+		_ = savePartialMetadata(prepared.metadataPath, metadata)
 		if isCancellationError(copyErr) {
-			emitCancelledEvent(handler, rawURL, target.Final, target.Partial, downloadedBytes, totalBytes)
+			emitCancelledEvent(handler, rawURL, prepared.target.Final, prepared.target.Partial, downloadedBytes, prepared.totalBytes)
 			return Result{}, ErrCancelled
 		}
 		return Result{}, copyErr
 	}
 	metadata.DownloadedBytes = downloadedBytes
-	if err := savePartialMetadata(metadataPath, metadata); err != nil {
+	if err := savePartialMetadata(prepared.metadataPath, metadata); err != nil {
 		return Result{}, err
 	}
 
-	if err := os.Rename(target.Partial, target.Final); err != nil {
-		return Result{}, fmt.Errorf("complete download %q: %w", target.Final, err)
+	if err := os.Rename(prepared.target.Partial, prepared.target.Final); err != nil {
+		return Result{}, fmt.Errorf("complete download %q: %w", prepared.target.Final, err)
 	}
-	if err := removePartialMetadata(metadataPath); err != nil {
+	if err := removePartialMetadata(prepared.metadataPath); err != nil {
 		return Result{}, err
 	}
 
 	emitEvent(handler, Event{
 		Type:            EventCompleted,
 		URL:             rawURL,
-		TargetPath:      target.Final,
-		PartialPath:     target.Partial,
+		TargetPath:      prepared.target.Final,
+		PartialPath:     prepared.target.Partial,
 		DownloadedBytes: downloadedBytes,
-		TotalBytes:      totalBytes,
-		Percent:         percent(downloadedBytes, totalBytes),
+		TotalBytes:      prepared.totalBytes,
+		Percent:         percent(downloadedBytes, prepared.totalBytes),
 		Attempt:         attempt,
 		MaxAttempts:     attempts,
 		Timestamp:       time.Now(),
@@ -266,7 +248,7 @@ func (d *Downloader) downloadAttempt(ctx context.Context, plan download.Plan, ha
 
 	return Result{
 		URL:  rawURL,
-		Path: target.Final,
+		Path: prepared.target.Final,
 	}, nil
 }
 
@@ -277,12 +259,22 @@ const (
 	downloadModeAppend
 )
 
-func (d *Downloader) prepareDownloadResponse(ctx context.Context, plan download.Plan, rawURL string, response *http.Response, candidate resumeCandidate, resumeOffset int64, handler EventHandler) (downloadMode, targetPaths, string, int64, int64, error) {
+type preparedDownload struct {
+	response     *http.Response
+	mode         downloadMode
+	target       targetPaths
+	metadataPath string
+	startBytes   int64
+	totalBytes   int64
+}
+
+func (d *Downloader) prepareDownloadResponse(ctx context.Context, plan download.Plan, rawURL string, response *http.Response, candidate resumeCandidate, resumeOffset int64, handler EventHandler) (preparedDownload, error) {
 	if resumeOffset > 0 {
 		switch {
 		case response.StatusCode == http.StatusPartialContent:
 			if !contentRangeStartsAt(response, resumeOffset) {
-				return downloadModeRestart, targetPaths{}, "", 0, 0, fmt.Errorf("server returned unexpected content range %q", response.Header.Get("Content-Range"))
+				_ = response.Body.Close()
+				return preparedDownload{}, fmt.Errorf("server returned unexpected content range %q", response.Header.Get("Content-Range"))
 			}
 			if candidate.HasMetadata && remoteChanged(candidate.Metadata, response.Header) {
 				return d.restartWithNewRequest(ctx, plan, rawURL, response, candidate, handler, remoteChangedMessage)
@@ -298,7 +290,14 @@ func (d *Downloader) prepareDownloadResponse(ctx context.Context, plan download.
 				TotalBytes:      totalBytes,
 				Message:         fmt.Sprintf("Resuming from %d bytes", resumeOffset),
 			})
-			return downloadModeAppend, candidate.Target, candidate.MetadataPath, resumeOffset, totalBytes, nil
+			return preparedDownload{
+				response:     response,
+				mode:         downloadModeAppend,
+				target:       candidate.Target,
+				metadataPath: candidate.MetadataPath,
+				startBytes:   resumeOffset,
+				totalBytes:   totalBytes,
+			}, nil
 
 		case response.StatusCode == http.StatusOK:
 			return d.restartWithResponse(plan, rawURL, response, candidate, handler, resumeNotSupportedMessage)
@@ -308,7 +307,8 @@ func (d *Downloader) prepareDownloadResponse(ctx context.Context, plan download.
 	}
 
 	if response.StatusCode < http.StatusOK || response.StatusCode > 299 {
-		return downloadModeRestart, targetPaths{}, "", 0, 0, httpStatusError{
+		_ = response.Body.Close()
+		return preparedDownload{}, httpStatusError{
 			StatusCode: response.StatusCode,
 			Status:     response.Status,
 		}
@@ -321,17 +321,25 @@ func (d *Downloader) prepareDownloadResponse(ctx context.Context, plan download.
 		var err error
 		target, err = prepareTarget(plan.Output, filename)
 		if err != nil {
-			return downloadModeRestart, targetPaths{}, "", 0, 0, err
+			_ = response.Body.Close()
+			return preparedDownload{}, err
 		}
 		metadataPath = metadataPathForPartial(target.Partial)
 	} else if _, err := prepareTarget(plan.Output, filepath.Base(target.Final)); err != nil {
-		return downloadModeRestart, targetPaths{}, "", 0, 0, err
+		_ = response.Body.Close()
+		return preparedDownload{}, err
 	}
 
-	return downloadModeRestart, target, metadataPath, 0, responseTotalBytes(response, 0), nil
+	return preparedDownload{
+		response:     response,
+		mode:         downloadModeRestart,
+		target:       target,
+		metadataPath: metadataPath,
+		totalBytes:   responseTotalBytes(response, 0),
+	}, nil
 }
 
-func (d *Downloader) restartWithResponse(plan download.Plan, rawURL string, response *http.Response, candidate resumeCandidate, handler EventHandler, message string) (downloadMode, targetPaths, string, int64, int64, error) {
+func (d *Downloader) restartWithResponse(plan download.Plan, rawURL string, response *http.Response, candidate resumeCandidate, handler EventHandler, message string) (preparedDownload, error) {
 	emitEvent(handler, Event{
 		Type:            EventRestarting,
 		URL:             rawURL,
@@ -342,16 +350,23 @@ func (d *Downloader) restartWithResponse(plan download.Plan, rawURL string, resp
 	})
 
 	if response.StatusCode < http.StatusOK || response.StatusCode > 299 {
-		return downloadModeRestart, targetPaths{}, "", 0, 0, httpStatusError{
+		_ = response.Body.Close()
+		return preparedDownload{}, httpStatusError{
 			StatusCode: response.StatusCode,
 			Status:     response.Status,
 		}
 	}
 
-	return downloadModeRestart, candidate.Target, candidate.MetadataPath, 0, responseTotalBytes(response, 0), nil
+	return preparedDownload{
+		response:     response,
+		mode:         downloadModeRestart,
+		target:       candidate.Target,
+		metadataPath: candidate.MetadataPath,
+		totalBytes:   responseTotalBytes(response, 0),
+	}, nil
 }
 
-func (d *Downloader) restartWithNewRequest(ctx context.Context, plan download.Plan, rawURL string, oldResponse *http.Response, candidate resumeCandidate, handler EventHandler, message string) (downloadMode, targetPaths, string, int64, int64, error) {
+func (d *Downloader) restartWithNewRequest(ctx context.Context, plan download.Plan, rawURL string, oldResponse *http.Response, candidate resumeCandidate, handler EventHandler, message string) (preparedDownload, error) {
 	_ = oldResponse.Body.Close()
 
 	emitEvent(handler, Event{
@@ -365,25 +380,31 @@ func (d *Downloader) restartWithNewRequest(ctx context.Context, plan download.Pl
 
 	request, err := newRequestWithContext(ctx, rawURL)
 	if err != nil {
-		return downloadModeRestart, targetPaths{}, "", 0, 0, nonRetryableError{err: fmt.Errorf("create download request: %w", err)}
+		return preparedDownload{}, nonRetryableError{err: fmt.Errorf("create download request: %w", err)}
 	}
 	response, err := d.client.Do(request)
 	if err != nil {
 		if isCancellationError(err) {
-			return downloadModeRestart, targetPaths{}, "", 0, 0, ErrCancelled
+			return preparedDownload{}, ErrCancelled
 		}
-		return downloadModeRestart, targetPaths{}, "", 0, 0, fmt.Errorf("download %q: %w", rawURL, err)
+		return preparedDownload{}, fmt.Errorf("download %q: %w", rawURL, err)
 	}
-	*oldResponse = *response
 
 	if response.StatusCode < http.StatusOK || response.StatusCode > 299 {
-		return downloadModeRestart, targetPaths{}, "", 0, 0, httpStatusError{
+		_ = response.Body.Close()
+		return preparedDownload{}, httpStatusError{
 			StatusCode: response.StatusCode,
 			Status:     response.Status,
 		}
 	}
 
-	return downloadModeRestart, candidate.Target, candidate.MetadataPath, 0, responseTotalBytes(response, 0), nil
+	return preparedDownload{
+		response:     response,
+		mode:         downloadModeRestart,
+		target:       candidate.Target,
+		metadataPath: candidate.MetadataPath,
+		totalBytes:   responseTotalBytes(response, 0),
+	}, nil
 }
 
 func metadataFromResponse(rawURL string, target targetPaths, response *http.Response, totalBytes, downloadedBytes int64, candidate resumeCandidate) partialMetadata {

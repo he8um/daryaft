@@ -81,6 +81,13 @@ Daryaft also restarts from byte `0`.
 partial file, overwrites the sidecar metadata, and preserves the existing final
 file protection.
 
+## User Config
+
+The YAML user config lives at `<UserConfigDir>/daryaft/config.yaml`. Saves
+create the parent directory as needed, write a temporary file in the same
+directory, set private `0600` permissions, and rename it into place. This avoids
+direct partial writes to the final config path during normal updates.
+
 ## Acceptance criteria
 
 - The feature is implemented in the correct module.

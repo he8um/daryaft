@@ -3,6 +3,7 @@ package download
 import (
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -77,6 +78,38 @@ func TestBuildPlanRejectsNegativeRetries(t *testing.T) {
 	_, err := BuildPlan(Options{
 		URLs:    []string{"https://example.com/file.zip"},
 		Retries: -1,
+		Resume:  true,
+	})
+	if err == nil {
+		t.Fatal("BuildPlan returned nil error")
+	}
+	if !strings.Contains(err.Error(), "retries") {
+		t.Fatalf("error = %q, want retries context", err)
+	}
+}
+
+func TestBuildPlanAcceptsRetryBounds(t *testing.T) {
+	for _, retries := range []int{0, MaxRetries} {
+		t.Run(strconv.Itoa(retries), func(t *testing.T) {
+			plan, err := BuildPlan(Options{
+				URLs:    []string{"https://example.com/file.zip"},
+				Retries: retries,
+				Resume:  true,
+			})
+			if err != nil {
+				t.Fatalf("BuildPlan returned error: %v", err)
+			}
+			if plan.Retries != retries {
+				t.Fatalf("Retries = %d, want %d", plan.Retries, retries)
+			}
+		})
+	}
+}
+
+func TestBuildPlanRejectsRetriesAboveMax(t *testing.T) {
+	_, err := BuildPlan(Options{
+		URLs:    []string{"https://example.com/file.zip"},
+		Retries: MaxRetries + 1,
 		Resume:  true,
 	})
 	if err == nil {

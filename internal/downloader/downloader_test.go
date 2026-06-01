@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/he8um/daryaft/internal/download"
 	"github.com/he8um/daryaft/pkg/version"
@@ -52,6 +53,69 @@ func TestDownloadSingleURL(t *testing.T) {
 	if userAgent != "Daryaft/"+version.Version {
 		t.Fatalf("User-Agent = %q", userAgent)
 	}
+}
+
+func TestDefaultHTTPClientUsesPhaseTimeoutsWithoutTotalTimeout(t *testing.T) {
+	client := defaultHTTPClient()
+	if client.Timeout != 0 {
+		t.Fatalf("client.Timeout = %s, want no total download timeout", client.Timeout)
+	}
+	transport, ok := client.Transport.(*http.Transport)
+	if !ok {
+		t.Fatalf("client.Transport = %T, want *http.Transport", client.Transport)
+	}
+	if transport.ResponseHeaderTimeout != DefaultResponseHeaderTimeout {
+		t.Fatalf("ResponseHeaderTimeout = %s, want %s", transport.ResponseHeaderTimeout, DefaultResponseHeaderTimeout)
+	}
+	if transport.TLSHandshakeTimeout != DefaultTLSHandshakeTimeout {
+		t.Fatalf("TLSHandshakeTimeout = %s, want %s", transport.TLSHandshakeTimeout, DefaultTLSHandshakeTimeout)
+	}
+}
+
+func TestResponseHeaderTimeoutFailsSlowHeaders(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(150 * time.Millisecond)
+		_, _ = w.Write([]byte("late"))
+	}))
+	defer server.Close()
+
+	client := server.Client()
+	client.Transport = &http.Transport{
+		ResponseHeaderTimeout: 25 * time.Millisecond,
+	}
+	_, err := NewWithClient(client).Download(download.Plan{
+		URLs:   []string{server.URL + "/slow-headers.txt"},
+		Output: t.TempDir(),
+	})
+	if err == nil {
+		t.Fatal("Download returned nil error, want header timeout")
+	}
+}
+
+func TestSlowBodyStreamingIsNotKilledByHeaderTimeout(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Length", "6")
+		if flusher, ok := w.(http.Flusher); ok {
+			_, _ = w.Write([]byte("abc"))
+			flusher.Flush()
+		}
+		time.Sleep(75 * time.Millisecond)
+		_, _ = w.Write([]byte("def"))
+	}))
+	defer server.Close()
+
+	client := server.Client()
+	client.Transport = &http.Transport{
+		ResponseHeaderTimeout: 25 * time.Millisecond,
+	}
+	result, err := NewWithClient(client).Download(download.Plan{
+		URLs:   []string{server.URL + "/slow-body.txt"},
+		Output: t.TempDir(),
+	})
+	if err != nil {
+		t.Fatalf("Download returned error: %v", err)
+	}
+	assertFileContent(t, result.Path, "abcdef")
 }
 
 func TestDownloadCancellationLeavesPartialAndMetadata(t *testing.T) {

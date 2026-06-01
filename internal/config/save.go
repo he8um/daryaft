@@ -22,9 +22,35 @@ func Save(cfg Config) error {
 	if err != nil {
 		return fmt.Errorf("encode config: %w", err)
 	}
-	if err := os.WriteFile(path, data, 0o644); err != nil {
+
+	dir := filepath.Dir(path)
+	temp, err := os.CreateTemp(dir, ".config-*.tmp")
+	if err != nil {
+		return fmt.Errorf("create temporary config file: %w", err)
+	}
+	tempPath := temp.Name()
+	cleanup := true
+	defer func() {
+		if cleanup {
+			_ = os.Remove(tempPath)
+		}
+	}()
+
+	if err := temp.Chmod(0o600); err != nil {
+		_ = temp.Close()
+		return fmt.Errorf("set config permissions: %w", err)
+	}
+	if _, err := temp.Write(data); err != nil {
+		_ = temp.Close()
+		return fmt.Errorf("write temporary config %q: %w", tempPath, err)
+	}
+	if err := temp.Close(); err != nil {
+		return fmt.Errorf("close temporary config %q: %w", tempPath, err)
+	}
+	if err := os.Rename(tempPath, path); err != nil {
 		return fmt.Errorf("write config %q: %w", path, err)
 	}
+	cleanup = false
 	return nil
 }
 

@@ -17,7 +17,7 @@ const (
 	defaultRetryMaxDelay  = 8 * time.Second
 )
 
-type Sleeper func(time.Duration)
+type Sleeper func(context.Context, time.Duration) error
 
 type RetryPolicy struct {
 	Retries int
@@ -72,6 +72,25 @@ func BackoffDelay(failedAttempt int) time.Duration {
 		}
 	}
 	return delay
+}
+
+func timerSleep(ctx context.Context, delay time.Duration) error {
+	if delay <= 0 {
+		return ctx.Err()
+	}
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	timer := time.NewTimer(delay)
+	defer timer.Stop()
+
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-timer.C:
+		return nil
+	}
 }
 
 func IsRetryableError(err error) bool {

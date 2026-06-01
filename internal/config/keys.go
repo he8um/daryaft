@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/he8um/daryaft/internal/download"
 )
 
 type KeyInfo struct {
@@ -120,8 +122,11 @@ func Reset() (string, error) {
 func parseNonNegativeInt(name, value string) (int, error) {
 	trimmed := strings.TrimSpace(value)
 	parsed, err := strconv.Atoi(trimmed)
-	if err != nil || parsed < 0 {
-		return 0, fmt.Errorf("invalid %s %q: must be an integer greater than or equal to 0", name, value)
+	if err != nil {
+		return 0, fmt.Errorf("invalid %s %q: must be an integer between 0 and %d", name, value, download.MaxRetries)
+	}
+	if err := download.ValidateRetries(parsed); err != nil {
+		return 0, fmt.Errorf("invalid %s %q: %w", name, value, err)
 	}
 	return parsed, nil
 }

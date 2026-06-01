@@ -41,6 +41,21 @@ The agent must treat this file as a contract. If behavior is ambiguous, prefer t
 - `../engineering/error-model.md`
 - `../architecture/module-boundaries.md`
 
+The default HTTP client uses transport phase timeouts rather than a global
+`http.Client.Timeout`. Dial, TLS handshake, response-header, and idle
+connection phases are bounded, but Daryaft does not impose a fixed total
+download-duration timeout by default. Long body streams should continue as long
+as the request context is active and the server keeps sending data.
+
+Retry backoff is context-aware. Cancellation during backoff returns promptly
+and cancelled downloads are not classified as retryable. Retry counts are
+bounded to `0` through `20`; `0` means the first attempt only.
+
+Resume/restart helpers own response bodies explicitly. If a Range response must
+be replaced by a new full request, the old response body is closed once and the
+new active response is returned to the caller. The caller closes only the
+active response body after a successful preparation step.
+
 ## Acceptance criteria
 
 - The feature is implemented in the correct module.
