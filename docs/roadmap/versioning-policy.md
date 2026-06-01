@@ -37,7 +37,8 @@ and `built_by`.
 
 ## Local Release Checks
 
-`make release-check` runs GoReleaser in snapshot mode with publishing skipped:
+`make release-check` runs GoReleaser v2 in snapshot mode with publishing
+skipped:
 
 ```bash
 goreleaser release --snapshot --clean --skip=publish
@@ -45,7 +46,10 @@ goreleaser release --snapshot --clean --skip=publish
 
 This check is local release-readiness validation only. It must not be treated as
 a public release, must not create tags, and must not publish package-manager
-artifacts before `v1.0.0`. Snapshot output is local and ignored by Git.
+artifacts before `v1.0.0`. Snapshot versions are named
+`0.5.0-dev-SNAPSHOT-<short-commit>` so they align with the current development
+metadata instead of deriving from older local tags. Snapshot output is local and
+ignored by Git.
 
 Related docs:
 

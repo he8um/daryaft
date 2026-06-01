@@ -56,6 +56,8 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
   being converted into failures in the report.
 - Local `make release-check` target for GoReleaser snapshot validation without
   publishing.
+- GoReleaser v2 configuration with non-deprecated archive fields and
+  `0.5.0-dev-SNAPSHOT-<short-commit>` snapshot naming.
 - Starter documentation, CI, Makefile, and future packaging configuration.
 
 ### Planned

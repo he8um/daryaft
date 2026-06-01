@@ -63,10 +63,11 @@ make release-check
 make run
 ```
 
-`make release-check` requires GoReleaser and runs a local snapshot release check
-without publishing, creating tags, or enabling package-manager publishing.
+`make release-check` requires GoReleaser v2 and runs a local snapshot release
+check without publishing, creating tags, or enabling package-manager publishing.
 Install GoReleaser with `brew install goreleaser` if the command is missing.
-Any snapshot artifacts are written under ignored local build directories such as
+Snapshot versions are named like `0.5.0-dev-SNAPSHOT-<short-commit>`, and any
+snapshot artifacts are written under ignored local build directories such as
 `dist/`.
 
 ## Current Commands

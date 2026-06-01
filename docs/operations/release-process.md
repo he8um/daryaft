@@ -11,7 +11,8 @@ Use the local release check before changing release configuration:
 make release-check
 ```
 
-The target verifies that GoReleaser is installed. If it is missing, it prints:
+The target verifies that GoReleaser v2 is installed. If it is missing, it
+prints:
 
 ```text
 GoReleaser is required. Install it with: brew install goreleaser
@@ -26,6 +27,16 @@ goreleaser release --snapshot --clean --skip=publish
 This is local-only validation. It does not publish a GitHub release, does not
 create tags, and does not enable package-manager publishing. Snapshot artifacts
 are written under ignored local build directories such as `dist/`.
+
+Snapshot versions are intentionally named:
+
+```text
+0.5.0-dev-SNAPSHOT-<short-commit>
+```
+
+GoReleaser normally derives versions from Git tags. The snapshot template keeps
+local dry-run metadata aligned with Daryaft's current `0.5.0-dev` development
+version without creating or deleting tags.
 
 ## Release Metadata
 

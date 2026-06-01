@@ -40,7 +40,7 @@ Use `make release-check` to run a local GoReleaser snapshot check:
 make release-check
 ```
 
-This requires GoReleaser. If it is missing, the target prints:
+This requires GoReleaser v2. If it is missing, the target prints:
 
 ```text
 GoReleaser is required. Install it with: brew install goreleaser
@@ -48,8 +48,9 @@ GoReleaser is required. Install it with: brew install goreleaser
 
 The target runs `goreleaser release --snapshot --clean --skip=publish`. It is
 local only: it does not publish releases, create tags, or enable package-manager
-publishing. Snapshot artifacts are written under ignored local build directories
-such as `dist/`.
+publishing. Snapshot versions are named like
+`0.5.0-dev-SNAPSHOT-<short-commit>`, and snapshot artifacts are written under
+ignored local build directories such as `dist/`.
 
 ## Shell Completion
 
