@@ -49,9 +49,24 @@ Implemented. Prints:
 - Daryaft version
 - commit
 - build date
+- built by
 - Go version
 
-Default local values are used unless release tooling injects build variables.
+Use `daryaft version --json` for stable machine-readable output:
+
+```json
+{
+  "version": "0.5.0-dev",
+  "commit": "local",
+  "date": "unknown",
+  "built_by": "source",
+  "go_version": "go1.xx.x"
+}
+```
+
+Source builds default to version `0.5.0-dev`, commit `local`, date `unknown`,
+and built by `source`. Release builds inject metadata through ldflags. Daryaft
+is still pre-1.0; public stable install channels begin at `v1.0.0`.
 
 ## `daryaft doctor`
 

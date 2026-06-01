@@ -13,9 +13,24 @@ and footer line.
 
 ```bash
 daryaft version
+daryaft version --json
 ```
 
-Prints the Daryaft version, commit, build date, and Go version.
+Prints the Daryaft version, commit, build date, build source, and Go version.
+Use `daryaft version --json` for stable machine-readable metadata:
+
+```json
+{
+  "version": "0.5.0-dev",
+  "commit": "local",
+  "date": "unknown",
+  "built_by": "source",
+  "go_version": "go1.xx.x"
+}
+```
+
+Source builds default to `0.5.0-dev`, commit `local`, date `unknown`, and
+built by `source`. Release builds inject metadata with linker flags.
 
 ```bash
 daryaft doctor

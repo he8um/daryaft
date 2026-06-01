@@ -23,6 +23,7 @@ builds:
       - -X github.com/he8um/daryaft/pkg/version.Version={{.Version}}
       - -X github.com/he8um/daryaft/pkg/version.Commit={{.Commit}}
       - -X github.com/he8um/daryaft/pkg/version.Date={{.Date}}
+      - -X github.com/he8um/daryaft/pkg/version.BuiltBy=goreleaser
 
 archives:
   - id: default

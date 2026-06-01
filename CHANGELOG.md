@@ -11,7 +11,8 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 - Initial project skeleton.
 - Minimal Cobra CLI foundation.
 - Bubble Tea interactive home screen for no-argument `daryaft`.
-- Version command with build metadata defaults.
+- Version command with `0.5.0-dev` build metadata defaults, `built_by`
+  reporting, JSON output, and release ldflags compatibility.
 - Download command surface with validation and dry-run planning.
 - Single URL HTTP/HTTPS downloader with safe filename selection and `.part` writes.
 - Structured single URL downloader events for started, progress, completed, and failed states.

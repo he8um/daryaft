@@ -9,7 +9,9 @@ startup.
 ## CLI Layer
 
 `cmd/` owns Cobra commands, flags, help text, and command dispatch. It should not
-contain downloader business logic.
+contain downloader business logic. `pkg/version` owns build metadata defaults
+and linker-injected release values; `daryaft version --json` exposes those
+values for automation.
 
 ## Downloader Engine
 

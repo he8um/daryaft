@@ -9,6 +9,7 @@ Use the Go toolchain:
 ```bash
 go run . --help
 go run . version
+go run . version --json
 go run .
 ```
 
@@ -18,6 +19,18 @@ Or build the binary:
 make build
 ./bin/daryaft --help
 ```
+
+For a local binary with injected build metadata:
+
+```bash
+make build-local
+./bin/daryaft version
+```
+
+Source builds report version `0.5.0-dev`, commit `local`, build date
+`unknown`, and built by `source`. Local ldflags builds can inject the current
+git commit, UTC build time, and `built by` value. Release builds use GoReleaser
+ldflags for the same metadata fields.
 
 ## Shell Completion
 

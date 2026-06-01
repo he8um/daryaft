@@ -18,6 +18,7 @@ from `.part` files when the server supports HTTP Range requests. Running
 collect a single URL or `.txt` file path and show the same dry-run download
 plan as the CLI, then start real single or sequential batch downloads from the
 plan screen. The single URL TUI flow can also set an optional custom filename.
+The current development version is `0.5.0-dev`.
 
 - Repository: https://github.com/he8um/daryaft
 - Website: https://xhesam.com
@@ -29,7 +30,9 @@ plan screen. The single URL TUI flow can also set an optional custom filename.
 
 Public install channels begin at `v1.0.0`. Before that release, Homebrew, Debian,
 RPM, Arch, and one-line install instructions are planned only and must not be
-presented as stable user-facing install paths.
+presented as stable user-facing install paths. Source builds report
+`0.5.0-dev`, commit `local`, build date `unknown`, and built by `source`.
+Release builds inject version metadata with linker flags.
 
 For local development:
 
@@ -37,6 +40,7 @@ For local development:
 go mod download
 go run . --help
 go run . version
+go run . version --json
 go run .
 go run . config path
 go run . config show
@@ -53,6 +57,8 @@ Build and test locally:
 ```bash
 make test
 make build
+make build-local
+make version
 make run
 ```
 
@@ -61,6 +67,7 @@ make run
 ```bash
 daryaft --help
 daryaft version
+daryaft version --json
 daryaft
 daryaft doctor
 daryaft completion zsh

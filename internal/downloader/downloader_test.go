@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/he8um/daryaft/internal/download"
+	"github.com/he8um/daryaft/pkg/version"
 )
 
 func TestDownloadSingleURL(t *testing.T) {
@@ -48,7 +49,7 @@ func TestDownloadSingleURL(t *testing.T) {
 	if _, err := os.Stat(wantPath + ".part"); !os.IsNotExist(err) {
 		t.Fatalf("partial file still exists or stat failed: %v", err)
 	}
-	if userAgent != "Daryaft/0.1.0-dev" {
+	if userAgent != "Daryaft/"+version.Version {
 		t.Fatalf("User-Agent = %q", userAgent)
 	}
 }

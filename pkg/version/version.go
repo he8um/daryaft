@@ -3,16 +3,18 @@ package version
 import "runtime"
 
 var (
-	Version = "0.1.0-dev"
+	Version = "0.5.0-dev"
 	Commit  = "local"
 	Date    = "unknown"
+	BuiltBy = "source"
 )
 
 type Details struct {
-	Version   string
-	Commit    string
-	Date      string
-	GoVersion string
+	Version   string `json:"version"`
+	Commit    string `json:"commit"`
+	Date      string `json:"date"`
+	BuiltBy   string `json:"built_by"`
+	GoVersion string `json:"go_version"`
 }
 
 func Info() Details {
@@ -20,6 +22,7 @@ func Info() Details {
 		Version:   Version,
 		Commit:    Commit,
 		Date:      Date,
+		BuiltBy:   BuiltBy,
 		GoVersion: runtime.Version(),
 	}
 }
