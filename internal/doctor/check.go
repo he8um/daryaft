@@ -44,6 +44,22 @@ func (r Report) Failed() bool {
 	return false
 }
 
+func (r Report) Warned() bool {
+	for _, check := range r.Checks {
+		if check.Status == StatusWarn {
+			return true
+		}
+	}
+	return false
+}
+
+func (r Report) OK(strict bool) bool {
+	if r.Failed() {
+		return false
+	}
+	return !strict || !r.Warned()
+}
+
 func writableDir(path string) error {
 	file, err := os.CreateTemp(path, ".daryaft-doctor-*")
 	if err != nil {

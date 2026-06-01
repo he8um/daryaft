@@ -51,6 +51,8 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
   terminal, optional tool, and skipped release-check reporting.
 - JSON output mode for `doctor` diagnostics with stable check status and summary
   fields for automation.
+- Strict doctor mode for CI, where warnings cause a non-zero exit status without
+  being converted into failures in the report.
 - Starter documentation, CI, Makefile, and future packaging configuration.
 
 ### Planned

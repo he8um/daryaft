@@ -82,6 +82,55 @@ func TestJSONSummaryCountsMatchSections(t *testing.T) {
 	}
 }
 
+func TestJSONStrictWarningSetsOKFalseWithoutChangingWarningStatus(t *testing.T) {
+	report := Report{}
+	report.Add("Download", StatusWarn, "Output writable", "directory missing")
+
+	got := ToJSONReportWithOptions(report, true)
+
+	if got.OK {
+		t.Fatal("OK = true, want false in strict mode with warning")
+	}
+	if !got.Strict {
+		t.Fatal("Strict = false, want true")
+	}
+	if got.Summary.Failures != 0 {
+		t.Fatalf("failures = %d, want 0", got.Summary.Failures)
+	}
+	if got.Summary.Warnings != 1 {
+		t.Fatalf("warnings = %d, want 1", got.Summary.Warnings)
+	}
+	if got.Sections[0].Checks[0].Status != "warning" {
+		t.Fatalf("status = %q, want warning", got.Sections[0].Checks[0].Status)
+	}
+}
+
+func TestReportOKStrictPolicy(t *testing.T) {
+	healthy := Report{}
+	healthy.Add("System", StatusOK, "OS", "darwin")
+	if !healthy.OK(true) {
+		t.Fatal("healthy report OK(true) = false")
+	}
+
+	warning := Report{}
+	warning.Add("Download", StatusWarn, "Output writable", "directory missing")
+	if !warning.OK(false) {
+		t.Fatal("warning report OK(false) = false")
+	}
+	if warning.OK(true) {
+		t.Fatal("warning report OK(true) = true")
+	}
+
+	failure := Report{}
+	failure.Add("Config", StatusFail, "Config load", "parse config")
+	if failure.OK(false) {
+		t.Fatal("failure report OK(false) = true")
+	}
+	if failure.OK(true) {
+		t.Fatal("failure report OK(true) = true")
+	}
+}
+
 func assertJSONStatusPresent(t *testing.T, report JSONReport, status string) {
 	t.Helper()
 

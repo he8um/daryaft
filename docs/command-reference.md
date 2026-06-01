@@ -59,6 +59,8 @@ Implemented. Prints a local diagnostics report using simple text output.
 
 Use `daryaft doctor --json` to print the same diagnostics as machine-readable
 JSON for automation and CI. JSON mode does not print the human text report.
+Use `daryaft doctor --strict` when warnings should fail the command, such as in
+CI. `--json` and `--strict` can be combined.
 
 Checks include:
 
@@ -114,6 +116,21 @@ JSON output uses this stable shape:
 
 JSON check statuses are `ok`, `warning`, `failure`, `info`, and `skipped`.
 Both text and JSON modes exit non-zero when any critical failure is present.
+With `--strict`, warnings also produce a non-zero exit status. JSON strict mode
+keeps warning checks as `warning`, reports warnings separately from failures,
+and sets top-level `ok` to `false` when warnings are present:
+
+```json
+{
+  "ok": false,
+  "strict": true,
+  "summary": {
+    "failures": 0,
+    "warnings": 1,
+    "checks": 16
+  }
+}
+```
 
 ## `daryaft completion [bash|zsh|fish|powershell]`
 

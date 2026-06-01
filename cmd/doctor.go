@@ -9,6 +9,7 @@ import (
 
 func newDoctorCommand() *cobra.Command {
 	var jsonOutput bool
+	var strict bool
 
 	command := &cobra.Command{
 		Use:          "doctor",
@@ -23,21 +24,25 @@ tools, and currently skipped remote checks.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			report := doctor.Run(doctor.Options{})
 			if jsonOutput {
-				data, err := doctor.FormatJSON(report)
+				data, err := doctor.FormatJSONWithOptions(report, strict)
 				if err != nil {
 					return fmt.Errorf("encode doctor report: %w", err)
 				}
 				fmt.Fprintln(cmd.OutOrStdout(), string(data))
 			} else {
 				fmt.Fprint(cmd.OutOrStdout(), doctor.Format(report))
+				if strict && !report.Failed() && report.Warned() {
+					fmt.Fprintln(cmd.OutOrStdout(), "Strict mode: warnings treated as failures")
+				}
 			}
-			if report.Failed() {
-				return fmt.Errorf("doctor found critical issues")
+			if !report.OK(strict) {
+				return fmt.Errorf("doctor found issues")
 			}
 			return nil
 		},
 	}
 	command.Flags().BoolVar(&jsonOutput, "json", false, "print diagnostics as JSON")
+	command.Flags().BoolVar(&strict, "strict", false, "return non-zero when warnings are present")
 	return command
 }
 

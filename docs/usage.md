@@ -20,6 +20,8 @@ Prints the Daryaft version, commit, build date, and Go version.
 ```bash
 daryaft doctor
 daryaft doctor --json
+daryaft doctor --strict
+daryaft doctor --json --strict
 ```
 
 Prints a local diagnostic report. Use `daryaft doctor` for human-readable text
@@ -29,7 +31,10 @@ default download directory status, terminal environment values, optional
 `clamscan` detection, and a skipped GitHub release check. Invalid config and
 unwritable active output directories are critical failures. Missing configured
 output directories are warnings and are not created by `doctor`. Both output
-modes return non-zero only when critical failures exist.
+modes return non-zero only when critical failures exist, unless `--strict` is
+set. Strict mode is useful in CI because warnings also cause a non-zero exit
+status. JSON strict mode keeps warning checks as `warning` but sets `ok` to
+`false`.
 
 ```bash
 daryaft completion bash

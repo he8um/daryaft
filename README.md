@@ -114,9 +114,11 @@ DARYAFT_NO_TUI=true daryaft
 `daryaft doctor` prints a local diagnostic report for runtime details, version
 metadata, config path and loading, default download directory writability,
 terminal environment hints, and optional tools. `daryaft doctor --json` prints
-the same checks as machine-readable JSON for automation and CI. `clamscan` is
-reported as an optional tool for future scan features. The GitHub release check
-is currently listed as skipped and does not make a network request.
+the same checks as machine-readable JSON for automation and CI.
+`daryaft doctor --strict` treats warnings as a non-zero exit status, while
+keeping warning checks marked as warnings in the report. `clamscan` is reported
+as an optional tool for future scan features. The GitHub release check is
+currently listed as skipped and does not make a network request.
 
 Daryaft can generate shell completion scripts with Cobra's standard completion
 command. Installation paths depend on your OS and shell setup:

@@ -4,6 +4,7 @@ import "encoding/json"
 
 type JSONReport struct {
 	OK       bool          `json:"ok"`
+	Strict   bool          `json:"strict,omitempty"`
 	Summary  JSONSummary   `json:"summary"`
 	Sections []JSONSection `json:"sections"`
 }
@@ -26,13 +27,22 @@ type JSONCheck struct {
 }
 
 func FormatJSON(report Report) ([]byte, error) {
-	dto := ToJSONReport(report)
+	return FormatJSONWithOptions(report, false)
+}
+
+func FormatJSONWithOptions(report Report, strict bool) ([]byte, error) {
+	dto := ToJSONReportWithOptions(report, strict)
 	return json.MarshalIndent(dto, "", "  ")
 }
 
 func ToJSONReport(report Report) JSONReport {
+	return ToJSONReportWithOptions(report, false)
+}
+
+func ToJSONReportWithOptions(report Report, strict bool) JSONReport {
 	dto := JSONReport{
-		OK: true,
+		OK:     report.OK(strict),
+		Strict: strict,
 		Summary: JSONSummary{
 			Checks: len(report.Checks),
 		},
@@ -42,7 +52,6 @@ func ToJSONReport(report Report) JSONReport {
 	for _, check := range report.Checks {
 		switch check.Status {
 		case StatusFail:
-			dto.OK = false
 			dto.Summary.Failures++
 		case StatusWarn:
 			dto.Summary.Warnings++
