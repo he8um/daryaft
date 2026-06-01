@@ -54,6 +54,8 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
   fields for automation.
 - Strict doctor mode for CI, where warnings cause a non-zero exit status without
   being converted into failures in the report.
+- Local `make release-check` target for GoReleaser snapshot validation without
+  publishing.
 - Starter documentation, CI, Makefile, and future packaging configuration.
 
 ### Planned

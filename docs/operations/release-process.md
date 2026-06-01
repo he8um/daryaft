@@ -1,0 +1,52 @@
+# Release Process
+
+Daryaft is still pre-1.0. Public stable install channels and public release
+publishing remain planned for `v1.0.0` and later.
+
+## Local Snapshot Check
+
+Use the local release check before changing release configuration:
+
+```bash
+make release-check
+```
+
+The target verifies that GoReleaser is installed. If it is missing, it prints:
+
+```text
+GoReleaser is required. Install it with: brew install goreleaser
+```
+
+When GoReleaser is available, the target runs:
+
+```bash
+goreleaser release --snapshot --clean --skip=publish
+```
+
+This is local-only validation. It does not publish a GitHub release, does not
+create tags, and does not enable package-manager publishing. Snapshot artifacts
+are written under ignored local build directories such as `dist/`.
+
+## Release Metadata
+
+GoReleaser injects build metadata into `github.com/he8um/daryaft/pkg/version`
+with linker flags:
+
+- `Version`
+- `Commit`
+- `Date`
+- `BuiltBy`
+
+Source builds keep the default development metadata:
+
+```text
+version: 0.5.0-dev
+commit: local
+date: unknown
+built_by: source
+```
+
+## Publishing Policy
+
+Do not publish releases, create release tags, or enable Homebrew, deb, rpm, or
+Arch package publishing before `v1.0.0`.

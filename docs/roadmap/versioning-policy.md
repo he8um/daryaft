@@ -35,6 +35,18 @@ Release builds inject version metadata through linker flags into
 `github.com/he8um/daryaft/pkg/version`. GoReleaser sets version, commit, date,
 and `built_by`.
 
+## Local Release Checks
+
+`make release-check` runs GoReleaser in snapshot mode with publishing skipped:
+
+```bash
+goreleaser release --snapshot --clean --skip=publish
+```
+
+This check is local release-readiness validation only. It must not be treated as
+a public release, must not create tags, and must not publish package-manager
+artifacts before `v1.0.0`. Snapshot output is local and ignored by Git.
+
 Related docs:
 
 - [Roadmap](index.md)
