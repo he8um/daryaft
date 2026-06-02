@@ -19,11 +19,18 @@ The Go test/build workflow runs on both Linux and macOS. It checks module
 tidiness, runs `go test ./...`, runs `go build ./...`, and runs
 `go test -race ./internal/tui`.
 
+The CI workflow also runs separate `lint` and `security` jobs. The `lint` job
+runs `golangci-lint run` with `.golangci.yml`. The `security` job installs and
+runs `govulncheck ./...` and `gosec ./...`. These jobs do not publish releases,
+create tags, or run snapshot builds.
+
 Recommended branch protection checks:
 
 - `Go test/build (ubuntu-latest)`
 - `Go test/build (macos-latest)`
 - `goreleaser-check`
+- `lint`
+- `security`
 
 See [Branch Protection](branch-protection.md) for recommended `main` branch
 settings.
@@ -40,8 +47,8 @@ make security
 ```
 
 `make lint` requires `golangci-lint`. `make security` requires `govulncheck`
-and `gosec`. These checks are local-only for now; GitHub Actions integration is
-planned after the local lint and security signal is stable.
+and `gosec`. These are the local equivalents of the CI `lint` and `security`
+jobs.
 
 Use the local release check before changing release configuration:
 

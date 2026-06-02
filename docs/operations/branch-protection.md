@@ -23,6 +23,8 @@ Require these checks before merging to `main`:
 - `Go test/build (ubuntu-latest)`
 - `Go test/build (macos-latest)`
 - `goreleaser-check`
+- `lint`
+- `security`
 
 The Go test/build matrix verifies module tidiness, `go test ./...`,
 `go build ./...`, and `go test -race ./internal/tui` on Linux and macOS.
@@ -30,6 +32,10 @@ The Go test/build matrix verifies module tidiness, `go test ./...`,
 The `goreleaser-check` job validates `.goreleaser.yml` with `goreleaser check`
 only. It does not publish releases, create tags, run snapshot builds, or use
 publishing secrets.
+
+The `lint` job runs `golangci-lint run` using `.golangci.yml`. The `security`
+job runs `govulncheck ./...` and `gosec ./...`. These jobs do not publish
+releases, create tags, run snapshot builds, or use publishing secrets.
 
 ## Release Safety
 

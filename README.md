@@ -75,14 +75,14 @@ snapshot artifacts are written under ignored local build directories such as
 
 `make lint` requires `golangci-lint` and runs the repository's practical lint
 profile from `.golangci.yml`. `make security` requires `govulncheck` and
-`gosec`, then runs both local security scans. These quality gates are local for
-now; CI integration is planned after the local signal stays stable.
+`gosec`, then runs both local security scans. GitHub Actions also runs separate
+`lint` and `security` jobs; the security job uses `govulncheck` and `gosec`.
 
 `make ci` runs the same local pre-release checks expected before opening a PR:
 module tidy verification, tests, build, TUI race test, whitespace diff check,
 and `goreleaser check` when GoReleaser is installed. GitHub Actions runs the Go
-test/build/race matrix on Linux and macOS, plus a separate `goreleaser-check`
-job that validates release configuration without publishing.
+test/build/race matrix on Linux and macOS, plus separate `goreleaser-check`,
+`lint`, and `security` jobs. None of these jobs publish releases.
 
 ## Current Commands
 

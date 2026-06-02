@@ -35,8 +35,9 @@ make lint
 ```
 
 Run `make security` before security-sensitive or downloader changes when
-`govulncheck` and `gosec` are available locally. These lint and security gates
-are local-only for now; CI integration is planned after the signal is stable.
+`govulncheck` and `gosec` are available locally. GitHub Actions runs separate
+`lint` and `security` jobs on push and pull request, so local runs help catch
+the same issues before CI.
 
 Add tests for downloader, updater, parser, config, storage, and event behavior.
 CLI-only text changes may use focused command tests once command behavior grows.

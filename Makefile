@@ -5,6 +5,8 @@ DATE ?= $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
 BUILT_BY ?= make
 VERSION_PKG := github.com/he8um/daryaft/pkg/version
 LD_FLAGS := -X $(VERSION_PKG).Version=$(VERSION) -X $(VERSION_PKG).Commit=$(COMMIT) -X $(VERSION_PKG).Date=$(DATE) -X $(VERSION_PKG).BuiltBy=$(BUILT_BY)
+GO_BIN := $(shell go env GOPATH 2>/dev/null)/bin
+TOOL_PATH := $(GO_BIN):$(PATH)
 
 .PHONY: help test lint security build build-local version ci release-check run clean
 
@@ -25,11 +27,12 @@ test:
 	go test ./...
 
 lint:
-	@command -v golangci-lint >/dev/null 2>&1 || { echo "golangci-lint is required. Install it with: brew install golangci-lint"; exit 1; }
-	golangci-lint run
+	@PATH="$(TOOL_PATH)" command -v golangci-lint >/dev/null 2>&1 || { echo "golangci-lint is required. Install it with: brew install golangci-lint"; exit 1; }
+	@PATH="$(TOOL_PATH)" golangci-lint run
 
 security:
-	@missing=0; \
+	@PATH="$(TOOL_PATH)"; \
+	missing=0; \
 	if ! command -v govulncheck >/dev/null 2>&1; then \
 		echo "govulncheck is required. Install it with: go install golang.org/x/vuln/cmd/govulncheck@latest"; \
 		missing=1; \
@@ -41,8 +44,8 @@ security:
 	if [ "$$missing" -ne 0 ]; then \
 		exit 1; \
 	fi
-	govulncheck ./...
-	gosec ./...
+	@PATH="$(TOOL_PATH)" govulncheck ./...
+	@PATH="$(TOOL_PATH)" gosec ./...
 
 build:
 	go build -o bin/$(APP) .

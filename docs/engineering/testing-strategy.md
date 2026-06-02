@@ -112,9 +112,8 @@ This requires both tools:
 - `govulncheck`: `go install golang.org/x/vuln/cmd/govulncheck@latest`
 - `gosec`: `go install github.com/securego/gosec/v2/cmd/gosec@latest`
 
-`make lint` and `make security` are local quality gates for now. They are not
-part of GitHub Actions yet; CI integration is planned after the local signal is
-stable and false positives are understood.
+`make lint` and `make security` are the local equivalents of the CI `lint` and
+`security` jobs.
 
 ## GitHub Actions
 
@@ -126,15 +125,23 @@ The separate `goreleaser-check` job validates `.goreleaser.yml` with
 `goreleaser check` only. It does not run snapshot builds, publish releases,
 create tags, or use publishing secrets.
 
+The separate `lint` job installs `golangci-lint` and runs `golangci-lint run`
+with the repository `.golangci.yml`. The separate `security` job installs
+`govulncheck` and `gosec`, then runs `govulncheck ./...` and `gosec ./...`.
+Neither job publishes releases or creates tags.
+
 Workflow actions should stay on stable majors supported by GitHub-hosted
 runners. The current workflow uses Node 24-compatible action majors for
-checkout, Go setup, and GoReleaser validation.
+checkout, Go setup, and GoReleaser validation. The lint job installs
+GolangCI-Lint manually with Go rather than adding another action dependency.
 
 Recommended branch protection checks:
 
 - `Go test/build (ubuntu-latest)`
 - `Go test/build (macos-latest)`
 - `goreleaser-check`
+- `lint`
+- `security`
 
 See [Branch Protection](../operations/branch-protection.md) for the full
 recommended `main` settings.
