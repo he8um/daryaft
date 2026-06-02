@@ -28,12 +28,3 @@ func isBackKey(msg tea.KeyMsg) bool {
 		return false
 	}
 }
-
-func isQuitKey(msg tea.KeyMsg) bool {
-	switch msg.String() {
-	case "q", "ctrl+c":
-		return true
-	default:
-		return false
-	}
-}

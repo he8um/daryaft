@@ -32,10 +32,6 @@ func defaultHTTPClient() *http.Client {
 	}
 }
 
-func newRequest(rawURL string) (*http.Request, error) {
-	return newRequestWithContext(context.Background(), rawURL)
-}
-
 func newRequestWithContext(ctx context.Context, rawURL string) (*http.Request, error) {
 	request, err := http.NewRequestWithContext(ctx, http.MethodGet, rawURL, nil)
 	if err != nil {

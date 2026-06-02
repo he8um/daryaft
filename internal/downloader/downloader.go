@@ -173,7 +173,9 @@ func (d *Downloader) downloadAttempt(ctx context.Context, plan download.Plan, ha
 		return Result{}, err
 	}
 	response = prepared.response
-	defer response.Body.Close()
+	defer func() {
+		_ = response.Body.Close()
+	}()
 
 	var partial *os.File
 	if prepared.mode == downloadModeAppend {
@@ -272,8 +274,8 @@ type preparedDownload struct {
 
 func (d *Downloader) prepareDownloadResponse(ctx context.Context, plan download.Plan, rawURL string, response *http.Response, candidate resumeCandidate, resumeOffset int64, handler EventHandler) (preparedDownload, error) {
 	if resumeOffset > 0 {
-		switch {
-		case response.StatusCode == http.StatusPartialContent:
+		switch response.StatusCode {
+		case http.StatusPartialContent:
 			if !contentRangeStartsAt(response, resumeOffset) {
 				_ = response.Body.Close()
 				return preparedDownload{}, fmt.Errorf("server returned unexpected content range %q", response.Header.Get("Content-Range"))
@@ -301,9 +303,9 @@ func (d *Downloader) prepareDownloadResponse(ctx context.Context, plan download.
 				totalBytes:   totalBytes,
 			}, nil
 
-		case response.StatusCode == http.StatusOK:
+		case http.StatusOK:
 			return d.restartWithResponse(plan, rawURL, response, candidate, handler, resumeNotSupportedMessage)
-		case response.StatusCode == http.StatusRequestedRangeNotSatisfiable:
+		case http.StatusRequestedRangeNotSatisfiable:
 			return d.restartWithNewRequest(ctx, plan, rawURL, response, candidate, handler, resumeNotSupportedMessage)
 		}
 	}

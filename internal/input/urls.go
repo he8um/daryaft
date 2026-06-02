@@ -12,11 +12,13 @@ func ReadURLFile(path string) ([]string, error) {
 		return nil, fmt.Errorf("URL file path cannot be empty")
 	}
 
-	file, err := os.Open(path)
+	file, err := os.Open(path) // #nosec G304 -- users intentionally choose the URL list file path.
 	if err != nil {
 		return nil, fmt.Errorf("read URL file %q: %w", path, err)
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	var urls []string
 	scanner := bufio.NewScanner(file)

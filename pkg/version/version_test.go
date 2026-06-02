@@ -26,8 +26,8 @@ func TestInfoDefaults(t *testing.T) {
 }
 
 func TestLdflagVariablesAreExportedStrings(t *testing.T) {
-	var _ string = Version
-	var _ string = Commit
-	var _ string = Date
-	var _ string = BuiltBy
+	values := []string{Version, Commit, Date, BuiltBy}
+	if len(values) != 4 {
+		t.Fatalf("ldflag variable count = %d, want 4", len(values))
+	}
 }

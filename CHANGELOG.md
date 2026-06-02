@@ -67,6 +67,8 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
   documentation.
 - Safe CLI Ctrl+C/SIGTERM cancellation for single and batch downloads, with
   partial files and metadata preserved for resume.
+- Local `make lint` and `make security` quality gates with a practical
+  GolangCI-Lint profile plus govulncheck/gosec scanning.
 - Starter documentation, CI, Makefile, and future packaging configuration.
 
 ### Fixed
@@ -91,6 +93,9 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
   so large downloads are not killed by a fixed overall duration.
 - Saved YAML config files through same-directory temporary files plus rename
   with private `0600` permissions.
+- Tightened Daryaft-created config, metadata, and output directories to
+  `0750` and documented narrow local gosec suppressions for intentional file
+  reads.
 - Hardened output-directory traversal checks with normalized relative paths.
 - Added a retry upper bound of `20` across CLI planning, config values, and
   environment overrides.

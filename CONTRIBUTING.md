@@ -31,7 +31,12 @@ Run these before opening a pull request:
 ```bash
 go test ./...
 go build ./...
+make lint
 ```
+
+Run `make security` before security-sensitive or downloader changes when
+`govulncheck` and `gosec` are available locally. These lint and security gates
+are local-only for now; CI integration is planned after the signal is stable.
 
 Add tests for downloader, updater, parser, config, storage, and event behavior.
 CLI-only text changes may use focused command tests once command behavior grows.

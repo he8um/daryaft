@@ -84,6 +84,38 @@ If GoReleaser is not installed, `make ci` prints a warning and continues. The
 strict release snapshot target remains `make release-check`, which requires
 GoReleaser and does not publish.
 
+## Local Quality Gates
+
+Run the local linter when touching Go code:
+
+```bash
+make lint
+```
+
+This requires `golangci-lint` and runs the practical profile in
+`.golangci.yml`: `govet`, `staticcheck`, `errcheck`, `ineffassign`, `unused`,
+`bodyclose`, `noctx`, and `gocritic`. The current GolangCI-Lint v2 linter set
+does not expose `gosimple` separately; simplification checks are covered through
+`staticcheck`. Command-output writes through `fmt.Fprint*` are excluded from
+`errcheck` to avoid style-only noise while keeping resource and API error checks
+active.
+
+Run local security scans when touching downloader, filesystem, config, or
+release-related code:
+
+```bash
+make security
+```
+
+This requires both tools:
+
+- `govulncheck`: `go install golang.org/x/vuln/cmd/govulncheck@latest`
+- `gosec`: `go install github.com/securego/gosec/v2/cmd/gosec@latest`
+
+`make lint` and `make security` are local quality gates for now. They are not
+part of GitHub Actions yet; CI integration is planned after the local signal is
+stable and false positives are understood.
+
 ## GitHub Actions
 
 The test workflow runs on push and pull request. The Go test/build job runs on

@@ -56,6 +56,8 @@ Build and test locally:
 
 ```bash
 make test
+make lint
+make security
 make ci
 make build
 make build-local
@@ -70,6 +72,11 @@ Install GoReleaser with `brew install goreleaser` if the command is missing.
 Snapshot versions are named like `0.5.0-dev-SNAPSHOT-<short-commit>`, and any
 snapshot artifacts are written under ignored local build directories such as
 `dist/`.
+
+`make lint` requires `golangci-lint` and runs the repository's practical lint
+profile from `.golangci.yml`. `make security` requires `govulncheck` and
+`gosec`, then runs both local security scans. These quality gates are local for
+now; CI integration is planned after the local signal stays stable.
 
 `make ci` runs the same local pre-release checks expected before opening a PR:
 module tidy verification, tests, build, TUI race test, whitespace diff check,

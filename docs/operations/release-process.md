@@ -30,6 +30,19 @@ settings.
 
 ## Local Snapshot Check
 
+Before release-configuration work, run the normal local checks plus the local
+quality gates when the tools are installed:
+
+```bash
+make ci
+make lint
+make security
+```
+
+`make lint` requires `golangci-lint`. `make security` requires `govulncheck`
+and `gosec`. These checks are local-only for now; GitHub Actions integration is
+planned after the local lint and security signal is stable.
+
 Use the local release check before changing release configuration:
 
 ```bash

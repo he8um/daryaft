@@ -470,7 +470,7 @@ type cancelOnWriteBuffer struct {
 
 func (b *cancelOnWriteBuffer) Write(p []byte) (int, error) {
 	n, err := b.Buffer.Write(p)
-	if !b.cancelled && strings.Contains(b.Buffer.String(), b.needle) {
+	if !b.cancelled && strings.Contains(b.String(), b.needle) {
 		b.cancelled = true
 		b.cancel()
 	}

@@ -26,7 +26,7 @@ func metadataPathForPartial(partialPath string) string {
 }
 
 func loadPartialMetadata(path string) (partialMetadata, error) {
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) // #nosec G304 -- sidecar path is derived from Daryaft target/partial path logic.
 	if err != nil {
 		return partialMetadata{}, err
 	}
@@ -51,7 +51,7 @@ func savePartialMetadata(path string, metadata partialMetadata) error {
 	}
 	data = append(data, '\n')
 
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
 		return fmt.Errorf("create metadata directory %q: %w", filepath.Dir(path), err)
 	}
 

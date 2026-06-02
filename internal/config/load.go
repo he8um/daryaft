@@ -15,7 +15,7 @@ func Load() (Config, error) {
 		return Config{}, fmt.Errorf("resolve config path: %w", err)
 	}
 
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) // #nosec G304 -- path comes from Daryaft config path resolution or test override.
 	if err != nil {
 		if os.IsNotExist(err) {
 			return Default(), nil

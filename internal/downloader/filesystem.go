@@ -25,7 +25,7 @@ func prepareTarget(outputDir, filename string) (targetPaths, error) {
 		return targetPaths{}, fmt.Errorf("check target file %q: %w", target.Final, err)
 	}
 
-	if err := os.MkdirAll(target.OutputDir, 0o755); err != nil {
+	if err := os.MkdirAll(target.OutputDir, 0o750); err != nil {
 		return targetPaths{}, fmt.Errorf("create output directory %q: %w", target.OutputDir, err)
 	}
 
