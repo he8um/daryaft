@@ -105,8 +105,7 @@ download files.
 ## Planned
 
 Queue persistence, concurrent downloads, history, and rich progress bars are
-not implemented yet. CLI ctrl+c behavior is unchanged and may terminate the
-process directly.
+not implemented yet.
 
 ## Examples
 

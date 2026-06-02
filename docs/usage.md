@@ -133,10 +133,11 @@ text inputs to the terminal window. Escape navigates back; Backspace edits a
 non-empty text input and navigates back only when the current input is empty.
 Press `q` while a TUI download is running to cancel it. Cancelled downloads
 keep the `.part` file and sidecar metadata for resume and are not retried. CLI
-`-o`/`--output` and `--name` behavior is unchanged, and CLI ctrl+c behavior is
-unchanged and may terminate the process directly. If `download_dir` is set in
-config, the TUI output directory input starts with that value; otherwise it
-starts with `.`.
+`-o`/`--output` and `--name` behavior is unchanged. CLI Ctrl+C/SIGTERM also
+cancels through the downloader context, keeps the `.part` file and sidecar
+metadata, stops remaining batch items, and exits non-zero. If `download_dir` is
+set in config, the TUI output directory input starts with that value; otherwise
+it starts with `.`.
 
 ```bash
 daryaft https://example.com/file.zip --dry-run

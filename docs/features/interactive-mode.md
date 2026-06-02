@@ -93,8 +93,7 @@ build metadata as `daryaft version`.
 
 Interactive mode does not implement queue persistence, concurrency,
 self-update, or packaging flows yet. It also does not implement one custom
-filename for `.txt` batch downloads. CLI ctrl+c behavior is unchanged and may
-terminate the process directly.
+filename for `.txt` batch downloads.
 
 ## Examples
 

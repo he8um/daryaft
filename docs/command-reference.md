@@ -312,9 +312,14 @@ execution screen consumes the same event stream for status, target path,
 downloaded bytes, percent, speed, retry/resume/restart messages, completion,
 failure, and summaries.
 
-Cancellation is supported by the downloader context path. TUI cancellation
-emits a cancelled event, leaves the `.part` file and metadata sidecar in place,
-does not rename to the final target, and does not retry.
+Cancellation is supported by the downloader context path. In CLI downloads,
+Ctrl+C or SIGTERM cancels the active request/copy loop, prints
+`Download cancelled. Partial file kept for resume.`, leaves the `.part` file
+and metadata sidecar in place, does not rename to the final target, and returns
+a non-zero exit code. In batch mode, cancellation stops the active item and
+does not start remaining URLs; the summary reports cancelled and skipped items
+when practical. TUI cancellation still uses `q` from the progress screen and
+preserves the same partial state for resume.
 
 `--retries` is implemented for transient failures. The value is the number of
 retry attempts after the first try, so `--retries 0` means one total attempt and

@@ -2,14 +2,18 @@ package cmd
 
 import (
 	"bytes"
+	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	appconfig "github.com/he8um/daryaft/internal/config"
+	"github.com/he8um/daryaft/internal/downloader"
 	"github.com/spf13/cobra"
 )
 
@@ -340,6 +344,137 @@ func TestRunDownloadBatchFromFileAndArgs(t *testing.T) {
 			t.Fatalf("output missing %q in:\n%s", want, output.String())
 		}
 	}
+}
+
+func TestRunDownloadContextCancellationLeavesPartialAndMetadata(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Length", "131072")
+		for range 4 {
+			_, _ = w.Write(bytes.Repeat([]byte("a"), 32*1024))
+			if flusher, ok := w.(http.Flusher); ok {
+				flusher.Flush()
+			}
+			select {
+			case <-r.Context().Done():
+				return
+			case <-time.After(20 * time.Millisecond):
+			}
+		}
+	}))
+	defer server.Close()
+
+	dir := t.TempDir()
+	output := &cancelOnWriteBuffer{needle: "Saving to:", cancel: cancel}
+	cmd := &cobra.Command{Use: "download"}
+	cmd.SetOut(output)
+
+	err := runDownloadWithContext(cmd, []string{server.URL + "/file.bin"}, downloadFlagValues{
+		output:  dir,
+		retries: 0,
+		resume:  true,
+	}, ctx)
+	if !errors.Is(err, downloader.ErrCancelled) {
+		t.Fatalf("runDownloadWithContext error = %v, want ErrCancelled", err)
+	}
+	if !strings.Contains(output.String(), "Download cancelled. Partial file kept for resume.") {
+		t.Fatalf("output missing cancellation message:\n%s", output.String())
+	}
+
+	final := filepath.Join(dir, "file.bin")
+	if _, err := os.Stat(final); !os.IsNotExist(err) {
+		t.Fatalf("final exists or stat failed: %v", err)
+	}
+	if _, err := os.Stat(final + ".part"); err != nil {
+		t.Fatalf("partial missing after cancellation: %v", err)
+	}
+	if _, err := os.Stat(final + ".part.daryaft.json"); err != nil {
+		t.Fatalf("metadata missing after cancellation: %v", err)
+	}
+}
+
+func TestRunDownloadBatchContextCancellationStopsRemainingItems(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	requestsByPath := make(map[string]int)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requestsByPath[r.URL.Path]++
+		switch r.URL.Path {
+		case "/one.bin":
+			w.Header().Set("Content-Length", "131072")
+			for range 4 {
+				_, _ = w.Write(bytes.Repeat([]byte("a"), 32*1024))
+				if flusher, ok := w.(http.Flusher); ok {
+					flusher.Flush()
+				}
+				select {
+				case <-r.Context().Done():
+					return
+				case <-time.After(20 * time.Millisecond):
+				}
+			}
+		case "/two.bin":
+			_, _ = w.Write([]byte("should not start"))
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer server.Close()
+
+	dir := t.TempDir()
+	output := &cancelOnWriteBuffer{needle: "Saving to:", cancel: cancel}
+	cmd := &cobra.Command{Use: "download"}
+	cmd.SetOut(output)
+
+	err := runDownloadWithContext(cmd, []string{server.URL + "/one.bin", server.URL + "/two.bin"}, downloadFlagValues{
+		output:  dir,
+		retries: 0,
+		resume:  true,
+	}, ctx)
+	if !errors.Is(err, downloader.ErrCancelled) {
+		t.Fatalf("runDownloadWithContext error = %v, want ErrCancelled", err)
+	}
+	if requestsByPath["/two.bin"] != 0 {
+		t.Fatalf("second item requests = %d, want 0", requestsByPath["/two.bin"])
+	}
+
+	for _, want := range []string{
+		"Download cancelled. Partial file kept for resume.",
+		"Daryaft batch summary",
+		"Total: 2",
+		"Cancelled: 1",
+		"Skipped: 1",
+	} {
+		if !strings.Contains(output.String(), want) {
+			t.Fatalf("output missing %q in:\n%s", want, output.String())
+		}
+	}
+
+	final := filepath.Join(dir, "one.bin")
+	if _, err := os.Stat(final); !os.IsNotExist(err) {
+		t.Fatalf("final exists or stat failed: %v", err)
+	}
+	if _, err := os.Stat(final + ".part"); err != nil {
+		t.Fatalf("partial missing after cancellation: %v", err)
+	}
+	if _, err := os.Stat(final + ".part.daryaft.json"); err != nil {
+		t.Fatalf("metadata missing after cancellation: %v", err)
+	}
+}
+
+type cancelOnWriteBuffer struct {
+	bytes.Buffer
+	needle    string
+	cancel    context.CancelFunc
+	cancelled bool
+}
+
+func (b *cancelOnWriteBuffer) Write(p []byte) (int, error) {
+	n, err := b.Buffer.Write(p)
+	if !b.cancelled && strings.Contains(b.Buffer.String(), b.needle) {
+		b.cancelled = true
+		b.cancel()
+	}
+	return n, err
 }
 
 func TestRunDownloadVerboseSingleURLAddsDiagnostics(t *testing.T) {

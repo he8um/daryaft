@@ -184,7 +184,9 @@ execution screen consumes the same event stream for status, byte progress,
 speed, retry/resume/restart messages, completion, failure, and batch summaries.
 TUI downloads can be cancelled with `q`; Daryaft keeps the `.part` file and
 metadata sidecar for a future resume and does not retry cancelled downloads.
-CLI ctrl+c behavior is unchanged and may terminate the process directly.
+CLI Ctrl+C/SIGTERM cancellation uses the same downloader context path, keeps
+the `.part` file and metadata sidecar for resume, avoids renaming to the final
+target, stops remaining batch items, and exits non-zero.
 
 ## Planned Features
 

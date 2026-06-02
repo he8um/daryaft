@@ -51,6 +51,11 @@ Retry backoff is context-aware. Cancellation during backoff returns promptly
 and cancelled downloads are not classified as retryable. Retry counts are
 bounded to `0` through `20`; `0` means the first attempt only.
 
+CLI real downloads create a signal-aware context for Ctrl+C and SIGTERM before
+calling the downloader. Dry-run planning returns before signal handling is
+installed. The downloader remains responsible for preserving `.part` files and
+metadata, emitting the cancelled event, and avoiding final-file rename.
+
 Resume/restart helpers own response bodies explicitly. If a Range response must
 be replaced by a new full request, the old response body is closed once and the
 new active response is returned to the caller. The caller closes only the

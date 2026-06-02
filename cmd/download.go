@@ -1,10 +1,14 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"net/url"
+	"os"
+	"os/signal"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"time"
 
 	appconfig "github.com/he8um/daryaft/internal/config"
@@ -67,6 +71,10 @@ func addDownloadFlags(command *cobra.Command, flags *downloadFlagValues) {
 }
 
 func runDownload(cmd *cobra.Command, args []string, flags downloadFlagValues) error {
+	return runDownloadWithContext(cmd, args, flags, nil)
+}
+
+func runDownloadWithContext(cmd *cobra.Command, args []string, flags downloadFlagValues, ctx context.Context) error {
 	cfg, err := appconfig.LoadEffective()
 	if err != nil {
 		return err
@@ -94,13 +102,19 @@ func runDownload(cmd *cobra.Command, args []string, flags downloadFlagValues) er
 		return nil
 	}
 
+	if ctx == nil {
+		signalCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+		defer stop()
+		ctx = signalCtx
+	}
+
 	verboseMode := effectiveVerbose(cmd)
 	startedAt := time.Now()
 	printVerbosePlan(cmd, plan, verboseMode)
 
 	if len(plan.URLs) > 1 {
 		savingPrinted := make(map[int]bool)
-		result := downloader.New().DownloadBatch(plan, downloader.BatchHandlers{
+		result := downloader.New().DownloadBatchContext(ctx, plan, downloader.BatchHandlers{
 			ItemStarted: func(item downloader.BatchItem) {
 				fmt.Fprintf(cmd.OutOrStdout(), "[%d/%d] Downloading: %s\n", item.Index, item.Total, item.URL)
 				printVerboseItem(cmd, item, verboseMode)
@@ -122,6 +136,8 @@ func runDownload(cmd *cobra.Command, args []string, flags downloadFlagValues) er
 					fmt.Fprintf(cmd.OutOrStdout(), "Completed: %s\n", event.TargetPath)
 				case downloader.EventFailed:
 					fmt.Fprintf(cmd.OutOrStdout(), "Failed: %s\n", event.Error)
+				case downloader.EventCancelled:
+					printMessage(cmd, event)
 				}
 				printVerboseEvent(cmd, event, verboseMode, startedAt)
 			},
@@ -134,7 +150,7 @@ func runDownload(cmd *cobra.Command, args []string, flags downloadFlagValues) er
 	fmt.Fprintf(cmd.OutOrStdout(), "Downloading: %s\n", plan.URLs[0])
 
 	savingPrinted := false
-	_, err = downloader.New().DownloadWithEvents(plan, func(event downloader.Event) {
+	_, err = downloader.New().DownloadWithEventsContext(ctx, plan, func(event downloader.Event) {
 		switch event.Type {
 		case downloader.EventStarted:
 			if !savingPrinted {
@@ -149,6 +165,8 @@ func runDownload(cmd *cobra.Command, args []string, flags downloadFlagValues) er
 			printMessage(cmd, event)
 		case downloader.EventCompleted:
 			fmt.Fprintf(cmd.OutOrStdout(), "Completed: %s\n", event.TargetPath)
+		case downloader.EventCancelled:
+			printMessage(cmd, event)
 		}
 		printVerboseEvent(cmd, event, verboseMode, startedAt)
 	})

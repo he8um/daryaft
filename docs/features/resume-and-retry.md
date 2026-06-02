@@ -59,6 +59,12 @@ Cancellation is not retryable. When a download context is cancelled, Daryaft
 emits a cancelled event and returns immediately without waiting for backoff or
 starting another attempt.
 
+In CLI mode, Ctrl+C or SIGTERM cancels through that context path. Daryaft keeps
+the `.part` file and `.part.daryaft.json` metadata sidecar, does not rename the
+partial file to the final target, prints a cancellation message, and exits
+non-zero. For batch downloads, the current item is cancelled and remaining URLs
+are not started. TUI cancellation remains `q` from the progress screen.
+
 ## Batch Downloads
 
 Sequential batch downloads use the same retry behavior for each item. One item

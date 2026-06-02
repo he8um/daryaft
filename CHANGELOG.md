@@ -65,6 +65,8 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 - Updated GitHub Actions workflow actions to newer Node 24-compatible majors.
 - GitHub issue templates, pull request template, and branch protection
   documentation.
+- Safe CLI Ctrl+C/SIGTERM cancellation for single and batch downloads, with
+  partial files and metadata preserved for resume.
 - Starter documentation, CI, Makefile, and future packaging configuration.
 
 ### Fixed
