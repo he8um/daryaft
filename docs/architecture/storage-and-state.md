@@ -102,5 +102,5 @@ direct partial writes to the final config path during normal updates.
 daryaft -h
 daryaft https://example.com/file.zip
 daryaft -f urls.txt
-daryaft update --check
+# planned: daryaft update --check
 ```

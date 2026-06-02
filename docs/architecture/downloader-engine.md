@@ -70,5 +70,5 @@ active response body after a successful preparation step.
 daryaft -h
 daryaft https://example.com/file.zip
 daryaft -f urls.txt
-daryaft update --check
+# planned: daryaft update --check
 ```

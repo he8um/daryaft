@@ -11,6 +11,7 @@ downloads inherit the same behavior for each item.
 - `--retries 3`: one initial attempt plus up to three retries, for four total attempts.
 
 The default is `3`.
+Valid retry values are `0` through `20`.
 
 Daryaft retries:
 

@@ -69,6 +69,9 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 
 ### Fixed
 
+- Expanded downloader HTTP integration coverage for redirects, unknown-length
+  responses, slow-stream cancellation, and exhausted retry failures, and cleaned
+  docs so planned update/install/Windows support is not overstated.
 - Added responsive TUI sizing from terminal window dimensions, including
   adaptive input widths for narrow, normal, and wide terminals.
 - Fixed TUI Backspace behavior so it edits non-empty text inputs and navigates

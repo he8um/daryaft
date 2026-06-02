@@ -41,6 +41,17 @@ The agent must treat this file as a contract. If behavior is ambiguous, prefer t
 - `../engineering/error-model.md`
 - `../architecture/module-boundaries.md`
 
+## Current Support Status
+
+Daryaft is developed and tested in CI on Linux and macOS. Windows builds are
+planned through GoReleaser configuration, but Windows is not part of the current
+GitHub Actions test matrix and is not officially supported or verified yet.
+
+Public package-manager install channels are planned for `v1.0.0` and later.
+Before `v1.0.0`, Homebrew, Debian, RPM, Arch, GitHub release archives, and
+install scripts are release-readiness configuration only, not stable install
+paths.
+
 ## Acceptance criteria
 
 - The feature is implemented in the correct module.
@@ -55,5 +66,5 @@ The agent must treat this file as a contract. If behavior is ambiguous, prefer t
 daryaft -h
 daryaft https://example.com/file.zip
 daryaft -f urls.txt
-daryaft update --check
+# planned: daryaft update --check
 ```

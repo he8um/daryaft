@@ -91,6 +91,55 @@ func TestDownloadRetriesTransient503AndSucceeds(t *testing.T) {
 	}
 }
 
+func TestDownloadExhaustsRetriesAtConfiguredLimit(t *testing.T) {
+	requests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests++
+		http.Error(w, "try later", http.StatusServiceUnavailable)
+	}))
+	defer server.Close()
+
+	var retryEvents []Event
+	var failedEvents []Event
+	d := newTestDownloader(server)
+	_, err := d.DownloadWithEvents(download.Plan{
+		URLs:    []string{server.URL + "/file.txt"},
+		Output:  t.TempDir(),
+		Retries: 2,
+	}, func(event Event) {
+		switch event.Type {
+		case EventRetrying:
+			retryEvents = append(retryEvents, event)
+		case EventFailed:
+			failedEvents = append(failedEvents, event)
+		}
+	})
+	if err == nil {
+		t.Fatal("DownloadWithEvents returned nil error")
+	}
+	if requests != 3 {
+		t.Fatalf("requests = %d, want 3", requests)
+	}
+	if len(retryEvents) != 2 {
+		t.Fatalf("retry events = %d, want 2", len(retryEvents))
+	}
+	if retryEvents[0].Attempt != 2 || retryEvents[0].MaxAttempts != 3 {
+		t.Fatalf("first retry event = %d/%d, want 2/3", retryEvents[0].Attempt, retryEvents[0].MaxAttempts)
+	}
+	if retryEvents[1].Attempt != 3 || retryEvents[1].MaxAttempts != 3 {
+		t.Fatalf("second retry event = %d/%d, want 3/3", retryEvents[1].Attempt, retryEvents[1].MaxAttempts)
+	}
+	if len(failedEvents) != 1 {
+		t.Fatalf("failed events = %d, want 1", len(failedEvents))
+	}
+	if failedEvents[0].Error == nil || !strings.Contains(failedEvents[0].Error.Error(), "temporary server error: 503") {
+		t.Fatalf("failed event error = %v", failedEvents[0].Error)
+	}
+	if !strings.Contains(err.Error(), "temporary server error: 503") {
+		t.Fatalf("error = %q, want clear 503 failure", err)
+	}
+}
+
 func TestDownloadCancelDuringRetryBackoffReturnsPromptly(t *testing.T) {
 	requests := 0
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

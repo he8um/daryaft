@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -53,6 +54,44 @@ func TestDownloadSingleURL(t *testing.T) {
 	if userAgent != "Daryaft/"+version.Version {
 		t.Fatalf("User-Agent = %q", userAgent)
 	}
+}
+
+func TestDownloadFollowsRedirectAndUsesFinalResponseFilename(t *testing.T) {
+	requestsByPath := make(map[string]int)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requestsByPath[r.URL.Path]++
+		switch r.URL.Path {
+		case "/start.bin":
+			http.Redirect(w, r, "/final", http.StatusFound)
+		case "/final":
+			w.Header().Set("Content-Disposition", `attachment; filename="redirected-name.txt"`)
+			_, _ = w.Write([]byte("redirected body"))
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer server.Close()
+
+	dir := t.TempDir()
+	result, err := New().Download(download.Plan{
+		URLs:   []string{server.URL + "/start.bin"},
+		Output: dir,
+	})
+	if err != nil {
+		t.Fatalf("Download returned error: %v", err)
+	}
+
+	if requestsByPath["/start.bin"] != 1 || requestsByPath["/final"] != 1 {
+		t.Fatalf("requests by path = %#v, want one redirect and one final request", requestsByPath)
+	}
+	if result.URL != server.URL+"/start.bin" {
+		t.Fatalf("result.URL = %q, want original requested URL", result.URL)
+	}
+	wantPath := filepath.Join(dir, "redirected-name.txt")
+	if result.Path != wantPath {
+		t.Fatalf("result.Path = %q, want %q", result.Path, wantPath)
+	}
+	assertFileContent(t, result.Path, "redirected body")
 }
 
 func TestDefaultHTTPClientUsesPhaseTimeoutsWithoutTotalTimeout(t *testing.T) {
@@ -350,7 +389,7 @@ func TestDownloadProgressUnknownTotal(t *testing.T) {
 	defer server.Close()
 
 	var progressEvents []Event
-	_, err := New().DownloadWithEvents(download.Plan{
+	result, err := New().DownloadWithEvents(download.Plan{
 		URLs:   []string{server.URL + "/stream.txt"},
 		Output: t.TempDir(),
 	}, func(event Event) {
@@ -374,6 +413,63 @@ func TestDownloadProgressUnknownTotal(t *testing.T) {
 	}
 	if lastProgress.DownloadedBytes != int64(len("hello daryaft")) {
 		t.Fatalf("lastProgress.DownloadedBytes = %d", lastProgress.DownloadedBytes)
+	}
+	assertFileContent(t, result.Path, "hello daryaft")
+}
+
+func TestSlowBodyStreamingCancellationReturnsPromptly(t *testing.T) {
+	bodyStarted := make(chan struct{})
+	cancelled := make(chan struct{})
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Length", strconv.Itoa(128*1024))
+		_, _ = w.Write(bytes.Repeat([]byte("a"), 64*1024))
+		if flusher, ok := w.(http.Flusher); ok {
+			flusher.Flush()
+		}
+		close(bodyStarted)
+		<-cancelled
+	}))
+	defer server.Close()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	var cancelOnce sync.Once
+	dir := t.TempDir()
+	errCh := make(chan error, 1)
+	go func() {
+		_, err := New().DownloadWithEventsContext(ctx, download.Plan{
+			URLs:   []string{server.URL + "/stream.bin"},
+			Output: dir,
+			Resume: true,
+		}, func(event Event) {
+			if event.Type == EventProgress {
+				cancel()
+				cancelOnce.Do(func() {
+					close(cancelled)
+				})
+			}
+		})
+		errCh <- err
+	}()
+
+	select {
+	case <-bodyStarted:
+	case <-time.After(500 * time.Millisecond):
+		t.Fatal("server did not start streaming body")
+	}
+
+	select {
+	case err := <-errCh:
+		if !errors.Is(err, ErrCancelled) {
+			t.Fatalf("error = %v, want ErrCancelled", err)
+		}
+	case <-time.After(500 * time.Millisecond):
+		t.Fatal("download did not return promptly after context cancellation")
+	}
+
+	final := filepath.Join(dir, "stream.bin")
+	assertMissing(t, final)
+	if _, err := os.Stat(final + ".part"); err != nil {
+		t.Fatalf("partial missing after cancellation: %v", err)
 	}
 }
 

@@ -55,5 +55,5 @@ The agent must treat this file as a contract. If behavior is ambiguous, prefer t
 daryaft -h
 daryaft https://example.com/file.zip
 daryaft -f urls.txt
-daryaft update --check
+# planned: daryaft update --check
 ```

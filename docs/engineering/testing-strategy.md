@@ -70,12 +70,14 @@ This runs:
 Downloader stabilization tests cover resume restart cases for `416`, full
 `200` responses after Range requests, changed `ETag` and `Last-Modified`
 metadata, context-aware retry backoff cancellation, HTTP response-header
-timeouts, long body streaming without a total timeout, retry bounds, and output
-directory traversal guards. Config tests cover atomic-style temp-file saves,
-private config permissions, retry bounds, environment override validation, and
-theme validation. TUI behavior tests cover responsive window sizing,
-input-width adaptation, and Backspace editing versus empty-input navigation.
-CLI tests cover verbose download diagnostics and unchanged non-verbose output.
+timeouts, redirect handling, unknown-length responses, long body streaming
+without a total timeout, slow-stream cancellation, exhausted retry limits,
+retry bounds, and output directory traversal guards. Config tests cover
+atomic-style temp-file saves, private config permissions, retry bounds,
+environment override validation, and theme validation. TUI behavior tests cover
+responsive window sizing, input-width adaptation, and Backspace editing versus
+empty-input navigation. CLI tests cover verbose download diagnostics and
+unchanged non-verbose output.
 
 If GoReleaser is not installed, `make ci` prints a warning and continues. The
 strict release snapshot target remains `make release-check`, which requires
@@ -110,5 +112,5 @@ recommended `main` settings.
 daryaft -h
 daryaft https://example.com/file.zip
 daryaft -f urls.txt
-daryaft update --check
+# planned: daryaft update --check
 ```

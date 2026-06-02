@@ -109,6 +109,9 @@ Supported set/get keys are `download_dir`, `retries`, `resume`, `no_color`,
 `no_tui`, `theme`, `animations`, and `hyperlinks`. Shell completion suggests
 these keys for `config get` and `config set`; boolean `config set` values also
 suggest `true` and `false`.
+`theme` supports `default` and `mono`; `mono` uses monochrome TUI styling.
+`animations` and `hyperlinks` are reserved fields stored for future behavior
+and do not currently change runtime output.
 
 ```bash
 daryaft
@@ -125,12 +128,15 @@ input because one filename cannot safely apply to multiple downloads. Leaving
 the output directory empty means `.`, the current directory. Press enter on the
 plan screen to start a real download. The TUI supports one URL and sequential
 `.txt` batch execution using the same downloader event stream as the CLI, and
-both flows honor the selected output directory. Press `q` while a TUI download
-is running to cancel it. Cancelled downloads keep the `.part` file and sidecar
-metadata for resume and are not retried. CLI `-o`/`--output` and `--name`
-behavior is unchanged, and CLI ctrl+c behavior is unchanged and may terminate
-the process directly. If `download_dir` is set in config, the TUI output
-directory input starts with that value; otherwise it starts with `.`.
+both flows honor the selected output directory. The TUI resizes its panel and
+text inputs to the terminal window. Escape navigates back; Backspace edits a
+non-empty text input and navigates back only when the current input is empty.
+Press `q` while a TUI download is running to cancel it. Cancelled downloads
+keep the `.part` file and sidecar metadata for resume and are not retried. CLI
+`-o`/`--output` and `--name` behavior is unchanged, and CLI ctrl+c behavior is
+unchanged and may terminate the process directly. If `download_dir` is set in
+config, the TUI output directory input starts with that value; otherwise it
+starts with `.`.
 
 ```bash
 daryaft https://example.com/file.zip --dry-run
@@ -150,7 +156,8 @@ Current flags:
 - `-o`, `--output`: output directory.
 - `--name`: filename for a single URL.
 - `--dry-run`: print the plan without attempting a download.
-- `--retries`: retry attempts after the initial attempt, default `3`.
+- `--retries`: retry attempts after the initial attempt, default `3`, valid
+  range `0` through `20`.
 - `--resume`: resume interrupted `.part` files, default `true`.
 - `--no-resume`: ignore existing partial state and restart from byte `0`.
 
@@ -164,13 +171,14 @@ Common root flags:
 
 - `--no-color`: avoid color styling in the TUI.
 - `--no-tui`: skip the TUI and print the non-interactive placeholder.
-- `-v`, `--verbose`: reserved for future verbose output.
+- `-v`, `--verbose`: print extra CLI download diagnostics.
 
 If `no_color` is true in config, the TUI uses no-color styling by default. If
 `no_tui` is true in config, plain `daryaft` prints the non-interactive fallback
 instead of launching the TUI. `DARYAFT_NO_COLOR` and `DARYAFT_NO_TUI` can
-override those config file values. Boolean environment values accept `true`,
-`1`, `yes`, `y`, `on`, `false`, `0`, `no`, `n`, and `off`.
+override those config file values. `DARYAFT_THEME` accepts `default` or `mono`.
+Boolean environment values accept `true`, `1`, `yes`, `y`, `on`, `false`, `0`,
+`no`, `n`, and `off`.
 
 Environment examples:
 
@@ -230,9 +238,16 @@ Progress: 524288 / 1048576 bytes (50.0%) | 1.2 MB/s
 Completed: downloads/file.zip
 ```
 
+With `--verbose` or `-v`, CLI downloads also print lines prefixed with
+`Verbose:` for the effective URL with user info, query, and fragment redacted,
+output directory, selected filename, HTTP status when known, target path,
+resume/retry decisions, and completion duration. Normal output is unchanged
+when verbose mode is not enabled.
+
 Retry execution is implemented for transient network failures and temporary
 server responses. `--retries 0` means one attempt total. `--retries 3` means the
-initial attempt plus up to three retries, for four total attempts.
+initial attempt plus up to three retries, for four total attempts. Valid retry
+values are `0` through `20`.
 
 ```text
 Downloading: https://example.com/file.zip
