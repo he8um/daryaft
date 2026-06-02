@@ -2,7 +2,8 @@
 
 The Bubble Tea terminal UI is implemented for no-argument startup. It can
 collect URL or `.txt` file input, show dry-run download plans, and start real
-downloads from the plan screen.
+downloads from the plan screen. It also has a read-only Inspect URL flow for
+remote metadata checks.
 
 ## Navigation
 
@@ -38,9 +39,10 @@ The home screen shows:
 - menu items:
   1. Download from URL
   2. Download from .txt file
-  3. View help
-  4. Version
-  5. Quit
+  3. Inspect URL
+  4. View help
+  5. Version
+  6. Quit
 - footer: `Developed with <3 by AmirHesam Piri`
 
 Navigation:
@@ -65,6 +67,14 @@ filename screen and keeps `Filename: auto-detect`. Pressing enter from the last
 input shows a dry-run plan with URL count, the first URLs, selected output
 directory, filename, retries, and resume settings. TUI retries and resume use
 config defaults unless the code path receives explicit values from the CLI.
+
+Inspect URL prompts `Enter URL to inspect`, validates HTTP/HTTPS input, then
+runs the shared `internal/inspect` probe through an injectable runner. It shows
+the final URL, status, inferred filename, content length, content type,
+`Accept-Ranges`, resume support, `ETag`, and `Last-Modified`. This flow is
+read-only: it does not start downloader execution, create `.part` files, or
+write metadata sidecars. JSON inspect output remains available through the CLI
+`daryaft inspect <url> --json` command.
 
 The TUI handles terminal resize messages. Its bordered panel uses available
 terminal width with sensible lower and upper bounds, and text inputs resize

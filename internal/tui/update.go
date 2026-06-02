@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/he8um/daryaft/internal/download"
+	"github.com/he8um/daryaft/internal/inspect"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -22,6 +23,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.applyExecutionFinished(msg)
 		return m, nil
 	case executionClosedMsg:
+		return m, nil
+	case inspectFinishedMsg:
+		m.applyInspectFinished(msg)
+		return m, nil
+	case inspectClosedMsg:
 		return m, nil
 	}
 
@@ -45,6 +51,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.execution.Message = "Cancelling..."
 			return m, nil
 		}
+		if m.inspect.Running {
+			if m.inspectCancel != nil {
+				m.inspectCancel()
+			}
+			m.inspect.Status = "Cancelling"
+			m.inspect.Message = "Cancelling..."
+			return m, nil
+		}
 		return m, tea.Quit
 	}
 
@@ -66,6 +80,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		if key.String() == "enter" {
 			return m.submitSourceInput()
+		}
+		return m.updateTextInput(msg)
+	case screenInspectInput:
+		if key.String() == "esc" || key.String() == "backspace" && m.input.Value() == "" {
+			return m.back()
+		}
+		if key.String() == "enter" {
+			return m.submitInspectInput()
 		}
 		return m.updateTextInput(msg)
 	case screenOutputInput:
@@ -94,6 +116,24 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m.home(), nil
 		}
 		return m, nil
+	case screenInspectExecution:
+		return m, nil
+	case screenInspectResult:
+		if key.String() == "enter" || key.String() == "h" {
+			return m.home(), nil
+		}
+		if isBackKey(key) {
+			return m.back()
+		}
+		return m, nil
+	case screenInspectError:
+		if key.String() == "h" {
+			return m.home(), nil
+		}
+		if isBackKey(key) {
+			return m.back()
+		}
+		return m, nil
 	}
 
 	switch {
@@ -106,6 +146,24 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	default:
 		return m, nil
 	}
+}
+
+func (m Model) submitInspectInput() (Model, tea.Cmd) {
+	rawURL := m.input.Value()
+	if err := inspect.ValidateURL(rawURL); err != nil {
+		m.errorMessage = err.Error()
+		return m, nil
+	}
+
+	m.inspectInput = rawURL
+	ctx, cancel := context.WithCancel(context.Background())
+	m.screen = screenInspectExecution
+	m.errorMessage = ""
+	m.inspect = newInspectState(rawURL)
+	m.inspectCancel = cancel
+	m.inspectMessages = runInspect(ctx, rawURL, m.inspectRunner)
+	m.input.Blur()
+	return m, waitForInspect(m.inspectMessages)
 }
 
 func (m Model) updateTextInput(msg tea.Msg) (Model, tea.Cmd) {

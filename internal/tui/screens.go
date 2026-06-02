@@ -6,10 +6,14 @@ const (
 	screenHome screen = iota
 	screenURLInput
 	screenFileInput
+	screenInspectInput
 	screenOutputInput
 	screenFilenameInput
 	screenPlan
 	screenExecution
+	screenInspectExecution
+	screenInspectResult
+	screenInspectError
 	screenHelp
 	screenVersion
 )
@@ -22,6 +26,7 @@ type menuItem struct {
 var homeMenu = []menuItem{
 	{title: "Download from URL", screen: screenURLInput},
 	{title: "Download from .txt file", screen: screenFileInput},
+	{title: "Inspect URL", screen: screenInspectInput},
 	{title: "View help", screen: screenHelp},
 	{title: "Version", screen: screenVersion},
 	{title: "Quit", screen: screenHome},
@@ -33,6 +38,8 @@ func (s screen) title() string {
 		return "Download from URL"
 	case screenFileInput:
 		return "Download from .txt file"
+	case screenInspectInput:
+		return "Inspect URL"
 	case screenOutputInput:
 		return "Output directory"
 	case screenFilenameInput:
@@ -41,6 +48,12 @@ func (s screen) title() string {
 		return "Download plan"
 	case screenExecution:
 		return "Downloading"
+	case screenInspectExecution:
+		return "Inspecting"
+	case screenInspectResult:
+		return "Inspect result"
+	case screenInspectError:
+		return "Inspect error"
 	case screenHelp:
 		return "Help"
 	case screenVersion:

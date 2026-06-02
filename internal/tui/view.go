@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/he8um/daryaft/internal/config"
+	"github.com/he8um/daryaft/internal/inspect"
 	"github.com/he8um/daryaft/internal/utils"
 
 	"github.com/charmbracelet/lipgloss"
@@ -15,12 +16,18 @@ func (m Model) View() string {
 	switch m.screen {
 	case screenHome:
 		content = m.homeView()
-	case screenURLInput, screenFileInput, screenOutputInput, screenFilenameInput:
+	case screenURLInput, screenFileInput, screenInspectInput, screenOutputInput, screenFilenameInput:
 		content = m.inputView()
 	case screenPlan:
 		content = m.planView()
 	case screenExecution:
 		content = m.executionView()
+	case screenInspectExecution:
+		content = m.inspectExecutionView()
+	case screenInspectResult:
+		content = m.inspectResultView()
+	case screenInspectError:
+		content = m.inspectErrorView()
 	case screenHelp:
 		content = m.helpView()
 	case screenVersion:
@@ -164,6 +171,9 @@ func (m Model) inputHelp() string {
 	if m.screen == screenFilenameInput {
 		return "enter plan • esc previous • backspace empty previous • q quit"
 	}
+	if m.screen == screenInspectInput {
+		return "enter inspect • esc home • backspace empty home • q quit"
+	}
 	return "enter next • esc home • backspace empty home • q quit"
 }
 
@@ -206,6 +216,81 @@ func (m Model) executionBody() string {
 		builder.WriteString(summaryView(m.execution.Summary))
 	}
 	return strings.TrimRight(builder.String(), "\n")
+}
+
+func (m Model) inspectExecutionView() string {
+	var builder strings.Builder
+	builder.WriteString(m.headerView())
+	builder.WriteString("\n\n")
+	builder.WriteString(m.styles.title.Render("Inspecting"))
+	builder.WriteString("\n\n")
+	fmt.Fprintf(&builder, "URL: %s\n", displayValue(m.inspect.URL, "pending"))
+	fmt.Fprintf(&builder, "Status: %s\n", displayValue(m.inspect.Status, "Inspecting"))
+	if m.inspect.Message != "" {
+		fmt.Fprintf(&builder, "Message: %s\n", m.inspect.Message)
+	}
+	builder.WriteString("\n\n")
+	builder.WriteString(m.styles.muted.Render("inspect running • q cancel • ctrl+c quit"))
+	builder.WriteString("\n\n")
+	builder.WriteString(m.footerView())
+	return strings.TrimRight(builder.String(), "\n")
+}
+
+func (m Model) inspectResultView() string {
+	var builder strings.Builder
+	builder.WriteString(m.headerView())
+	builder.WriteString("\n\n")
+	builder.WriteString(m.styles.title.Render("Inspect result"))
+	builder.WriteString("\n\n")
+	builder.WriteString(m.styles.body.Render(inspectResultBody(m.inspect.Result)))
+	builder.WriteString("\n\n")
+	builder.WriteString(m.styles.muted.Render("enter/h home • esc/backspace edit • q quit"))
+	builder.WriteString("\n\n")
+	builder.WriteString(m.footerView())
+	return strings.TrimRight(builder.String(), "\n")
+}
+
+func (m Model) inspectErrorView() string {
+	var builder strings.Builder
+	builder.WriteString(m.headerView())
+	builder.WriteString("\n\n")
+	builder.WriteString(m.styles.title.Render("Inspect error"))
+	builder.WriteString("\n\n")
+	builder.WriteString(m.styles.error.Render(displayValue(m.inspect.Error, "Inspect failed")))
+	builder.WriteString("\n\n")
+	builder.WriteString(m.styles.muted.Render("esc/backspace edit • h home • q quit"))
+	builder.WriteString("\n\n")
+	builder.WriteString(m.footerView())
+	return strings.TrimRight(builder.String(), "\n")
+}
+
+func inspectResultBody(result inspect.Result) string {
+	var builder strings.Builder
+	fmt.Fprintf(&builder, "URL: %s\n", displayValue(result.URL, "unknown"))
+	fmt.Fprintf(&builder, "Final URL: %s\n", displayValue(result.FinalURL, "unknown"))
+	fmt.Fprintf(&builder, "Status: %s\n", displayValue(result.Status, "unknown"))
+	fmt.Fprintf(&builder, "Filename: %s\n", displayValue(result.Filename, "unknown"))
+	if result.ContentLengthKnown {
+		fmt.Fprintf(&builder, "Content length: %d bytes\n", result.ContentLength)
+	} else {
+		builder.WriteString("Content length: unknown\n")
+	}
+	fmt.Fprintf(&builder, "Content type: %s\n", displayValue(result.ContentType, "unknown"))
+	fmt.Fprintf(&builder, "Accept-Ranges: %s\n", displayValue(result.AcceptRanges, "unknown"))
+	fmt.Fprintf(&builder, "Resume supported: %s\n", inspectResumeSupport(result))
+	fmt.Fprintf(&builder, "ETag: %s\n", displayValue(result.ETag, "none"))
+	fmt.Fprintf(&builder, "Last-Modified: %s", displayValue(result.LastModified, "none"))
+	return builder.String()
+}
+
+func inspectResumeSupport(result inspect.Result) string {
+	if !result.ResumeSupportKnown {
+		return "unknown"
+	}
+	if result.ResumeSupported {
+		return "yes"
+	}
+	return "no"
 }
 
 func byteProgress(downloaded, total int64) string {

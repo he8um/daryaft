@@ -31,9 +31,10 @@ small:
 
 1. Download from URL
 2. Download from .txt file
-3. View help
-4. Version
-5. Quit
+3. Inspect URL
+4. View help
+5. Version
+6. Quit
 
 The download menu entries open Bubble Tea text input forms:
 
@@ -41,6 +42,7 @@ The download menu entries open Bubble Tea text input forms:
 - Download from .txt file prompts `Enter path to .txt file`.
 - Both flows then prompt `Enter output directory`.
 - Single URL downloads then prompt `Enter custom filename`.
+- Inspect URL prompts `Enter URL to inspect`.
 
 Pressing enter validates the input with the existing download planning logic and
 opens the output directory input. Empty output means `.`, the current
@@ -51,6 +53,12 @@ separators, `.`, and `..`. The `.txt` batch flow does not offer one custom
 filename and keeps auto-detect for each item. Invalid URLs, file paths, or
 unsafe filenames keep the user on the relevant input screen and show a
 validation error.
+
+Inspect URL validates one HTTP/HTTPS URL and shows remote metadata without
+starting a download. It displays the final URL, status, filename, content
+length, content type, resume support, `ETag`, and `Last-Modified`. It does not
+write files or metadata sidecars, and CLI JSON inspect output remains available
+only through `daryaft inspect <url> --json`.
 
 Pressing enter on the plan screen starts a real download. The execution screen
 uses the same downloader event stream as the CLI and supports both one URL and
@@ -82,6 +90,7 @@ build metadata as `daryaft version`.
 - enter from output directory input: continue to filename input for single URL,
   or review plan for `.txt` batch
 - enter from filename input: review plan
+- enter from inspect input: run the read-only metadata probe
 - enter on plan: start download
 - enter after completion: return home
 - `esc` or backspace: return to the previous input screen, or home from a

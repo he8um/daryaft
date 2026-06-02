@@ -48,6 +48,8 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
   supported config keys.
 - `inspect` command for HTTP/HTTPS URL metadata preflight, with human and JSON
   output and no file writes.
+- Read-only TUI Inspect URL flow backed by the shared inspect package and an
+  injectable runner for deterministic tests.
 - Shell completion generation for bash, zsh, fish, and PowerShell, with config
   key completion for `config get` and `config set`.
 - `doctor` diagnostics command for local runtime, config, download directory,

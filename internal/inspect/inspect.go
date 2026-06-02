@@ -20,7 +20,7 @@ type Options struct {
 
 func URL(ctx context.Context, options Options) (Result, error) {
 	rawURL := strings.TrimSpace(options.URL)
-	if err := validateURL(rawURL); err != nil {
+	if err := ValidateURL(rawURL); err != nil {
 		return Result{}, err
 	}
 	if ctx == nil {
@@ -161,7 +161,7 @@ func metadataSufficient(result Result) bool {
 		result.LastModified != ""
 }
 
-func validateURL(rawURL string) error {
+func ValidateURL(rawURL string) error {
 	if strings.TrimSpace(rawURL) == "" {
 		return fmt.Errorf("URL cannot be empty")
 	}

@@ -53,8 +53,13 @@ useful metadata, Daryaft may use a small `GET` request with
 reported as `unknown` in human output and as empty values with `*_known: false`
 where applicable in JSON.
 
+The no-argument TUI also includes an Inspect URL menu item. It uses the same
+read-only metadata probe and shows the same key fields in a terminal screen
+without starting a download or writing files. JSON inspect output remains
+CLI-only through `daryaft inspect <url> --json`.
+
 Inspect currently does not implement checksum verification, proxy settings,
-custom headers, auth, or a TUI flow.
+custom headers, or auth.
 
 ## Dry Run
 

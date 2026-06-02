@@ -2,6 +2,7 @@ package tui
 
 import (
 	"github.com/he8um/daryaft/internal/downloader"
+	"github.com/he8um/daryaft/internal/inspect"
 )
 
 type executionItemStartedMsg struct {
@@ -18,3 +19,10 @@ type executionFinishedMsg struct {
 }
 
 type executionClosedMsg struct{}
+
+type inspectFinishedMsg struct {
+	Result inspect.Result
+	Err    error
+}
+
+type inspectClosedMsg struct{}

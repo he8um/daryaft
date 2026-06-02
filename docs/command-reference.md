@@ -11,6 +11,7 @@ The home screen shows:
 - Modern terminal downloader
 - Download from URL
 - Download from .txt file
+- Inspect URL
 - View help
 - Version
 - Quit
@@ -18,17 +19,19 @@ The home screen shows:
 Use up/down arrows or `k`/`j` to move and enter to select. Escape navigates
 back from sub-screens. Backspace edits text when the current input has content
 and navigates back only when the input is empty. `q` quits unless a download is
-running; ctrl+c exits from anywhere. Download from URL and Download from .txt file open input forms,
-validate with the existing download planner, then ask for an output directory
-before showing dry-run plans. The single URL flow then asks for an optional
-custom filename; leaving it empty means auto-detect. The `.txt` batch flow does
-not offer one custom filename and keeps per-item auto-detect. Leaving the
-output directory empty means `.`, the current directory. Press enter on the
-plan screen to start a real download in the TUI. The TUI panel and input width
-adapt to terminal resize messages with bounded minimum and maximum widths.
-Existing CLI download commands remain fully supported, and CLI
-`-o`/`--output` and `--name` behavior is unchanged. Pressing `q` while a TUI
-download is running cancels it and keeps partial state for resume.
+running; ctrl+c exits from anywhere. Download from URL and Download from .txt
+file open input forms, validate with the existing download planner, then ask
+for an output directory before showing dry-run plans. The single URL flow then
+asks for an optional custom filename; leaving it empty means auto-detect. The
+`.txt` batch flow does not offer one custom filename and keeps per-item
+auto-detect. Leaving the output directory empty means `.`, the current
+directory. Press enter on the plan screen to start a real download in the TUI.
+Inspect URL prompts for one HTTP/HTTPS URL and shows read-only metadata without
+starting a download or writing files. The TUI panel and input width adapt to
+terminal resize messages with bounded minimum and maximum widths. Existing CLI
+download commands remain fully supported, and CLI `-o`/`--output` and `--name`
+behavior is unchanged. Pressing `q` while a TUI download is running cancels it
+and keeps partial state for resume.
 
 When URL arguments or `--file` are provided, the root command enters the current
 download validation mode.

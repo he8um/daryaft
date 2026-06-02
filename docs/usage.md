@@ -131,7 +131,8 @@ daryaft
 ```
 
 Opens the first Bubble Tea interactive home screen. The home screen includes
-Download from URL, Download from .txt file, View help, Version, and Quit.
+Download from URL, Download from .txt file, Inspect URL, View help, Version,
+and Quit.
 Download actions inside the TUI now open input forms. Entering a URL or a path
 to a `.txt` URL file validates the input with the existing download planning
 logic, then opens an output directory input before showing the dry-run plan.
@@ -151,6 +152,13 @@ cancels through the downloader context, keeps the `.part` file and sidecar
 metadata, stops remaining batch items, and exits non-zero. If `download_dir` is
 set in config, the TUI output directory input starts with that value; otherwise
 it starts with `.`.
+
+The Inspect URL menu item prompts for one HTTP/HTTPS URL, runs the same
+read-only metadata probe as `daryaft inspect <url>`, and shows the final URL,
+status, inferred filename, content length, content type, resume support,
+`ETag`, and `Last-Modified`. It does not download files, create `.part` files,
+or write metadata sidecars. JSON inspect output remains a CLI-only
+`daryaft inspect <url> --json` mode.
 
 ```bash
 daryaft https://example.com/file.zip --dry-run

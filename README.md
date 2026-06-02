@@ -17,7 +17,9 @@ from `.part` files when the server supports HTTP Range requests. Running
 `daryaft` with no arguments opens the interactive TUI home screen. The TUI can
 collect a single URL or `.txt` file path and show the same dry-run download
 plan as the CLI, then start real single or sequential batch downloads from the
-plan screen. The single URL TUI flow can also set an optional custom filename.
+plan screen. The single URL TUI flow can also set an optional custom filename,
+and the Inspect URL menu item can show read-only remote metadata without
+downloading a file.
 The current development version is `0.6.0-dev`.
 This milestone represents the stabilized pre-release foundation after
 downloader/config correctness work, CLI/TUI cancellation alignment, expanded
@@ -118,18 +120,19 @@ daryaft download -f urls.txt
 ```
 
 With no arguments, Daryaft opens a Bubble Tea home screen with menu entries for
-URL input, `.txt` file input, help, version information, and quit. Download
-actions inside the TUI validate input, then let you set an output directory
-before showing the dry-run plan. For single URL downloads, the TUI then asks
-for an optional custom filename; leaving it empty means auto-detect. The TUI
-does not offer one custom filename for `.txt` batch downloads, which continue
-to auto-detect each item filename. Leaving the output directory empty means `.`,
-the current directory. TUI downloads can start real single URL or sequential
-batch downloads from that plan. The TUI resizes its panel and text inputs to
-the terminal window. Backspace edits non-empty inputs and navigates back only
-when the input is empty; Escape always navigates back. Existing CLI download
-commands, including `-o`/`--output` and `--name`, remain fully supported and
-unchanged.
+URL input, `.txt` file input, Inspect URL, help, version information, and quit.
+Download actions inside the TUI validate input, then let you set an output
+directory before showing the dry-run plan. For single URL downloads, the TUI
+then asks for an optional custom filename; leaving it empty means auto-detect.
+The TUI does not offer one custom filename for `.txt` batch downloads, which
+continue to auto-detect each item filename. Leaving the output directory empty
+means `.`, the current directory. TUI downloads can start real single URL or
+sequential batch downloads from that plan. Inspect URL accepts one HTTP/HTTPS
+URL, shows remote metadata, and does not download or write files. The TUI
+resizes its panel and text inputs to the terminal window. Backspace edits
+non-empty inputs and navigates back only when the input is empty; Escape always
+navigates back. Existing CLI download commands, including `-o`/`--output` and
+`--name`, remain fully supported and unchanged.
 
 Daryaft can read YAML configuration from the OS user config directory:
 `<UserConfigDir>/daryaft/config.yaml`. On macOS this is usually
@@ -166,9 +169,10 @@ currently listed as skipped and does not make a network request.
 saving a file. It follows redirects, reports the final URL, status, inferred
 filename, content length when known, content type, `Accept-Ranges`, resume
 support, `ETag`, and `Last-Modified`. Use `daryaft inspect <url> --json` for
-stable machine-readable output. Some fields may be unknown when a server omits
-headers. Inspect does not implement checksum, proxy, custom-header, auth, or
-TUI flows yet.
+stable machine-readable CLI output. The no-argument TUI also has a read-only
+Inspect URL flow for the same metadata, but JSON output remains CLI-only. Some
+fields may be unknown when a server omits headers. Inspect does not implement
+checksum, proxy, custom-header, or auth yet.
 
 Daryaft can generate shell completion scripts with Cobra's standard completion
 command. Installation paths depend on your OS and shell setup:

@@ -38,19 +38,31 @@ type Model struct {
 	errorMessage      string
 	plan              download.Plan
 	executionRunner   ExecutionRunner
+	inspectRunner     InspectRunner
 	execution         executionState
 	executionCancel   context.CancelFunc
 	executionMessages <-chan tea.Msg
+	inspectInput      string
+	inspect           inspectState
+	inspectCancel     context.CancelFunc
+	inspectMessages   <-chan tea.Msg
 }
 
 func NewModel(options Options) Model {
-	return NewModelWithRunner(options, defaultExecutionRunner)
+	return NewModelWithRunners(options, defaultExecutionRunner, defaultInspectRunner)
 }
 
 func NewModelWithRunner(options Options, runner ExecutionRunner) Model {
+	return NewModelWithRunners(options, runner, defaultInspectRunner)
+}
+
+func NewModelWithRunners(options Options, runner ExecutionRunner, inspectRunner InspectRunner) Model {
 	styles := newStyles(options.NoColor || config.IsMonoTheme(options.Theme))
 	if runner == nil {
 		runner = defaultExecutionRunner
+	}
+	if inspectRunner == nil {
+		inspectRunner = defaultInspectRunner
 	}
 	defaultOutput := defaultOutputDir(options.DownloadDir)
 	retries := tuiDefaultRetries
@@ -69,6 +81,7 @@ func NewModelWithRunner(options Options, runner ExecutionRunner) Model {
 		retries:          retries,
 		resume:           resume,
 		executionRunner:  runner,
+		inspectRunner:    inspectRunner,
 	}
 	model.input = model.newTextInput()
 	return model
@@ -101,7 +114,7 @@ func (m Model) enter() (Model, tea.Cmd) {
 	if item.title == "Quit" {
 		return m, tea.Quit
 	}
-	if item.screen == screenURLInput || item.screen == screenFileInput {
+	if item.screen == screenURLInput || item.screen == screenFileInput || item.screen == screenInspectInput {
 		return m.openInput(item.screen)
 	}
 	m.screen = item.screen
@@ -120,6 +133,10 @@ func (m Model) openInput(next screen) (Model, tea.Cmd) {
 	m.execution = executionState{}
 	m.executionCancel = nil
 	m.executionMessages = nil
+	m.inspectInput = ""
+	m.inspect = inspectState{}
+	m.inspectCancel = nil
+	m.inspectMessages = nil
 	return m, m.input.Focus()
 }
 
@@ -148,6 +165,16 @@ func (m Model) back() (Model, tea.Cmd) {
 		m.errorMessage = ""
 		return m, m.input.Focus()
 	}
+	if m.screen == screenInspectResult || m.screen == screenInspectError {
+		m.screen = screenInspectInput
+		m.input = m.newTextInput()
+		m.input.SetValue(m.inspectInput)
+		m.errorMessage = ""
+		m.inspect = inspectState{}
+		m.inspectCancel = nil
+		m.inspectMessages = nil
+		return m, m.input.Focus()
+	}
 	m.screen = screenHome
 	m.errorMessage = ""
 	return m, nil
@@ -159,9 +186,12 @@ func (m Model) home() Model {
 	m.execution = executionState{}
 	m.executionCancel = nil
 	m.executionMessages = nil
+	m.inspect = inspectState{}
+	m.inspectCancel = nil
+	m.inspectMessages = nil
 	return m
 }
 
 func (m Model) isInputScreen() bool {
-	return m.screen == screenURLInput || m.screen == screenFileInput || m.screen == screenOutputInput || m.screen == screenFilenameInput
+	return m.screen == screenURLInput || m.screen == screenFileInput || m.screen == screenInspectInput || m.screen == screenOutputInput || m.screen == screenFilenameInput
 }

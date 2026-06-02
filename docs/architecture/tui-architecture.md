@@ -43,6 +43,8 @@ Current files:
 - `messages.go`: Bubble Tea message types for downloader execution events
 - `execution.go`: injectable execution runner plus the goroutine/channel
   bridge from `internal/downloader` to the TUI model
+- `inspect.go`: injectable inspect runner plus the goroutine/channel bridge
+  from `internal/inspect` to the TUI model
 
 `cmd/root.go` calls `tui.Run` only for no-argument execution. URL arguments,
 `--file`, and download flags continue through the existing CLI download path.
@@ -58,6 +60,8 @@ The model tracks:
 - source input value and source screen
 - output directory input value
 - filename input value for single URL downloads
+- inspect input value
+- inspect runner and inspect result/error state
 - validation error message
 - generated dry-run download plan
 - execution runner used to start downloads
@@ -74,6 +78,9 @@ The first implemented screens are:
 - custom filename input for single URL downloads
 - dry-run download plan
 - execution/progress
+- Inspect URL input
+- inspect execution/progress
+- inspect result and error screens
 - help
 - version
 
@@ -91,6 +98,12 @@ execution share the same sequential runner as the CLI and both honor the
 selected output directory. Tests can inject a runner to assert the exact
 `download.Plan` passed to execution without performing network downloads. CLI
 `-o`/`--output` and `--name` behavior is unchanged.
+
+The TUI also calls `internal/inspect` through an `InspectRunner` function for
+the Inspect URL flow. It validates one HTTP/HTTPS URL, starts a read-only
+metadata probe, and renders the result or error without invoking the downloader
+execution path. Tests can inject this runner to assert state changes without
+network requests. CLI inspect behavior, including `--json`, remains unchanged.
 
 Text input screens distinguish editing from navigation. Escape always navigates
 back. Backspace is sent to the text input when it contains text; it navigates
@@ -120,13 +133,20 @@ moves the screen to `Cancelling...`, and continues receiving downloader events
 until the final cancelled message arrives. Ctrl+c behavior is unchanged and may
 terminate the process directly.
 
+Inspect execution follows the same non-blocking boundary with a smaller
+`InspectRunner`. It sends a single completion message containing either
+`inspect.Result` or an error, then the model moves to the inspect result or
+inspect error screen. Pressing `q` while inspect is running cancels the inspect
+context.
+
 ## Testing
 
 Current tests cover menu navigation, wrap behavior, screen switching, input
 validation, dry-run plan creation, execution transitions, injected runner plan
 capture, injected runner cancellation, event message handling, summary
 rendering, running-state quit behavior, back navigation, Backspace editing
-semantics, responsive window sizing, footer rendering, and version rendering
+semantics, injected inspect runner state transitions, inspect result/error
+rendering, responsive window sizing, footer rendering, and version rendering
 without brittle snapshots.
 
 ## Examples

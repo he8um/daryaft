@@ -12,6 +12,7 @@ import (
 	"github.com/he8um/daryaft/internal/config"
 	"github.com/he8um/daryaft/internal/download"
 	"github.com/he8um/daryaft/internal/downloader"
+	"github.com/he8um/daryaft/internal/inspect"
 	"github.com/he8um/daryaft/pkg/version"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -47,7 +48,7 @@ func TestJKNavigation(t *testing.T) {
 
 func TestScreenSwitchingAndBack(t *testing.T) {
 	model := NewModel(Options{NoColor: true})
-	model.selected = 2
+	model.selected = 3
 
 	model = updateWithKey(t, model, tea.KeyEnter)
 	if model.screen != screenHelp {
@@ -59,7 +60,7 @@ func TestScreenSwitchingAndBack(t *testing.T) {
 		t.Fatalf("screen after esc = %v, want home", model.screen)
 	}
 
-	model.selected = 3
+	model.selected = 4
 	model = updateWithKey(t, model, tea.KeyEnter)
 	if model.screen != screenVersion {
 		t.Fatalf("screen = %v, want version", model.screen)
@@ -346,6 +347,248 @@ func TestSelectFileInputScreen(t *testing.T) {
 	}
 	if !strings.Contains(model.View(), "Enter path to .txt file") {
 		t.Fatalf("file input view missing prompt:\n%s", model.View())
+	}
+}
+
+func TestHomeMenuIncludesInspectURL(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	view := model.View()
+
+	for _, want := range []string{
+		"Download from URL",
+		"Download from .txt file",
+		"Inspect URL",
+		"View help",
+		"Version",
+		"Quit",
+	} {
+		if !strings.Contains(view, want) {
+			t.Fatalf("home view missing %q:\n%s", want, view)
+		}
+	}
+	if homeMenu[2].title != "Inspect URL" {
+		t.Fatalf("homeMenu[2] = %q, want Inspect URL", homeMenu[2].title)
+	}
+}
+
+func TestSelectInspectURLInputScreen(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model.selected = 2
+	model = updateWithKey(t, model, tea.KeyEnter)
+
+	if model.screen != screenInspectInput {
+		t.Fatalf("screen = %v, want inspect input", model.screen)
+	}
+	if !strings.Contains(model.View(), "Enter URL to inspect") {
+		t.Fatalf("inspect input view missing prompt:\n%s", model.View())
+	}
+}
+
+func TestInvalidInspectURLShowsValidationError(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model.selected = 2
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithString(t, model, "ftp://example.com/file.zip")
+	model = updateWithKey(t, model, tea.KeyEnter)
+
+	if model.screen != screenInspectInput {
+		t.Fatalf("screen = %v, want inspect input", model.screen)
+	}
+	if model.errorMessage == "" {
+		t.Fatal("errorMessage is empty, want validation error")
+	}
+	if !strings.Contains(model.View(), "scheme must be http or https") {
+		t.Fatalf("inspect input view missing validation error:\n%s", model.View())
+	}
+}
+
+func TestValidInspectURLStartsInjectedRunner(t *testing.T) {
+	var received string
+	runner := func(ctx context.Context, rawURL string) (inspect.Result, error) {
+		received = rawURL
+		return sampleInspectResult(rawURL), nil
+	}
+	model := NewModelWithRunners(Options{NoColor: true}, nil, runner)
+	model.selected = 2
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithString(t, model, "https://example.com/file.zip")
+
+	model, cmd := updateWithKeyAndCmd(t, model, tea.KeyEnter)
+	if model.screen != screenInspectExecution {
+		t.Fatalf("screen = %v, want inspect execution", model.screen)
+	}
+	if !model.inspect.Running {
+		t.Fatal("inspect.Running = false, want true")
+	}
+	if cmd == nil {
+		t.Fatal("inspect command is nil")
+	}
+
+	model, _ = updateWithInspectCmd(t, model, cmd)
+	if received != "https://example.com/file.zip" {
+		t.Fatalf("runner URL = %q", received)
+	}
+	if model.screen != screenInspectResult {
+		t.Fatalf("screen = %v, want inspect result", model.screen)
+	}
+	if model.inspect.Result.Filename != "file.zip" {
+		t.Fatalf("filename = %q", model.inspect.Result.Filename)
+	}
+}
+
+func TestInspectResultScreenRendersKeyFields(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model.screen = screenInspectResult
+	model.inspect = inspectState{
+		Done:   true,
+		Status: "Completed",
+		Result: inspect.Result{
+			URL:                "https://example.com/file.zip",
+			FinalURL:           "https://cdn.example.com/file.zip",
+			Status:             "200 OK",
+			StatusCode:         200,
+			Filename:           "file.zip",
+			ContentLength:      1048576,
+			ContentLengthKnown: true,
+			ContentType:        "application/zip",
+			AcceptRanges:       "bytes",
+			ResumeSupported:    true,
+			ResumeSupportKnown: true,
+			ETag:               `"abc123"`,
+			LastModified:       "Tue, 01 Jun 2026 12:00:00 GMT",
+		},
+	}
+
+	view := model.View()
+	for _, want := range []string{
+		"Inspect result",
+		"URL: https://example.com/file.zip",
+		"Final URL: https://cdn.example.com/file.zip",
+		"Status: 200 OK",
+		"Filename: file.zip",
+		"Content length: 1048576 bytes",
+		"Content type: application/zip",
+		"Accept-Ranges: bytes",
+		"Resume supported: yes",
+		`ETag: "abc123"`,
+		"Last-Modified: Tue, 01 Jun 2026 12:00:00 GMT",
+	} {
+		if !strings.Contains(view, want) {
+			t.Fatalf("inspect result missing %q in:\n%s", want, view)
+		}
+	}
+}
+
+func TestInspectErrorScreenRendersError(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model.screen = screenInspectError
+	model.inspect = inspectState{Error: "Inspect failed: timeout"}
+
+	view := model.View()
+	if !strings.Contains(view, "Inspect error") || !strings.Contains(view, "Inspect failed: timeout") {
+		t.Fatalf("inspect error view missing error:\n%s", view)
+	}
+}
+
+func TestInspectRunnerErrorShowsErrorScreenAndCanNavigateBack(t *testing.T) {
+	runner := func(ctx context.Context, rawURL string) (inspect.Result, error) {
+		return inspect.Result{}, context.DeadlineExceeded
+	}
+	model := NewModelWithRunners(Options{NoColor: true}, nil, runner)
+	model.selected = 2
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithString(t, model, "https://example.com/file.zip")
+	model, cmd := updateWithKeyAndCmd(t, model, tea.KeyEnter)
+
+	model, _ = updateWithInspectCmd(t, model, cmd)
+	if model.screen != screenInspectError {
+		t.Fatalf("screen = %v, want inspect error", model.screen)
+	}
+	if !strings.Contains(model.View(), "Inspect failed") {
+		t.Fatalf("inspect error view missing failure:\n%s", model.View())
+	}
+
+	homeModel := updateWithRune(t, model, 'h')
+	if homeModel.screen != screenHome {
+		t.Fatalf("screen after h = %v, want home", homeModel.screen)
+	}
+
+	inputModel := updateWithKey(t, model, tea.KeyBackspace)
+	if inputModel.screen != screenInspectInput {
+		t.Fatalf("screen after backspace = %v, want inspect input", inputModel.screen)
+	}
+	if inputModel.input.Value() != "https://example.com/file.zip" {
+		t.Fatalf("input value = %q", inputModel.input.Value())
+	}
+}
+
+func TestBackspaceEditsInspectInput(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model.selected = 2
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithString(t, model, "abc")
+	model = updateWithKey(t, model, tea.KeyBackspace)
+
+	if model.screen != screenInspectInput {
+		t.Fatalf("screen = %v, want inspect input", model.screen)
+	}
+	if model.input.Value() != "ab" {
+		t.Fatalf("input value = %q, want ab", model.input.Value())
+	}
+
+	model.input.SetValue("")
+	model = updateWithKey(t, model, tea.KeyBackspace)
+	if model.screen != screenHome {
+		t.Fatalf("screen after empty backspace = %v, want home", model.screen)
+	}
+}
+
+func TestInspectDoesNotInvokeDownloadRunner(t *testing.T) {
+	downloadInvoked := false
+	downloadRunner := func(ctx context.Context, plan download.Plan, handlers downloader.BatchHandlers) downloader.BatchResult {
+		downloadInvoked = true
+		return downloader.BatchResult{Planned: len(plan.URLs)}
+	}
+	inspectRunner := func(ctx context.Context, rawURL string) (inspect.Result, error) {
+		return sampleInspectResult(rawURL), nil
+	}
+
+	model := NewModelWithRunners(Options{NoColor: true}, downloadRunner, inspectRunner)
+	model.selected = 2
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithString(t, model, "https://example.com/file.zip")
+	model, cmd := updateWithKeyAndCmd(t, model, tea.KeyEnter)
+	if cmd == nil {
+		t.Fatal("inspect command is nil")
+	}
+	_, _ = updateWithInspectCmd(t, model, cmd)
+
+	if downloadInvoked {
+		t.Fatal("download runner was invoked for inspect")
+	}
+}
+
+func TestQWhileInspectRunningDoesNotQuit(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model.screen = screenInspectExecution
+	model.inspect = inspectState{Running: true}
+	cancelled := false
+	model.inspectCancel = func() {
+		cancelled = true
+	}
+
+	model, cmd := updateWithRuneAndCmd(t, model, 'q')
+	if cmd != nil {
+		t.Fatal("q while inspect running returned a command, want nil")
+	}
+	if !cancelled {
+		t.Fatal("inspect cancel func was not called")
+	}
+	if model.inspect.Status != "Cancelling" {
+		t.Fatalf("status = %q, want Cancelling", model.inspect.Status)
+	}
+	if model.inspect.Message != "Cancelling..." {
+		t.Fatalf("message = %q, want Cancelling...", model.inspect.Message)
 	}
 }
 
@@ -877,6 +1120,9 @@ func TestProductionConstructorCreatesUsableModel(t *testing.T) {
 	if model.executionRunner == nil {
 		t.Fatal("executionRunner is nil")
 	}
+	if model.inspectRunner == nil {
+		t.Fatal("inspectRunner is nil")
+	}
 	if !strings.Contains(model.View(), "Download from URL") {
 		t.Fatalf("home view missing menu:\n%s", model.View())
 	}
@@ -1159,6 +1405,15 @@ func waitForSignal(t *testing.T, signal <-chan struct{}, label string) {
 	}
 }
 
+func updateWithInspectCmd(t *testing.T, model Model, cmd tea.Cmd) (Model, tea.Cmd) {
+	t.Helper()
+	if cmd == nil {
+		t.Fatal("inspect command is nil")
+	}
+	msg := cmd()
+	return updateWithMsgAndCmd(t, model, msg)
+}
+
 func updateWithExecutionCmd(t *testing.T, model Model, cmd tea.Cmd) (Model, tea.Cmd) {
 	t.Helper()
 	if cmd == nil {
@@ -1166,6 +1421,24 @@ func updateWithExecutionCmd(t *testing.T, model Model, cmd tea.Cmd) (Model, tea.
 	}
 	msg := cmd()
 	return updateWithMsgAndCmd(t, model, msg)
+}
+
+func sampleInspectResult(rawURL string) inspect.Result {
+	return inspect.Result{
+		URL:                rawURL,
+		FinalURL:           rawURL,
+		Status:             "200 OK",
+		StatusCode:         200,
+		Filename:           "file.zip",
+		ContentLength:      1048576,
+		ContentLengthKnown: true,
+		ContentType:        "application/zip",
+		AcceptRanges:       "bytes",
+		ResumeSupported:    true,
+		ResumeSupportKnown: true,
+		ETag:               `"abc123"`,
+		LastModified:       "Tue, 01 Jun 2026 12:00:00 GMT",
+	}
 }
 
 func updateWithKey(t *testing.T, model Model, key tea.KeyType) Model {

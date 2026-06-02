@@ -84,6 +84,8 @@ func (m Model) inputPrompt() string {
 		return "Enter download URL"
 	case screenFileInput:
 		return "Enter path to .txt file"
+	case screenInspectInput:
+		return "Enter URL to inspect"
 	case screenOutputInput:
 		return "Enter output directory"
 	case screenFilenameInput:
