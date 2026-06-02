@@ -35,7 +35,9 @@ publishing secrets.
 
 The `lint` job runs `golangci-lint run` using `.golangci.yml`. The `security`
 job runs `govulncheck ./...` and `gosec ./...`. These jobs do not publish
-releases, create tags, run snapshot builds, or use publishing secrets.
+releases, create tags, run snapshot builds, or use publishing secrets. They may
+use a newer Go toolchain than the test/build matrix only to install current
+quality tools; runtime compatibility remains governed by `go.mod`.
 
 ## Release Safety
 

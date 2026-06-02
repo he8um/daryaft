@@ -128,7 +128,9 @@ create tags, or use publishing secrets.
 The separate `lint` job installs `golangci-lint` and runs `golangci-lint run`
 with the repository `.golangci.yml`. The separate `security` job installs
 `govulncheck` and `gosec`, then runs `govulncheck ./...` and `gosec ./...`.
-Neither job publishes releases or creates tags.
+Neither job publishes releases or creates tags. These tooling jobs use Go
+`1.26.x` so current quality tools can be installed, while the Go test/build
+matrix continues to use the module Go version from `go.mod`.
 
 Workflow actions should stay on stable majors supported by GitHub-hosted
 runners. The current workflow uses Node 24-compatible action majors for
