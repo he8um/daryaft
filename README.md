@@ -96,6 +96,8 @@ daryaft version
 daryaft version --json
 daryaft
 daryaft doctor
+daryaft inspect https://example.com/file.zip
+daryaft inspect https://example.com/file.zip --json
 daryaft completion zsh
 daryaft config path
 daryaft config show
@@ -159,6 +161,14 @@ the same checks as machine-readable JSON for automation and CI.
 keeping warning checks marked as warnings in the report. `clamscan` is reported
 as an optional tool for future scan features. The GitHub release check is
 currently listed as skipped and does not make a network request.
+
+`daryaft inspect <url>` prints HTTP metadata for one HTTP/HTTPS URL without
+saving a file. It follows redirects, reports the final URL, status, inferred
+filename, content length when known, content type, `Accept-Ranges`, resume
+support, `ETag`, and `Last-Modified`. Use `daryaft inspect <url> --json` for
+stable machine-readable output. Some fields may be unknown when a server omits
+headers. Inspect does not implement checksum, proxy, custom-header, auth, or
+TUI flows yet.
 
 Daryaft can generate shell completion scripts with Cobra's standard completion
 command. Installation paths depend on your OS and shell setup:

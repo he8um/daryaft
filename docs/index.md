@@ -13,6 +13,7 @@ commands only.
 - [Usage](usage.md): implemented commands and planned examples.
 - [Command Reference](command-reference.md): current command behavior.
 - [Configuration](configuration.md): default metadata and planned config locations.
+- [Inspect and Dry Run](features/inspect-and-dry-run.md): URL metadata inspection and dry-run preflight behavior.
 - [Architecture Overview](architecture/overview.md): planned high-level components.
 - [Testing Strategy](engineering/testing-strategy.md): local and CI checks.
 - [Release Process](operations/release-process.md): local release readiness checks.

@@ -70,6 +70,50 @@ Source builds default to version `0.6.0-dev`, commit `local`, date `unknown`,
 and built by `source`. Release builds inject metadata through ldflags. Daryaft
 is still pre-1.0; public stable install channels begin at `v1.0.0`.
 
+## `daryaft inspect <url>`
+
+Implemented. Inspects one HTTP/HTTPS URL and prints metadata without saving a
+file. Exactly one URL argument is required, and the URL scheme must be `http`
+or `https`.
+
+Human output includes:
+
+- original URL
+- final URL after redirects
+- HTTP status
+- inferred filename
+- content length, or `unknown`
+- content type, or `unknown`
+- `Accept-Ranges`, or `unknown`
+- resume support as `yes`, `no`, or `unknown`
+- `ETag`, or `unknown`
+- `Last-Modified`, or `unknown`
+
+Use `--json` for stable machine-readable output:
+
+```json
+{
+  "url": "https://example.com/file.zip",
+  "final_url": "https://cdn.example.com/file.zip",
+  "status": "200 OK",
+  "status_code": 200,
+  "filename": "file.zip",
+  "content_length": 1048576,
+  "content_length_known": true,
+  "content_type": "application/zip",
+  "accept_ranges": "bytes",
+  "resume_supported": true,
+  "resume_support_known": true,
+  "etag": "\"abc123\"",
+  "last_modified": "Tue, 01 Jun 2026 12:00:00 GMT"
+}
+```
+
+Daryaft tries `HEAD` first and may fall back to `GET` with
+`Range: bytes=0-0` when `HEAD` is not allowed or omits useful metadata. It
+closes response bodies and does not write `.part` files, metadata sidecars, or
+final downloads. Metadata may be unknown when the server omits headers.
+
 ## `daryaft doctor`
 
 Implemented. Prints a local diagnostics report using simple text output.

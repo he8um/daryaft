@@ -33,6 +33,19 @@ Source builds default to `0.6.0-dev`, commit `local`, date `unknown`, and
 built by `source`. Release builds inject metadata with linker flags.
 
 ```bash
+daryaft inspect https://example.com/file.zip
+daryaft inspect https://example.com/file.zip --json
+```
+
+Inspects one HTTP/HTTPS URL and prints metadata without saving a file. Inspect
+follows redirects and reports the final URL, HTTP status, inferred filename,
+content length when known, content type, `Accept-Ranges`, resume support,
+`ETag`, and `Last-Modified`. Daryaft tries `HEAD` first and may fall back to a
+small `Range: bytes=0-0` probe when the server does not support `HEAD` or omits
+useful metadata. Metadata may be unknown if the server does not send the
+corresponding headers. Use `--json` for stable machine-readable output.
+
+```bash
 daryaft doctor
 daryaft doctor --json
 daryaft doctor --strict

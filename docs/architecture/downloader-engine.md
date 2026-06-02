@@ -47,6 +47,10 @@ connection phases are bounded, but Daryaft does not impose a fixed total
 download-duration timeout by default. Long body streams should continue as long
 as the request context is active and the server keeps sending data.
 
+The inspect command uses the same HTTP transport defaults for URL metadata
+preflight. It tries `HEAD` first and may use a small range probe for metadata,
+but it does not write final files, `.part` files, or metadata sidecars.
+
 Retry backoff is context-aware. Cancellation during backoff returns promptly
 and cancelled downloads are not classified as retryable. Retry counts are
 bounded to `0` through `20`; `0` means the first attempt only.

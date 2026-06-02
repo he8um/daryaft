@@ -78,7 +78,10 @@ environment override validation, and theme validation. TUI behavior tests cover
 responsive window sizing, input-width adaptation, and Backspace editing versus
 empty-input navigation. CLI tests cover verbose download diagnostics, unchanged
 non-verbose output, and context-injected cancellation for single and batch
-downloads without sending OS signals to the test process.
+downloads without sending OS signals to the test process. Inspect tests use
+`httptest.Server` to cover URL validation, redirects, HEAD metadata,
+unknown metadata, range fallback, JSON output, no file writes, and response
+body closing without external network calls.
 
 If GoReleaser is not installed, `make ci` prints a warning and continues. The
 strict release snapshot target remains `make release-check`, which requires
