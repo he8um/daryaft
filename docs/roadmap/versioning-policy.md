@@ -2,8 +2,11 @@
 
 Daryaft uses milestone-oriented semantic versioning.
 
-The current development metadata version is `0.5.0-dev`. It reflects the
-project's current pre-1.0 capability level and is not a public stable release.
+The current development metadata version is `0.6.0-dev`. It represents the
+stabilized pre-release foundation after downloader/config correctness work,
+CLI/TUI behavior alignment, expanded HTTP coverage, safe CLI signal
+cancellation, and local/CI quality gates. It is not a public stable release,
+and breaking changes may still happen before `v1.0.0`.
 
 ## Rules
 
@@ -25,7 +28,7 @@ available from `v1.0.0` onward.
 Source builds default to:
 
 ```text
-version: 0.5.0-dev
+version: 0.6.0-dev
 commit: local
 date: unknown
 built_by: source
@@ -47,7 +50,7 @@ goreleaser release --snapshot --clean --skip=publish
 This check is local release-readiness validation only. It must not be treated as
 a public release, must not create tags, and must not publish package-manager
 artifacts before `v1.0.0`. Snapshot versions are named
-`0.5.0-dev-SNAPSHOT-<short-commit>` so they align with the current development
+`0.6.0-dev-SNAPSHOT-<short-commit>` so they align with the current development
 metadata instead of deriving from older local tags. Snapshot output is local and
 ignored by Git.
 

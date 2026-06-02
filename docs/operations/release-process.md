@@ -76,11 +76,11 @@ are written under ignored local build directories such as `dist/`.
 Snapshot versions are intentionally named:
 
 ```text
-0.5.0-dev-SNAPSHOT-<short-commit>
+0.6.0-dev-SNAPSHOT-<short-commit>
 ```
 
 GoReleaser normally derives versions from Git tags. The snapshot template keeps
-local dry-run metadata aligned with Daryaft's current `0.5.0-dev` development
+local dry-run metadata aligned with Daryaft's current `0.6.0-dev` development
 version without creating or deleting tags.
 
 ## Release Metadata
@@ -96,7 +96,7 @@ with linker flags:
 Source builds keep the default development metadata:
 
 ```text
-version: 0.5.0-dev
+version: 0.6.0-dev
 commit: local
 date: unknown
 built_by: source

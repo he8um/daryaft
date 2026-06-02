@@ -11,7 +11,7 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 - Initial project skeleton.
 - Minimal Cobra CLI foundation.
 - Bubble Tea interactive home screen for no-argument `daryaft`.
-- Version command with `0.5.0-dev` build metadata defaults, `built_by`
+- Version command with `0.6.0-dev` build metadata defaults, `built_by`
   reporting, JSON output, and release ldflags compatibility.
 - Download command surface with validation and dry-run planning.
 - Single URL HTTP/HTTPS downloader with safe filename selection and `.part` writes.
@@ -57,7 +57,7 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 - Local `make release-check` target for GoReleaser snapshot validation without
   publishing.
 - GoReleaser v2 configuration with non-deprecated archive fields and
-  `0.5.0-dev-SNAPSHOT-<short-commit>` snapshot naming.
+  `0.6.0-dev-SNAPSHOT-<short-commit>` snapshot naming.
 - CI GoReleaser config validation with `goreleaser check`, without publishing
   releases.
 - Hardened pre-release CI with Linux/macOS Go test-build matrix, tidy check,

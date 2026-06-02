@@ -21,7 +21,7 @@ Use `daryaft version --json` for stable machine-readable metadata:
 
 ```json
 {
-  "version": "0.5.0-dev",
+  "version": "0.6.0-dev",
   "commit": "local",
   "date": "unknown",
   "built_by": "source",
@@ -29,7 +29,7 @@ Use `daryaft version --json` for stable machine-readable metadata:
 }
 ```
 
-Source builds default to `0.5.0-dev`, commit `local`, date `unknown`, and
+Source builds default to `0.6.0-dev`, commit `local`, date `unknown`, and
 built by `source`. Release builds inject metadata with linker flags.
 
 ```bash

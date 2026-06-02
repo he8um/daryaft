@@ -18,7 +18,11 @@ from `.part` files when the server supports HTTP Range requests. Running
 collect a single URL or `.txt` file path and show the same dry-run download
 plan as the CLI, then start real single or sequential batch downloads from the
 plan screen. The single URL TUI flow can also set an optional custom filename.
-The current development version is `0.5.0-dev`.
+The current development version is `0.6.0-dev`.
+This milestone represents the stabilized pre-release foundation after
+downloader/config correctness work, CLI/TUI cancellation alignment, expanded
+HTTP coverage, and local/CI quality gates. Daryaft remains pre-1.0, and
+breaking changes may still happen before `v1.0.0`.
 
 - Repository: https://github.com/he8um/daryaft
 - Website: https://xhesam.com
@@ -31,7 +35,7 @@ The current development version is `0.5.0-dev`.
 Public install channels begin at `v1.0.0`. Before that release, Homebrew, Debian,
 RPM, Arch, and one-line install instructions are planned only and must not be
 presented as stable user-facing install paths. Source builds report
-`0.5.0-dev`, commit `local`, build date `unknown`, and built by `source`.
+`0.6.0-dev`, commit `local`, build date `unknown`, and built by `source`.
 Release builds inject version metadata with linker flags.
 
 For local development:
@@ -69,7 +73,7 @@ make run
 `make release-check` requires GoReleaser v2 and runs a local snapshot release
 check without publishing, creating tags, or enabling package-manager publishing.
 Install GoReleaser with `brew install goreleaser` if the command is missing.
-Snapshot versions are named like `0.5.0-dev-SNAPSHOT-<short-commit>`, and any
+Snapshot versions are named like `0.6.0-dev-SNAPSHOT-<short-commit>`, and any
 snapshot artifacts are written under ignored local build directories such as
 `dist/`.
 

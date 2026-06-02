@@ -58,7 +58,7 @@ Use `daryaft version --json` for stable machine-readable output:
 
 ```json
 {
-  "version": "0.5.0-dev",
+  "version": "0.6.0-dev",
   "commit": "local",
   "date": "unknown",
   "built_by": "source",
@@ -66,7 +66,7 @@ Use `daryaft version --json` for stable machine-readable output:
 }
 ```
 
-Source builds default to version `0.5.0-dev`, commit `local`, date `unknown`,
+Source builds default to version `0.6.0-dev`, commit `local`, date `unknown`,
 and built by `source`. Release builds inject metadata through ldflags. Daryaft
 is still pre-1.0; public stable install channels begin at `v1.0.0`.
 
