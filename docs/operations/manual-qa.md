@@ -44,6 +44,8 @@ Run the optional tool-backed gates when the tools are installed:
 
 ```bash
 make lint
+govulncheck ./...
+gosec ./...
 make security
 goreleaser check
 ```
@@ -57,8 +59,13 @@ make release-check
 Expected:
 
 - All required Go tests and builds pass.
-- Optional lint, security, and GoReleaser checks pass when their tools are
+- Optional lint, `gosec`, and GoReleaser checks pass when their tools are
   installed.
+- Local `make security` remains strict. Until local Go 1.26.x resolves to Go
+  1.26.4 or newer, `govulncheck` may report known Go 1.26.3 standard-library
+  vulnerabilities GO-2026-5039 and GO-2026-5037; these are temporarily advisory
+  only in CI and should be reverted to blocking there once patched Go is
+  available.
 - `make release-check` writes only local snapshot artifacts under ignored build
   directories such as `dist/`; it must not publish.
 

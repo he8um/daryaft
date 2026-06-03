@@ -20,9 +20,13 @@ tidiness, runs `go test ./...`, runs `go build ./...`, and runs
 `go test -race ./internal/tui`.
 
 The CI workflow also runs separate `lint` and `security` jobs. The `lint` job
-runs `golangci-lint run` with `.golangci.yml`. The `security` job installs and
-runs `govulncheck ./...` and `gosec ./...`. These jobs do not publish releases,
-create tags, or run snapshot builds.
+runs blocking `golangci-lint run` with `.golangci.yml`. The `security` job
+installs and runs `govulncheck ./...` and `gosec ./...`; `gosec` remains
+blocking. `govulncheck` is temporarily advisory in CI because Go 1.26.x on
+hosted tooling can still resolve to Go 1.26.3 and report standard-library
+vulnerabilities fixed in Go 1.26.4. Restore `govulncheck` to blocking once CI
+can use Go 1.26.4 or newer. These jobs do not publish releases, create tags, or
+run snapshot builds.
 
 Recommended branch protection checks:
 
@@ -47,7 +51,9 @@ make security
 ```
 
 `make lint` requires `golangci-lint`. `make security` requires `govulncheck`
-and `gosec`. These are the local equivalents of the CI `lint` and `security`
+and `gosec`, and remains strict locally even while CI `govulncheck` is
+temporarily advisory for the Go 1.26.3 standard-library patch gap. `make lint`
+and `make security` are the local equivalents of the CI `lint` and `security`
 jobs.
 
 Use the local release check before changing release configuration:

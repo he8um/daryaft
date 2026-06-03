@@ -115,8 +115,9 @@ This requires both tools:
 - `govulncheck`: `go install golang.org/x/vuln/cmd/govulncheck@latest`
 - `gosec`: `go install github.com/securego/gosec/v2/cmd/gosec@latest`
 
-`make lint` and `make security` are the local equivalents of the CI `lint` and
-`security` jobs.
+`make lint` is the local equivalent of the CI `lint` job. `make security`
+remains strict locally and runs both `govulncheck ./...` and `gosec ./...` as
+blocking checks.
 
 ## GitHub Actions
 
@@ -129,11 +130,16 @@ The separate `goreleaser-check` job validates `.goreleaser.yml` with
 create tags, or use publishing secrets.
 
 The separate `lint` job installs `golangci-lint` and runs `golangci-lint run`
-with the repository `.golangci.yml`. The separate `security` job installs
-`govulncheck` and `gosec`, then runs `govulncheck ./...` and `gosec ./...`.
-Neither job publishes releases or creates tags. These tooling jobs use Go
-`1.26.x` so current quality tools can be installed, while the Go test/build
-matrix continues to use the module Go version from `go.mod`.
+with the repository `.golangci.yml`; it is blocking. The separate `security`
+job installs `govulncheck` and `gosec`. `gosec ./...` remains blocking in CI.
+`govulncheck ./...` is temporarily advisory in CI and emits a GitHub Actions
+warning if it fails because Go 1.26.x on hosted tooling can still resolve to Go
+1.26.3, which reports standard-library vulnerabilities GO-2026-5039 in
+`net/textproto` and GO-2026-5037 in `crypto/x509`; both are fixed in Go 1.26.4.
+Restore `govulncheck` to blocking once CI can use Go 1.26.4 or newer. Neither
+job publishes releases or creates tags. These tooling jobs use Go `1.26.x` so
+current quality tools can be installed, while the Go test/build matrix
+continues to use the module Go version from `go.mod`.
 
 Workflow actions should stay on stable majors supported by GitHub-hosted
 runners. The current workflow uses Node 24-compatible action majors for

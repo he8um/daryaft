@@ -33,11 +33,15 @@ The `goreleaser-check` job validates `.goreleaser.yml` with `goreleaser check`
 only. It does not publish releases, create tags, run snapshot builds, or use
 publishing secrets.
 
-The `lint` job runs `golangci-lint run` using `.golangci.yml`. The `security`
-job runs `govulncheck ./...` and `gosec ./...`. These jobs do not publish
-releases, create tags, run snapshot builds, or use publishing secrets. They may
-use a newer Go toolchain than the test/build matrix only to install current
-quality tools; runtime compatibility remains governed by `go.mod`.
+The `lint` job runs blocking `golangci-lint run` using `.golangci.yml`. The
+`security` job runs `govulncheck ./...` and `gosec ./...`; `gosec` remains
+blocking. `govulncheck` is temporarily advisory in CI because Go 1.26.x on
+hosted tooling can still resolve to Go 1.26.3 and report standard-library
+vulnerabilities GO-2026-5039 and GO-2026-5037, both fixed in Go 1.26.4. Restore
+`govulncheck` to blocking once CI can use Go 1.26.4 or newer. These jobs do not
+publish releases, create tags, run snapshot builds, or use publishing secrets.
+They may use a newer Go toolchain than the test/build matrix only to install
+current quality tools; runtime compatibility remains governed by `go.mod`.
 
 ## Release Safety
 

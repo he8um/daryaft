@@ -80,6 +80,10 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 
 ### Fixed
 
+- Made CI `govulncheck ./...` temporarily advisory, with a GitHub Actions
+  warning, while Go 1.26.x on hosted tooling can still resolve to Go 1.26.3
+  and report standard-library vulnerabilities fixed in Go 1.26.4. CI `gosec`
+  remains blocking, and local `make security` remains strict.
 - Expanded downloader HTTP integration coverage for redirects, unknown-length
   responses, slow-stream cancellation, and exhausted retry failures, and cleaned
   docs so planned update/install/Windows support is not overstated.
