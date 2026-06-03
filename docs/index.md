@@ -16,6 +16,7 @@ commands only.
 - [Inspect and Dry Run](features/inspect-and-dry-run.md): URL metadata inspection and dry-run preflight behavior.
 - [Architecture Overview](architecture/overview.md): planned high-level components.
 - [Testing Strategy](engineering/testing-strategy.md): local and CI checks.
+- [Manual QA Checklist](operations/manual-qa.md): local pre-release validation checklist.
 - [Release Process](operations/release-process.md): local release readiness checks.
 - [Branch Protection](operations/branch-protection.md): recommended `main` protection.
 

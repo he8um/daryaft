@@ -1,0 +1,329 @@
+# Manual QA Checklist
+
+Use this checklist before a local pre-release validation pass. It is local-only:
+do not publish releases, create tags, or push changes while running these steps.
+
+Run all commands from the repository root unless a step says otherwise.
+
+## Prerequisites
+
+- Go installed and available in `PATH`.
+- Python 3 available for the local HTTP test server.
+- GoReleaser v2 installed if running `goreleaser check` or `make release-check`.
+- `golangci-lint`, `govulncheck`, and `gosec` installed for local lint and
+  security checks. These are optional but recommended.
+- A terminal capable of running the TUI.
+
+## Clean Workspace
+
+Confirm that the checkout starts clean and that the expected recent commits are
+present:
+
+```bash
+git status
+git log --oneline --decorate --graph --all -10
+```
+
+Expected:
+
+- `git status` reports a clean working tree before QA begins.
+- Recent history includes the latest pushed work for the TUI inspect flow.
+
+## Quality Gates
+
+Run the standard local checks:
+
+```bash
+go test ./...
+go build ./...
+go test -race ./internal/downloader
+go test -race ./internal/tui
+```
+
+Run the optional tool-backed gates when the tools are installed:
+
+```bash
+make lint
+make security
+goreleaser check
+```
+
+If GoReleaser is installed and snapshot validation is desired, run:
+
+```bash
+make release-check
+```
+
+Expected:
+
+- All required Go tests and builds pass.
+- Optional lint, security, and GoReleaser checks pass when their tools are
+  installed.
+- `make release-check` writes only local snapshot artifacts under ignored build
+  directories such as `dist/`; it must not publish.
+
+## Local HTTP Server
+
+Use a separate terminal for the local HTTP server. The helper script prepares
+test files and starts a server on `127.0.0.1:8091`:
+
+```bash
+scripts/manual-qa-server.sh
+```
+
+Manual setup, if you do not use the helper script:
+
+```bash
+rm -rf /tmp/daryaft-qa-server /tmp/daryaft-qa-out
+mkdir -p /tmp/daryaft-qa-server /tmp/daryaft-qa-out
+printf 'Daryaft manual QA test file\n' > /tmp/daryaft-qa-server/file.txt
+python3 - <<'PY'
+from pathlib import Path
+path = Path("/tmp/daryaft-qa-server/big.bin")
+chunk = bytes(range(256)) * 4096
+with path.open("wb") as f:
+    for _ in range(24):
+        f.write(chunk)
+PY
+cat > /tmp/daryaft-qa-server/urls.txt <<'EOF'
+http://localhost:8091/file.txt
+http://localhost:8091/big.bin
+EOF
+cd /tmp/daryaft-qa-server
+python3 -m http.server 8091 --bind 127.0.0.1
+```
+
+Use another terminal for all Daryaft commands. If you use a different port,
+replace `<port>` in the steps below.
+
+## CLI Single Download
+
+```bash
+rm -rf /tmp/daryaft-qa-out
+mkdir -p /tmp/daryaft-qa-out
+go run . http://localhost:<port>/file.txt -o /tmp/daryaft-qa-out
+ls -la /tmp/daryaft-qa-out
+```
+
+Expected:
+
+- `file.txt` downloads successfully.
+- `/tmp/daryaft-qa-out/file.txt` exists.
+- No `file.txt.part` remains after success.
+
+## CLI Batch Download
+
+```bash
+rm -rf /tmp/daryaft-qa-out
+mkdir -p /tmp/daryaft-qa-out
+go run . -f /tmp/daryaft-qa-server/urls.txt -o /tmp/daryaft-qa-out
+ls -la /tmp/daryaft-qa-out
+```
+
+Expected:
+
+- All files listed in `urls.txt` download.
+- The batch summary shows the completed count.
+- No successful download leaves a `.part` file behind.
+
+## CLI Dry Run
+
+```bash
+rm -rf /tmp/daryaft-qa-out
+mkdir -p /tmp/daryaft-qa-out
+go run . http://localhost:<port>/file.txt -o /tmp/daryaft-qa-out --dry-run
+ls -la /tmp/daryaft-qa-out
+go run . -f /tmp/daryaft-qa-server/urls.txt -o /tmp/daryaft-qa-out --dry-run
+ls -la /tmp/daryaft-qa-out
+```
+
+Expected:
+
+- Each command prints a dry-run plan.
+- No files are written to `/tmp/daryaft-qa-out`.
+
+## CLI Resume
+
+Use the larger file so there is time to interrupt:
+
+```bash
+rm -rf /tmp/daryaft-qa-out
+mkdir -p /tmp/daryaft-qa-out
+go run . http://localhost:<port>/big.bin -o /tmp/daryaft-qa-out
+```
+
+Press `Ctrl+C` while the download is active, then check the partial state:
+
+```bash
+ls -la /tmp/daryaft-qa-out
+```
+
+Rerun the same command:
+
+```bash
+go run . http://localhost:<port>/big.bin -o /tmp/daryaft-qa-out
+```
+
+Expected:
+
+- After interruption, `.part` and `.part.daryaft.json` files exist.
+- Rerunning the same command resumes when the server supports ranges.
+- If the server does not support ranges, Daryaft restarts safely.
+- After success, `big.bin` exists and partial files are removed.
+
+## CLI Safe Cancellation
+
+Start a large or slow enough download:
+
+```bash
+rm -rf /tmp/daryaft-qa-out
+mkdir -p /tmp/daryaft-qa-out
+go run . http://localhost:<port>/big.bin -o /tmp/daryaft-qa-out
+```
+
+Press `Ctrl+C` during the transfer.
+
+Expected:
+
+- Daryaft prints a cancellation message.
+- The command exits non-zero.
+- The partial download is kept.
+- The final `big.bin` file is not created.
+
+## CLI Inspect
+
+```bash
+go run . inspect http://localhost:<port>/file.txt
+go run . inspect http://localhost:<port>/file.txt --json
+```
+
+Optional JSON parse check:
+
+```bash
+go run . inspect http://localhost:<port>/file.txt --json | python3 -m json.tool
+```
+
+Expected:
+
+- Metadata is printed.
+- No files are written.
+- JSON output is valid JSON.
+
+## TUI Flows
+
+Start the TUI:
+
+```bash
+go run .
+```
+
+Test these flows:
+
+- Download from URL: `http://localhost:<port>/file.txt`.
+- Download from `.txt` file: `/tmp/daryaft-qa-server/urls.txt`.
+- Inspect URL: `http://localhost:<port>/file.txt`.
+- Press `q` during an active download.
+- Press `q` during an active inspect.
+- Use Backspace in input fields, including on an empty input.
+- Resize the terminal while screens are active, if practical.
+
+Expected:
+
+- No panic.
+- Screens navigate correctly.
+- Inspect does not write files.
+- A cancelled download keeps the partial file.
+
+## Config And Environment
+
+These commands update the local Daryaft config file. Before testing, record the
+path so you can restore it if needed:
+
+```bash
+go run . config path
+go run . config show
+```
+
+Run:
+
+```bash
+go run . config set retries 5
+go run . config set theme mono
+go run . config show
+go run . config set retries 21
+go run . config set theme invalid-theme
+DARYAFT_RETRIES=4 go run . http://localhost:<port>/file.txt --dry-run
+```
+
+Expected:
+
+- `config show` reflects `retries: 5` and `theme: mono`.
+- Invalid `retries` values greater than `20` are rejected.
+- Invalid theme values are rejected.
+- The `DARYAFT_RETRIES=4` dry-run uses the environment override without writing
+  files.
+
+## Doctor
+
+```bash
+go run . doctor
+go run . doctor --json
+go run . doctor --json | python3 -m json.tool
+go run . doctor --strict
+```
+
+Expected:
+
+- Plain output is readable.
+- JSON output is parseable.
+- `--strict` returns non-zero when warnings or failures are present and returns
+  zero when no warnings or failures are present.
+
+## Completion
+
+```bash
+go run . completion bash > /tmp/daryaft-qa-completion.bash
+go run . completion zsh > /tmp/daryaft-qa-completion.zsh
+go run . completion fish > /tmp/daryaft-qa-completion.fish
+go run . completion powershell > /tmp/daryaft-qa-completion.ps1
+wc -c /tmp/daryaft-qa-completion.*
+```
+
+Expected:
+
+- Each completion command exits successfully.
+- Each generated completion file is non-empty.
+
+## Release Readiness Local Only
+
+```bash
+goreleaser check
+make release-check
+```
+
+Expected:
+
+- `goreleaser check` passes.
+- `make release-check` creates local snapshot artifacts only.
+- No GitHub release is published.
+- No Git tags are created.
+
+## Cleanup
+
+Stop the local HTTP server with `Ctrl+C`, then remove temporary QA artifacts:
+
+```bash
+rm -rf /tmp/daryaft-qa-server /tmp/daryaft-qa-out
+rm -f /tmp/daryaft-qa-completion.bash
+rm -f /tmp/daryaft-qa-completion.zsh
+rm -f /tmp/daryaft-qa-completion.fish
+rm -f /tmp/daryaft-qa-completion.ps1
+git status
+```
+
+Expected:
+
+- The HTTP server is stopped.
+- Temporary test directories and completion files are removed.
+- `git status` is clean except for intentional documentation or script changes
+  from this checklist update.
