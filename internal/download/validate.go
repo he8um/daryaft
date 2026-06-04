@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/he8um/daryaft/internal/checksum"
 	"github.com/he8um/daryaft/internal/input"
 )
 
@@ -38,13 +39,35 @@ func BuildPlan(options Options) (Plan, error) {
 		return Plan{}, fmt.Errorf("--name can only be used with a single URL")
 	}
 
+	parsedChecksum, err := parsePlanChecksum(options, urls)
+	if err != nil {
+		return Plan{}, err
+	}
+
 	return Plan{
-		URLs:    urls,
-		Output:  strings.TrimSpace(options.Output),
-		Name:    strings.TrimSpace(options.Name),
-		Retries: options.Retries,
-		Resume:  options.Resume,
+		URLs:     urls,
+		Output:   strings.TrimSpace(options.Output),
+		Name:     strings.TrimSpace(options.Name),
+		Checksum: parsedChecksum,
+		Retries:  options.Retries,
+		Resume:   options.Resume,
 	}, nil
+}
+
+func parsePlanChecksum(options Options, urls []string) (*checksum.Spec, error) {
+	rawChecksum := strings.TrimSpace(options.Checksum)
+	if rawChecksum == "" {
+		return nil, nil
+	}
+
+	spec, err := checksum.Parse(rawChecksum)
+	if err != nil {
+		return nil, err
+	}
+	if strings.TrimSpace(options.File) != "" || len(urls) != 1 {
+		return nil, fmt.Errorf("--checksum is currently supported only for single URL downloads")
+	}
+	return &spec, nil
 }
 
 func ValidateRetries(retries int) error {

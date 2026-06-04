@@ -178,6 +178,8 @@ Current flags:
 - `-o`, `--output`: output directory.
 - `--name`: filename for a single URL.
 - `--dry-run`: print the plan without attempting a download.
+- `--checksum`: verify a completed single URL download with
+  `sha256:<hex>` or `sha512:<hex>`.
 - `--retries`: retry attempts after the initial attempt, default `3`, valid
   range `0` through `20`.
 - `--resume`: resume interrupted `.part` files, default `true`.
@@ -260,11 +262,31 @@ Progress: 524288 / 1048576 bytes (50.0%) | 1.2 MB/s
 Completed: downloads/file.zip
 ```
 
+For manual integrity checks, pass `--checksum sha256:<hex>` or
+`--checksum sha512:<hex>` with a single URL. Daryaft validates the checksum
+format before downloading, computes the digest only after the final file has
+completed and been renamed into place, and prints:
+
+```text
+Checksum verified: sha256
+```
+
+If the digest does not match, the command returns non-zero with an error like:
+
+```text
+checksum mismatch: expected <expected>, got <actual>
+```
+
+The completed final file is not deleted on mismatch in this milestone. Dry-run
+validates and shows the checksum but does not compute it. `--checksum` is
+currently single URL only, is rejected for batch input and `--file`, and is not
+exposed in the TUI.
+
 With `--verbose` or `-v`, CLI downloads also print lines prefixed with
 `Verbose:` for the effective URL with user info, query, and fragment redacted,
-output directory, selected filename, HTTP status when known, target path,
-resume/retry decisions, and completion duration. Normal output is unchanged
-when verbose mode is not enabled.
+output directory, selected filename, checksum details when provided, HTTP
+status when known, target path, resume/retry decisions, and completion
+duration. Normal output is unchanged when verbose mode is not enabled.
 
 Retry execution is implemented for transient network failures and temporary
 server responses. `--retries 0` means one attempt total. `--retries 3` means the

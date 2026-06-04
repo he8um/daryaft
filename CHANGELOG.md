@@ -14,6 +14,8 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 - Version command with `0.6.0-dev` build metadata defaults, `built_by`
   reporting, JSON output, and release ldflags compatibility.
 - Download command surface with validation and dry-run planning.
+- CLI `--checksum` verification for completed single URL downloads, supporting
+  manual `sha256:<hex>` and `sha512:<hex>` checksum specs.
 - Single URL HTTP/HTTPS downloader with safe filename selection and `.part` writes.
 - Structured single URL downloader events for started, progress, completed, and failed states.
 - CLI text progress output backed by downloader events.

@@ -28,6 +28,7 @@ home screen, and planned packaging, self-update workflow, and expanded
 downloader engine in future milestones.`,
 	Example: `  daryaft https://example.com/file.zip
   daryaft https://example.com/file.zip --dry-run
+  daryaft https://example.com/file.zip --checksum sha256:<hex>
   daryaft -f urls.txt --dry-run
   daryaft download https://example.com/file.zip
   daryaft download https://example.com/file.zip --dry-run

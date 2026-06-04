@@ -110,6 +110,7 @@ daryaft config reset
 daryaft config keys
 daryaft https://example.com/file.zip --dry-run
 daryaft https://example.com/file.zip
+daryaft https://example.com/file.zip --checksum sha256:<hex>
 daryaft https://example.com/a.txt https://example.com/b.txt
 daryaft -f urls.txt --dry-run
 daryaft -f urls.txt
@@ -189,6 +190,19 @@ continue after item failures and print a final summary. `--retries` controls
 retry attempts after the initial attempt; the default `3` means up to four total
 attempts. Valid retry values are `0` through `20`.
 
+CLI single URL downloads can verify a manually supplied checksum after the
+final file is completed and renamed into place:
+
+```bash
+daryaft https://example.com/file.zip --checksum sha256:<hex>
+daryaft download https://example.com/file.zip --checksum sha512:<hex>
+```
+
+Supported checksum algorithms are `sha256` and `sha512`. Dry-run validates and
+prints the checksum plan but does not compute a digest. `--checksum` is
+currently single URL only, is not exposed in the TUI, does not discover or
+download checksum files, and does not delete the completed file on mismatch.
+
 Use `--verbose` or `-v` with CLI downloads to print additional diagnostic lines
 prefixed with `Verbose:`. Verbose output includes the effective URL with user
 info and query data redacted, output directory, selected filename, retry/resume
@@ -217,7 +231,7 @@ target, stops remaining batch items, and exits non-zero.
 
 - Concurrent batch downloads
 - Rich progress bars
-- Checksum-aware behavior
+- TUI checksum flow and signed checksum handling
 - Queue persistence and history management
 - Structured automation output
 - Self-update support after the release model is ready

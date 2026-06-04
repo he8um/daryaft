@@ -8,6 +8,7 @@ Single URL HTTP/HTTPS download is implemented with simple text progress output.
 daryaft https://example.com/file.zip
 daryaft download https://example.com/file.zip
 daryaft https://example.com/file.zip --dry-run
+daryaft https://example.com/file.zip --checksum sha256:<hex>
 ```
 
 Current behavior:
@@ -26,6 +27,8 @@ Current behavior:
   shows the remote file changed.
 - Truncates `.part` files and overwrites metadata when `--no-resume` is used.
 - Does not overwrite existing final files.
+- Verifies manual CLI checksums after successful completed downloads when
+  `--checksum sha256:<hex>` or `--checksum sha512:<hex>` is provided.
 - Emits structured downloader events for started, progress, resuming,
   restarting, retrying, completed, and failed states.
 - Uses simple line-based text progress in the CLI.
@@ -38,7 +41,15 @@ Downloading: https://example.com/file.zip
 Saving to: downloads/file.zip
 Progress: 524288 / 1048576 bytes (50.0%) | 1.2 MB/s
 Completed: downloads/file.zip
+Checksum verified: sha256
 ```
+
+Checksum verification is CLI-only in this milestone. Daryaft validates the
+checksum format before starting the download. Dry-run shows the checksum but
+does not compute it. A mismatch returns a non-zero error like `checksum
+mismatch: expected <expected>, got <actual>` and leaves the completed final file
+in place. Daryaft does not auto-discover checksum files, download checksum
+files, verify signed checksums, or expose checksum entry in the TUI yet.
 
 Example resume output:
 
@@ -74,8 +85,9 @@ the output directory.
 
 ## Planned
 
-Rich progress bars, checksum validation, and segmented downloads are planned.
-The Bubble Tea execution screen consumes the existing downloader event stream.
+Rich progress bars, TUI checksum flow, signed checksum handling, and segmented
+downloads are planned. The Bubble Tea execution screen consumes the existing
+downloader event stream.
 
 Related docs:
 

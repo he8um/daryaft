@@ -1,6 +1,8 @@
 package download
 
 import (
+	"crypto/sha256"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -32,6 +34,68 @@ func TestBuildPlanValidatesURLSchemes(t *testing.T) {
 				t.Fatalf("error = %q, want invalid URL context", err)
 			}
 		})
+	}
+}
+
+func TestBuildPlanParsesChecksum(t *testing.T) {
+	sum := sha256.Sum256([]byte("hello"))
+	plan, err := BuildPlan(Options{
+		URLs:     []string{"https://example.com/file.zip"},
+		Checksum: " sha256:" + fmt.Sprintf("%X", sum) + " ",
+		Retries:  3,
+		Resume:   true,
+	})
+	if err != nil {
+		t.Fatalf("BuildPlan returned error: %v", err)
+	}
+	if plan.Checksum == nil {
+		t.Fatal("plan.Checksum = nil")
+	}
+	if plan.Checksum.Algorithm != "sha256" {
+		t.Fatalf("Algorithm = %q", plan.Checksum.Algorithm)
+	}
+	if plan.Checksum.Expected != fmt.Sprintf("%x", sum) {
+		t.Fatalf("Expected = %q", plan.Checksum.Expected)
+	}
+}
+
+func TestBuildPlanRejectsChecksumWithMultipleURLs(t *testing.T) {
+	sum := sha256.Sum256([]byte("hello"))
+	_, err := BuildPlan(Options{
+		URLs: []string{
+			"https://example.com/one.zip",
+			"https://example.com/two.zip",
+		},
+		Checksum: "sha256:" + fmt.Sprintf("%x", sum),
+		Retries:  3,
+		Resume:   true,
+	})
+	if err == nil {
+		t.Fatal("BuildPlan returned nil error")
+	}
+	if !strings.Contains(err.Error(), "--checksum is currently supported only for single URL downloads") {
+		t.Fatalf("error = %q", err)
+	}
+}
+
+func TestBuildPlanRejectsChecksumWithFileInput(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "urls.txt")
+	if err := os.WriteFile(path, []byte("https://example.com/file.zip\n"), 0o600); err != nil {
+		t.Fatalf("write URL file: %v", err)
+	}
+	sum := sha256.Sum256([]byte("hello"))
+
+	_, err := BuildPlan(Options{
+		File:     path,
+		Checksum: "sha256:" + fmt.Sprintf("%x", sum),
+		Retries:  3,
+		Resume:   true,
+	})
+	if err == nil {
+		t.Fatal("BuildPlan returned nil error")
+	}
+	if !strings.Contains(err.Error(), "--checksum is currently supported only for single URL downloads") {
+		t.Fatalf("error = %q", err)
 	}
 }
 

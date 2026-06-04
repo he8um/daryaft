@@ -333,6 +333,7 @@ Incomplete downloads keep sidecar metadata at
 daryaft https://example.com/file.zip
 daryaft https://example.com/file.zip --output downloads
 daryaft https://example.com/file.zip --name file.zip
+daryaft https://example.com/file.zip --checksum sha256:<hex>
 ```
 
 The command does not overwrite existing final files. It uses simple text output:
@@ -346,6 +347,7 @@ Resume not supported by server; restarting download
 Remote file changed; restarting download
 Retrying <attempt>/<max> in <delay>: <reason>
 Completed: <path>
+Checksum verified: sha256
 ```
 
 If the server does not provide a known content length, progress uses:
@@ -393,6 +395,17 @@ prefixed with `Verbose:`. These include the effective URL with user info,
 query, and fragment redacted, output directory, selected filename, retry/resume
 details, HTTP status when known, target path, and completion duration. Normal
 non-verbose output is unchanged.
+
+`--checksum` is implemented for manual single URL verification after a
+successful completed download. Supported forms are `sha256:<hex>` and
+`sha512:<hex>`. The checksum is validated before the network request starts.
+After the final file is renamed into place, Daryaft computes the digest and
+prints `Checksum verified: sha256` or `Checksum verified: sha512` on match. On
+mismatch, it returns a non-zero error such as `checksum mismatch: expected
+<expected>, got <actual>` and leaves the completed final file in place.
+Dry-run validates and prints the checksum but does not compute it. `--checksum`
+is rejected for multiple URLs and for `--file` input, and it is not exposed in
+the TUI yet.
 
 ## `daryaft download [url...] --dry-run`
 
@@ -445,6 +458,8 @@ Implemented. Explicit form of sequential batch download.
 - `-o`, `--output string`: output directory.
 - `--name string`: filename for a single URL.
 - `--dry-run`: validate inputs and print the download plan.
+- `--checksum string`: verify a completed single URL download with
+  `sha256:<hex>` or `sha512:<hex>`.
 - `--retries int`: retry attempts after the initial attempt, default `3`,
   valid range `0` through `20`.
 - `--resume`: resume interrupted `.part` files with HTTP Range, default `true`.
@@ -457,6 +472,9 @@ Validation rules:
 - Only `http` and `https` URLs are accepted.
 - Empty lines and `#` comments are ignored in URL files.
 - `--name` is rejected when more than one URL is provided.
+- `--checksum` is rejected when more than one URL is provided or when `--file`
+  is used.
+- `--checksum` must use `sha256:<64 hex chars>` or `sha512:<128 hex chars>`.
 - `--retries` must be from `0` through `20`.
 
 ## Common Flags

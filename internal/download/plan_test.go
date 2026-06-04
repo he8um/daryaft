@@ -1,8 +1,12 @@
 package download
 
 import (
+	"crypto/sha256"
+	"fmt"
 	"strings"
 	"testing"
+
+	"github.com/he8um/daryaft/internal/checksum"
 )
 
 func TestDryRunString(t *testing.T) {
@@ -26,6 +30,25 @@ func TestDryRunString(t *testing.T) {
 		if !strings.Contains(got, want) {
 			t.Fatalf("DryRunString() missing %q in:\n%s", want, got)
 		}
+	}
+}
+
+func TestDryRunStringIncludesChecksum(t *testing.T) {
+	sum := sha256.Sum256([]byte("hello"))
+	spec := checksum.Spec{
+		Algorithm: checksum.AlgorithmSHA256,
+		Expected:  fmt.Sprintf("%x", sum),
+	}
+	plan := Plan{
+		URLs:     []string{"https://example.com/file.zip"},
+		Checksum: &spec,
+		Retries:  3,
+		Resume:   true,
+	}
+
+	got := plan.DryRunString()
+	if !strings.Contains(got, "Checksum: sha256:"+spec.Expected) {
+		t.Fatalf("DryRunString() missing checksum in:\n%s", got)
 	}
 }
 

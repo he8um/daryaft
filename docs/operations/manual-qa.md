@@ -142,6 +142,7 @@ Expected:
 rm -rf /tmp/daryaft-qa-out
 mkdir -p /tmp/daryaft-qa-out
 go run . http://localhost:<port>/file.txt -o /tmp/daryaft-qa-out --dry-run
+go run . http://localhost:<port>/file.txt -o /tmp/daryaft-qa-out --checksum sha256:<file.txt-sha256> --dry-run
 ls -la /tmp/daryaft-qa-out
 go run . -f /tmp/daryaft-qa-server/urls.txt -o /tmp/daryaft-qa-out --dry-run
 ls -la /tmp/daryaft-qa-out
@@ -150,7 +151,42 @@ ls -la /tmp/daryaft-qa-out
 Expected:
 
 - Each command prints a dry-run plan.
+- The checksum dry-run shows `Checksum: sha256:<file.txt-sha256>`.
 - No files are written to `/tmp/daryaft-qa-out`.
+
+## CLI Checksum
+
+Compute the expected checksum for the local fixture, then verify a successful
+download:
+
+```bash
+expected="$(shasum -a 256 /tmp/daryaft-qa-server/file.txt | awk '{print $1}')"
+rm -rf /tmp/daryaft-qa-out
+mkdir -p /tmp/daryaft-qa-out
+go run . http://localhost:<port>/file.txt -o /tmp/daryaft-qa-out --checksum "sha256:${expected}"
+```
+
+Expected:
+
+- The command prints `Checksum verified: sha256`.
+- `/tmp/daryaft-qa-out/file.txt` exists.
+- No `file.txt.part` remains after success.
+
+Run a mismatch check:
+
+```bash
+rm -rf /tmp/daryaft-qa-out
+mkdir -p /tmp/daryaft-qa-out
+go run . http://localhost:<port>/file.txt -o /tmp/daryaft-qa-out --checksum "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+ls -la /tmp/daryaft-qa-out
+```
+
+Expected:
+
+- The command exits non-zero.
+- The error includes `checksum mismatch: expected`.
+- The completed final file remains in `/tmp/daryaft-qa-out`.
+- No checksum behavior is exposed in the TUI yet.
 
 ## CLI Resume
 

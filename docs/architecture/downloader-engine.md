@@ -60,6 +60,12 @@ calling the downloader. Dry-run planning returns before signal handling is
 installed. The downloader remains responsible for preserving `.part` files and
 metadata, emitting the cancelled event, and avoiding final-file rename.
 
+Manual checksum verification is intentionally outside the downloader engine.
+The download plan carries a parsed checksum spec for CLI single URL downloads,
+and the CLI verifies the final path returned by the downloader only after a
+successful completed download. The downloader does not verify partial files and
+does not delete final files on checksum mismatch.
+
 Resume/restart helpers own response bodies explicitly. If a Range response must
 be replaced by a new full request, the old response body is closed once and the
 new active response is returned to the caller. The caller closes only the

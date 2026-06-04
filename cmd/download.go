@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/he8um/daryaft/internal/checksum"
 	appconfig "github.com/he8um/daryaft/internal/config"
 	"github.com/he8um/daryaft/internal/download"
 	"github.com/he8um/daryaft/internal/downloader"
@@ -23,6 +24,7 @@ type downloadFlagValues struct {
 	output   string
 	name     string
 	dryRun   bool
+	checksum string
 	retries  int
 	resume   bool
 	noResume bool
@@ -43,6 +45,7 @@ will interpret URLs, batch files, output options, retries, and resume settings
 before any network request is made.`,
 	Example: `  daryaft download https://example.com/file.zip --dry-run
   daryaft download https://example.com/file.zip
+  daryaft download https://example.com/file.zip --checksum sha256:<hex>
   daryaft download https://example.com/a.txt https://example.com/b.txt
   daryaft download -f urls.txt --dry-run
   daryaft download -f urls.txt
@@ -65,6 +68,7 @@ func addDownloadFlags(command *cobra.Command, flags *downloadFlagValues) {
 	command.Flags().StringVarP(&flags.output, "output", "o", "", "output directory")
 	command.Flags().StringVar(&flags.name, "name", "", "filename for a single URL")
 	command.Flags().BoolVar(&flags.dryRun, "dry-run", false, "validate inputs and print the download plan")
+	command.Flags().StringVar(&flags.checksum, "checksum", "", "verify completed single URL download with <algorithm>:<hex>")
 	command.Flags().IntVar(&flags.retries, "retries", 3, "retry attempts after the initial attempt, 0-20")
 	command.Flags().BoolVar(&flags.resume, "resume", true, "resume interrupted partial downloads")
 	command.Flags().BoolVar(&flags.noResume, "no-resume", false, "disable resume and restart partial downloads")
@@ -87,6 +91,7 @@ func runDownloadWithContext(cmd *cobra.Command, args []string, flags downloadFla
 		Output:   flags.output,
 		Name:     flags.name,
 		DryRun:   flags.dryRun,
+		Checksum: flags.checksum,
 		Retries:  flags.retries,
 		Resume:   flags.resume,
 		NoResume: flags.noResume,
@@ -150,7 +155,7 @@ func runDownloadWithContext(cmd *cobra.Command, args []string, flags downloadFla
 	fmt.Fprintf(cmd.OutOrStdout(), "Downloading: %s\n", plan.URLs[0])
 
 	savingPrinted := false
-	_, err = downloader.New().DownloadWithEventsContext(ctx, plan, func(event downloader.Event) {
+	result, err := downloader.New().DownloadWithEventsContext(ctx, plan, func(event downloader.Event) {
 		switch event.Type {
 		case downloader.EventStarted:
 			if !savingPrinted {
@@ -173,7 +178,28 @@ func runDownloadWithContext(cmd *cobra.Command, args []string, flags downloadFla
 	if err != nil {
 		return err
 	}
+	if plan.Checksum != nil {
+		if err := verifyCompletedDownloadChecksum(cmd, result.Path, *plan.Checksum, verboseMode); err != nil {
+			return err
+		}
+	}
 
+	return nil
+}
+
+func verifyCompletedDownloadChecksum(cmd *cobra.Command, path string, spec checksum.Spec, verboseMode bool) error {
+	actual, err := checksum.VerifyFile(path, spec)
+	if verboseMode {
+		fmt.Fprintf(cmd.OutOrStdout(), "Verbose: checksum algorithm: %s\n", spec.Algorithm)
+		fmt.Fprintf(cmd.OutOrStdout(), "Verbose: checksum expected: %s\n", spec.Expected)
+		if actual != "" {
+			fmt.Fprintf(cmd.OutOrStdout(), "Verbose: checksum actual: %s\n", actual)
+		}
+	}
+	if err != nil {
+		return err
+	}
+	fmt.Fprintf(cmd.OutOrStdout(), "Checksum verified: %s\n", spec.Algorithm)
 	return nil
 }
 
@@ -243,6 +269,10 @@ func printVerbosePlan(cmd *cobra.Command, plan download.Plan, enabled bool) {
 	}
 	fmt.Fprintf(cmd.OutOrStdout(), "Verbose: output directory: %s\n", displayOutput(plan.Output))
 	fmt.Fprintf(cmd.OutOrStdout(), "Verbose: selected filename: %s\n", displayFilename(plan.Name))
+	if plan.Checksum != nil {
+		fmt.Fprintf(cmd.OutOrStdout(), "Verbose: checksum algorithm: %s\n", plan.Checksum.Algorithm)
+		fmt.Fprintf(cmd.OutOrStdout(), "Verbose: checksum expected: %s\n", plan.Checksum.Expected)
+	}
 	fmt.Fprintf(cmd.OutOrStdout(), "Verbose: retries: %d\n", plan.Retries)
 	fmt.Fprintf(cmd.OutOrStdout(), "Verbose: resume enabled: %t\n", plan.Resume)
 	if len(plan.URLs) == 1 {

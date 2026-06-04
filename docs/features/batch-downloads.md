@@ -86,6 +86,10 @@ item fails without retrying and the batch continues.
 cannot safely apply to multiple downloads. CLI `--name` behavior is unchanged
 for single URL commands.
 
+`--checksum` is also rejected for batch input and `--file` input in this
+milestone because one checksum cannot safely apply to multiple files. Manual
+checksum verification is currently single URL CLI-only.
+
 ## Planned
 
 Concurrency, persistent queue state, history, and richer batch formats are

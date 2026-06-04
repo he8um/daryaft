@@ -20,6 +20,7 @@ Windows support, and final `v1.0.0` guarantees are not ready.
 
 - CLI foundation.
 - Single URL download.
+- Manual CLI checksum verification for single URL downloads.
 - Sequential batch download.
 - Dry-run planning.
 - Retry.
@@ -86,6 +87,7 @@ Use the [Manual QA Checklist](manual-qa.md) for local pre-release validation.
 Manual QA should cover:
 
 - CLI single download.
+- CLI checksum verification.
 - CLI batch download.
 - Dry-run.
 - Resume.
@@ -112,7 +114,8 @@ remains disabled/future work. Self-update remains future work.
 - Windows is not officially tested/supported in CI.
 - Self-update is not implemented.
 - Proxy/custom headers/auth are not implemented.
-- Checksum verification is not implemented.
+- TUI checksum flow, signed checksums, and checksum-file discovery are not
+  implemented.
 - Concurrent/segmented downloads are not implemented.
 - Queue/history is not implemented.
 - More manual QA is needed before public release.
@@ -122,9 +125,9 @@ remains disabled/future work. Self-update remains future work.
 
 - Run full manual QA.
 - Fix any QA findings.
-- Add checksum verification as the next low-risk trust feature.
-- Or add inspect polish if needed.
-- Later: proxy/auth, concurrent batch, segmented downloads, queue/history.
+- Add inspect polish if needed.
+- Later: proxy/auth, TUI checksum flow, signed checksums, concurrent batch,
+  segmented downloads, queue/history.
 - Consider Windows CI only when ready to support Windows officially.
 - Restore `govulncheck` blocking in CI after Go `1.26.4` or newer is
   available.
