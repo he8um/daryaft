@@ -72,6 +72,8 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 - Updated GitHub Actions workflow actions to newer Node 24-compatible majors.
 - GitHub issue templates, pull request template, and branch protection
   documentation.
+- Pre-release readiness review for the `0.6.0-dev` internal/manual validation
+  milestone.
 - Safe CLI Ctrl+C/SIGTERM cancellation for single and batch downloads, with
   partial files and metadata preserved for resume.
 - Local `make lint` and `make security` quality gates with a practical

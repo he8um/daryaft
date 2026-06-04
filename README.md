@@ -235,6 +235,7 @@ Start here:
 - [Usage](docs/usage.md)
 - [Command Reference](docs/command-reference.md)
 - [Testing Strategy](docs/engineering/testing-strategy.md)
+- [Pre-Release Readiness](docs/operations/pre-release-readiness.md)
 - [Release Process](docs/operations/release-process.md)
 - [Branch Protection](docs/operations/branch-protection.md)
 - [Architecture Overview](docs/architecture/overview.md)

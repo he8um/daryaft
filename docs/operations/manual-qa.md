@@ -3,6 +3,9 @@
 Use this checklist before a local pre-release validation pass. It is local-only:
 do not publish releases, create tags, or push changes while running these steps.
 
+See [Pre-Release Readiness](pre-release-readiness.md) for the current
+`0.6.0-dev` readiness verdict and known release blockers.
+
 Run all commands from the repository root unless a step says otherwise.
 
 ## Prerequisites

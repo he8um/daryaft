@@ -3,6 +3,10 @@
 Daryaft is still pre-1.0. Public stable install channels and public release
 publishing remain planned for `v1.0.0` and later.
 
+See [Pre-Release Readiness](pre-release-readiness.md) for the current
+`0.6.0-dev` internal validation verdict, known toolchain note, and remaining
+`v1.0.0` blockers.
+
 ## CI Validation
 
 The test workflow includes a `goreleaser-check` job on push and pull request.
