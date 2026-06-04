@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/sha256"
+	"crypto/sha512"
 	"errors"
 	"fmt"
 	"net/http"
@@ -427,6 +428,65 @@ func TestRunDownloadSingleURLVerifiesMatchingChecksum(t *testing.T) {
 	}
 }
 
+func TestRunDownloadSingleURLVerifiesMatchingSHA512Checksum(t *testing.T) {
+	content := []byte("verified sha512 content")
+	sum := sha512.Sum512(content)
+	expected := fmt.Sprintf("%x", sum)
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write(content)
+	}))
+	defer server.Close()
+
+	var output bytes.Buffer
+	cmd := &cobra.Command{Use: "download"}
+	cmd.SetOut(&output)
+
+	err := runDownload(cmd, []string{server.URL + "/file.txt"}, downloadFlagValues{
+		output:   t.TempDir(),
+		checksum: "sha512:" + expected,
+		retries:  3,
+		resume:   true,
+	})
+	if err != nil {
+		t.Fatalf("runDownload returned error: %v", err)
+	}
+	if !strings.Contains(output.String(), "Checksum verified: sha512") {
+		t.Fatalf("output missing sha512 checksum success:\n%s", output.String())
+	}
+}
+
+func TestRunDownloadDoesNotVerifyChecksumAfterDownloadFailure(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "failure", http.StatusInternalServerError)
+	}))
+	defer server.Close()
+
+	var output bytes.Buffer
+	cmd := &cobra.Command{Use: "download"}
+	cmd.SetOut(&output)
+	dir := t.TempDir()
+
+	err := runDownload(cmd, []string{server.URL + "/file.txt"}, downloadFlagValues{
+		output:   dir,
+		checksum: "sha256:" + strings.Repeat("a", 64),
+		retries:  0,
+		resume:   true,
+	})
+	if err == nil {
+		t.Fatal("runDownload returned nil error")
+	}
+	if strings.Contains(err.Error(), "checksum") {
+		t.Fatalf("error = %q, want download failure before checksum", err)
+	}
+	if strings.Contains(output.String(), "Checksum verified") {
+		t.Fatalf("output unexpectedly contains checksum success:\n%s", output.String())
+	}
+	if _, err := os.Stat(filepath.Join(dir, "file.txt")); !os.IsNotExist(err) {
+		t.Fatalf("final file exists or stat failed: %v", err)
+	}
+}
+
 func TestRunDownloadSingleURLReturnsErrorOnChecksumMismatch(t *testing.T) {
 	content := []byte("actual content")
 	wrong := sha256.Sum256([]byte("wrong content"))
@@ -532,15 +592,19 @@ func TestRunDownloadContextCancellationLeavesPartialAndMetadata(t *testing.T) {
 	cmd.SetOut(output)
 
 	err := runDownloadWithContext(cmd, []string{server.URL + "/file.bin"}, downloadFlagValues{
-		output:  dir,
-		retries: 0,
-		resume:  true,
+		output:   dir,
+		checksum: "sha256:" + strings.Repeat("a", 64),
+		retries:  0,
+		resume:   true,
 	}, ctx)
 	if !errors.Is(err, downloader.ErrCancelled) {
 		t.Fatalf("runDownloadWithContext error = %v, want ErrCancelled", err)
 	}
 	if !strings.Contains(output.String(), "Download cancelled. Partial file kept for resume.") {
 		t.Fatalf("output missing cancellation message:\n%s", output.String())
+	}
+	if strings.Contains(output.String(), "Checksum verified") {
+		t.Fatalf("output unexpectedly contains checksum success:\n%s", output.String())
 	}
 
 	final := filepath.Join(dir, "file.bin")

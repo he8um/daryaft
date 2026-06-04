@@ -68,7 +68,7 @@ func ComputeFile(path, algorithm string) (string, error) {
 		return "", err
 	}
 
-	// #nosec G304 -- checksum verification opens the completed downloader target path.
+	// #nosec G304 -- checksum verification opens the completed downloader target path after target safety validation.
 	file, err := os.Open(path)
 	if err != nil {
 		return "", fmt.Errorf("open checksum target %q: %w", path, err)
