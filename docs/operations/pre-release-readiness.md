@@ -20,9 +20,11 @@ The completed QA pass is recorded in
 [QA Results: 0.6.0-dev](qa-results-0.6.0-dev.md). Its verdict is PASS WITH
 NOTES for internal validation readiness.
 
-The internal `v0.6.0-rc.1` tag is documented in
-[Release-Candidate Validation](rc-validation.md), with draft unpublished notes
-in [Daryaft v0.6.0-rc.1 Internal Release Candidate](release-notes-v0.6.0-rc.1.md).
+The current internal RC is `v0.6.0-rc.2`, documented in
+[Release-Candidate Validation](rc-validation.md) and
+[Daryaft v0.6.0-rc.2 Internal Release Candidate](release-notes-v0.6.0-rc.2.md).
+`v0.6.0-rc.1` is superseded; its notes remain at
+[Daryaft v0.6.0-rc.1 Internal Release Candidate](release-notes-v0.6.0-rc.1.md).
 
 ## Implemented Capabilities
 
@@ -128,7 +130,8 @@ remains disabled/future work. Self-update remains future work.
   are not implemented.
 - Concurrent/segmented downloads are not implemented.
 - Queue/history is not implemented.
-- More manual QA is needed before public release.
+- Full interactive TUI QA completed during `v0.6.0-rc.2` validation; more
+  manual QA may be needed before public release.
 - Security gate passes with Go `1.26.4`; `govulncheck` is blocking in CI.
 
 ## Recommended Next Work

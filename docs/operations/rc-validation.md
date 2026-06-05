@@ -5,10 +5,15 @@ It is for pre-1.0 release engineering only and does not publish releases.
 
 ## Current RC
 
-`v0.6.0-rc.1` is an internal validation release candidate for the
+`v0.6.0-rc.2` is the current internal validation release candidate for the
 `0.6.0-dev` milestone. It is not a public stable release, does not imply a
 public install channel, and must not be promoted as a stable user-facing
 release. Public stable remains planned for `v1.0.0`.
+
+`v0.6.0-rc.1` is the previous internal RC. It has been superseded by
+`v0.6.0-rc.2`. See
+[Daryaft v0.6.0-rc.1 Internal Release Candidate](release-notes-v0.6.0-rc.1.md)
+for its historical notes.
 
 The source default version remains `0.6.0-dev`. GoReleaser release and snapshot
 builds inject build metadata with linker flags.
@@ -28,8 +33,8 @@ To inspect the RC tag directly, use a detached checkout or inspect it without
 changing branches:
 
 ```bash
-git checkout v0.6.0-rc.1
-git show --stat v0.6.0-rc.1
+git checkout v0.6.0-rc.2
+git show --stat v0.6.0-rc.2
 ```
 
 If you check out the tag, return to the working branch before making changes:
@@ -116,10 +121,27 @@ git status --short
 The current test workflow runs on `push` and `pull_request`. Because the `push`
 trigger is not filtered to branches only, GitHub Actions runs for tag pushes as
 well as branch pushes. This means an internal RC tag push such as
-`v0.6.0-rc.1` should run the test, GoReleaser config, lint, and security jobs.
+`v0.6.0-rc.2` runs the test, GoReleaser config, lint, and security jobs.
+GitHub Actions for `v0.6.0-rc.2` passed.
 
 The workflow does not publish releases and does not run a tag-triggered release
 job.
+
+## Optional GitHub Pre-Release (Manual Only)
+
+If you want to publish an internal GitHub pre-release for sharing, use:
+
+```bash
+gh release create v0.6.0-rc.2 \
+  --title "Daryaft v0.6.0-rc.2" \
+  --notes-file docs/operations/release-notes-v0.6.0-rc.2.md \
+  --prerelease \
+  --verify-tag
+```
+
+Do not run this unless intentionally publishing a GitHub pre-release. Do not
+enable package-manager artifact publishing from an RC tag. This command is
+provided for reference only — it is not run automatically.
 
 ## Confirm No Release Was Published
 
@@ -156,9 +178,8 @@ record style.
 - The previous Go `1.26.3` standard-library advisory gap (GO-2026-5039 and
   GO-2026-5037) is resolved by using Go `1.26.4` or newer.
 - `govulncheck` and `gosec` are both blocking in CI and in `make rc-check`.
+- Real-terminal interactive TUI QA passed for `v0.6.0-rc.2`.
 - Windows is not officially tested or supported yet.
-- Full interactive TUI QA should be completed in a real terminal before wider
-  public release.
 - Batch checksum semantics are unsupported.
 - Checksum file discovery and signed checksum verification are not implemented.
 

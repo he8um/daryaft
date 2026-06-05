@@ -38,8 +38,8 @@ The automated and terminal-driven QA pass completed successfully for internal
 - That gap is now resolved: CI and local tooling use Go `1.26.4` or newer,
   and `govulncheck` is blocking in CI with no vulnerabilities reported.
 - Windows is not officially tested or supported yet.
-- Full interactive TUI QA should still be completed in a real terminal before a
-  wider public release, although automated TUI tests and race tests passed.
+- Full interactive TUI QA was completed in a real terminal during `v0.6.0-rc.2`
+  validation; all flows passed.
 
 ## Findings
 
@@ -50,11 +50,11 @@ The automated and terminal-driven QA pass completed successfully for internal
 
 ## Next Decision
 
-- Continue internal validation without a tag.
-- Continue validation of the internal `v0.6.0-rc.1` tag using
-  [Release-Candidate Validation](rc-validation.md).
-- Use the draft
+- The current internal RC is `v0.6.0-rc.2`. See
+  [Release-Candidate Validation](rc-validation.md) and
+  [Daryaft v0.6.0-rc.2 Internal Release Candidate](release-notes-v0.6.0-rc.2.md).
+- `v0.6.0-rc.1` is superseded; see
   [Daryaft v0.6.0-rc.1 Internal Release Candidate](release-notes-v0.6.0-rc.1.md)
-  notes for internal review only.
+  for historical notes.
 - Do not publish a public stable release yet.
 - Public stable remains planned for `v1.0.0`.

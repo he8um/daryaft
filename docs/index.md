@@ -20,7 +20,8 @@ commands only.
 - [Pre-Release Readiness](operations/pre-release-readiness.md): `0.6.0-dev` internal validation status and blockers.
 - [QA Results: 0.6.0-dev](operations/qa-results-0.6.0-dev.md): completed internal validation readiness QA pass.
 - [Release-Candidate Validation](operations/rc-validation.md): internal RC tag validation workflow.
-- [Draft RC Release Notes](operations/release-notes-v0.6.0-rc.1.md): unpublished `v0.6.0-rc.1` notes for internal validation.
+- [RC Release Notes: v0.6.0-rc.2](operations/release-notes-v0.6.0-rc.2.md): current internal RC notes (unpublished).
+- [RC Release Notes: v0.6.0-rc.1](operations/release-notes-v0.6.0-rc.1.md): superseded RC notes (historical reference).
 - [Release Process](operations/release-process.md): local release readiness checks.
 - [Branch Protection](operations/branch-protection.md): recommended `main` protection.
 

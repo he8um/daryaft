@@ -87,7 +87,9 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
   milestone.
 - QA results record for the completed `0.6.0-dev` internal validation readiness
   pass.
-- Internal `v0.6.0-rc.1` validation docs and draft unpublished release notes.
+- Internal `v0.6.0-rc.2` validation docs and release notes; supersedes
+  `v0.6.0-rc.1`.
+- Internal `v0.6.0-rc.1` validation docs and release notes (historical).
 - Safe CLI Ctrl+C/SIGTERM cancellation for single and batch downloads, with
   partial files and metadata preserved for resume.
 - Local `make lint` and `make security` quality gates with a practical

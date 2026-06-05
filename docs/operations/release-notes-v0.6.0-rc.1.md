@@ -1,6 +1,11 @@
 # Daryaft v0.6.0-rc.1 Internal Release Candidate
 
-Status: internal validation only
+Status: superseded — use `v0.6.0-rc.2` for current internal validation
+
+> **Superseded.** `v0.6.0-rc.1` has been superseded by
+> [`v0.6.0-rc.2`](release-notes-v0.6.0-rc.2.md). Use `v0.6.0-rc.2` for
+> current internal validation. Historical content below is preserved for
+> reference.
 
 `v0.6.0-rc.1` is an internal release candidate for validating the current
 pre-1.0 Daryaft foundation. It is not a public stable release and does not
