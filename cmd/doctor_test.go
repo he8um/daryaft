@@ -167,6 +167,12 @@ func TestDoctorJSONStrictWarningSetsOKFalse(t *testing.T) {
 func TestDoctorStrictHealthyExitsZero(t *testing.T) {
 	restore := appconfig.SetUserConfigDirForTest(t.TempDir())
 	t.Cleanup(restore)
+	home := t.TempDir()
+	downloads := filepath.Join(home, "Downloads")
+	if err := os.Mkdir(downloads, 0o755); err != nil {
+		t.Fatalf("create Downloads dir: %v", err)
+	}
+	t.Cleanup(appconfig.SetUserHomeDirForTest(home))
 
 	output, err := executeDoctorCommand(t, "--strict")
 	if err != nil {
