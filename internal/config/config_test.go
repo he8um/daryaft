@@ -52,6 +52,47 @@ func TestPathUsesUserConfigDir(t *testing.T) {
 	}
 }
 
+func TestBuiltinDownloadDirUsesUserDownloads(t *testing.T) {
+	home := t.TempDir()
+	t.Cleanup(SetUserHomeDirForTest(home))
+
+	want := filepath.Join(home, "Downloads")
+	if got := BuiltinDownloadDir(); got != want {
+		t.Fatalf("BuiltinDownloadDir = %q, want %q", got, want)
+	}
+}
+
+func TestBuiltinDownloadDirFallsBackToCurrentDirectoryWhenHomeUnavailable(t *testing.T) {
+	t.Cleanup(SetUserHomeDirErrorForTest())
+
+	if got := BuiltinDownloadDir(); got != "." {
+		t.Fatalf("BuiltinDownloadDir = %q, want .", got)
+	}
+}
+
+func TestEffectiveDownloadDirPreservesExplicitValues(t *testing.T) {
+	home := t.TempDir()
+	t.Cleanup(SetUserHomeDirForTest(home))
+
+	tests := []struct {
+		name  string
+		value string
+		want  string
+	}{
+		{name: "empty", value: "", want: filepath.Join(home, "Downloads")},
+		{name: "current directory", value: ".", want: "."},
+		{name: "trimmed value", value: " /tmp/daryaft ", want: "/tmp/daryaft"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := EffectiveDownloadDir(tt.value); got != tt.want {
+				t.Fatalf("EffectiveDownloadDir(%q) = %q, want %q", tt.value, got, tt.want)
+			}
+		})
+	}
+}
+
 func TestInitCreatesConfigFile(t *testing.T) {
 	dir := t.TempDir()
 	t.Cleanup(SetUserConfigDirForTest(dir))

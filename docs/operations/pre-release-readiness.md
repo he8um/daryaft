@@ -50,6 +50,7 @@ go test ./...
 go build ./...
 go test -race ./internal/downloader
 go test -race ./internal/tui
+make rc-check
 make lint
 make security
 goreleaser check
@@ -68,6 +69,8 @@ CI checks:
 `make release-check` remains local/manual and does not publish. `gosec` is
 blocking in CI. `govulncheck` is temporarily advisory in CI only until Go
 `1.26.4` or newer is available, while local `make security` remains strict.
+`make rc-check` is available for release-candidate validation without
+`govulncheck` during this Go toolchain patch gap.
 
 ## Known Toolchain/Security Note
 
@@ -138,6 +141,7 @@ remains disabled/future work. Self-update remains future work.
 - [ ] GitHub Actions green.
 - [ ] Local tests pass.
 - [ ] Local lint passes.
+- [ ] `make rc-check` passes.
 - [ ] Local security passes or known Go toolchain issue documented.
 - [ ] Manual QA completed.
 - [ ] No unexpected generated artifacts.

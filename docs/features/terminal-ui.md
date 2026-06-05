@@ -58,8 +58,10 @@ Navigation:
 The View help and Version menu items render simple in-TUI screens. Download
 from URL and Download from .txt file render text input forms. Pressing enter
 validates the URL or URL file through the existing download planner, then opens
-an output directory input screen. The default/current value is config
-`download_dir` when set, otherwise `.`. The single URL flow then opens an
+an output directory input screen. The default/current value is the effective
+output directory: config `download_dir` when set, otherwise the built-in
+`~/Downloads` default. Entering `.` uses the current directory explicitly. The
+single URL flow then opens an
 `Enter custom filename` input screen with `Leave empty to auto-detect` help
 text. Empty filename input means auto-detect; a custom filename is shown on the
 plan and passed to the existing download plan. The single URL flow then opens

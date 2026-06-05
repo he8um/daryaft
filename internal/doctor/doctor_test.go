@@ -16,6 +16,12 @@ import (
 func TestDoctorSucceedsWithValidDefaultEnvironment(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "daryaft", "config.yaml")
+	home := t.TempDir()
+	downloads := filepath.Join(home, "Downloads")
+	if err := os.Mkdir(downloads, 0o755); err != nil {
+		t.Fatalf("create downloads dir: %v", err)
+	}
+	t.Cleanup(appconfig.SetUserHomeDirForTest(home))
 
 	report := Run(testOptions(dir, path, appconfig.Default()))
 	output := Format(report)
@@ -26,7 +32,7 @@ func TestDoctorSucceedsWithValidDefaultEnvironment(t *testing.T) {
 	for _, want := range []string{
 		"Daryaft doctor",
 		"✓ Config load: ok",
-		"✓ Default output: current directory",
+		"✓ Default output: " + downloads,
 		"✓ Output writable: yes",
 		"✓ Version: test-version",
 		path,

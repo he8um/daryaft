@@ -24,14 +24,16 @@ file open input forms, validate with the existing download planner, then ask
 for an output directory before showing dry-run plans. The single URL flow then
 asks for an optional custom filename; leaving it empty means auto-detect. The
 `.txt` batch flow does not offer one custom filename and keeps per-item
-auto-detect. Leaving the output directory empty means `.`, the current
-directory. Press enter on the plan screen to start a real download in the TUI.
-Inspect URL prompts for one HTTP/HTTPS URL and shows read-only metadata without
-starting a download or writing files. The TUI panel and input width adapt to
-terminal resize messages with bounded minimum and maximum widths. Existing CLI
-download commands remain fully supported, and CLI `-o`/`--output` and `--name`
-behavior is unchanged. Pressing `q` while a TUI download is running cancels it
-and keeps partial state for resume.
+auto-detect. Leaving the output directory empty uses the effective output
+default, which falls back to `~/Downloads` when no environment or config value
+is set. Enter `.` to use the current directory explicitly. Press enter on the
+plan screen to start a real download in the TUI. Inspect URL prompts for one
+HTTP/HTTPS URL and shows read-only metadata without starting a download or
+writing files. The TUI panel and input width adapt to terminal resize messages
+with bounded minimum and maximum widths. Existing CLI download commands remain
+fully supported, and CLI `-o`/`--output` and `--name` behavior is unchanged.
+Pressing `q` while a TUI download is running cancels it and keeps partial state
+for resume.
 
 When URL arguments or `--file` are provided, the root command enters the current
 download validation mode.
@@ -134,8 +136,8 @@ Checks include:
   creatable.
 - Effective config loading. Invalid YAML is a critical failure.
 - Default download directory. If `download_dir` is empty, this checks the
-  current directory. Existing unwritable output directories are critical
-  failures. Missing configured output directories are warnings and are not
+  built-in `~/Downloads` default. Existing unwritable output directories are
+  critical failures. Missing output directories are warnings and are not
   created.
 - Terminal environment hints: `TERM`, `NO_COLOR`, and stdout terminal status
   when available.
@@ -384,11 +386,12 @@ remote file changed, Daryaft also restarts from byte `0`. `--no-resume` ignores
 existing partial data and overwrites the partial file from byte `0`.
 
 Config precedence is CLI flags, then environment variables, then config file
-values, then built-in defaults. If `-o`/`--output` is omitted and
-`DARYAFT_DOWNLOAD_DIR` or `download_dir` is non-empty, Daryaft uses that
-directory. If `--retries` is omitted, Daryaft uses `DARYAFT_RETRIES` or config
-`retries`. If neither `--resume` nor `--no-resume` is set, Daryaft uses
-`DARYAFT_RESUME` or config `resume`.
+values, then built-in defaults. If `-o`/`--output` is omitted, Daryaft uses
+`DARYAFT_DOWNLOAD_DIR`, then config `download_dir`, then the built-in
+`~/Downloads` default. Explicit `.` still means the current directory. If
+`--retries` is omitted, Daryaft uses `DARYAFT_RETRIES` or config `retries`. If
+neither `--resume` nor `--no-resume` is set, Daryaft uses `DARYAFT_RESUME` or
+config `resume`.
 
 With `--verbose` or `-v`, CLI downloads print additional diagnostic lines
 prefixed with `Verbose:`. These include the effective URL with user info,

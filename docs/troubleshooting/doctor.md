@@ -14,7 +14,8 @@ The report includes:
 - Config path and whether the config directory is writable or appears
   creatable.
 - Effective config loading, including environment overrides.
-- Default download directory. Empty `download_dir` means the current directory.
+- Default download directory. Empty `download_dir` means the built-in
+  `~/Downloads` default.
 - Terminal hints: `TERM`, `NO_COLOR`, and stdout terminal status when available.
 - Optional `clamscan` detection.
 - GitHub release check status.
@@ -29,11 +30,10 @@ The report includes:
 ```
 
 Critical failures return a non-zero exit code. These include a config path that
-cannot be determined, invalid config YAML, an unwritable current directory when
-`download_dir` is empty, and an existing configured `download_dir` that is not
-writable.
+cannot be determined, invalid config YAML, and an existing effective download
+directory that is not writable.
 
-Warnings do not fail the command. A configured download directory that does not
+Warnings do not fail the command. An effective download directory that does not
 exist is a warning; `doctor` reports it but does not create it.
 
 Use strict mode when warnings should fail automation:

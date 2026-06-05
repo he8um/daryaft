@@ -113,6 +113,117 @@ func TestRunDownloadInvalidChecksumFailsBeforeNetworkCall(t *testing.T) {
 	}
 }
 
+func TestRunDownloadUsesDownloadsDefaultWhenOutputNotProvided(t *testing.T) {
+	restoreConfig := appconfig.SetUserConfigDirForTest(t.TempDir())
+	t.Cleanup(restoreConfig)
+	home := t.TempDir()
+	t.Cleanup(appconfig.SetUserHomeDirForTest(home))
+	wantOutput := filepath.Join(home, "Downloads")
+
+	var flags downloadFlagValues
+	cmd := &cobra.Command{Use: "download"}
+	addDownloadFlags(cmd, &flags)
+	if err := cmd.Flags().Set("dry-run", "true"); err != nil {
+		t.Fatalf("set dry-run: %v", err)
+	}
+
+	var output bytes.Buffer
+	cmd.SetOut(&output)
+	err := runDownload(cmd, []string{"https://example.com/file.zip"}, flags)
+	if err != nil {
+		t.Fatalf("runDownload returned error: %v", err)
+	}
+	if !strings.Contains(output.String(), "Output: "+wantOutput) {
+		t.Fatalf("output missing Downloads default %q:\n%s", wantOutput, output.String())
+	}
+}
+
+func TestRunDownloadOutputDotOverridesDownloadsDefault(t *testing.T) {
+	restoreConfig := appconfig.SetUserConfigDirForTest(t.TempDir())
+	t.Cleanup(restoreConfig)
+	t.Cleanup(appconfig.SetUserHomeDirForTest(t.TempDir()))
+
+	var flags downloadFlagValues
+	cmd := &cobra.Command{Use: "download"}
+	addDownloadFlags(cmd, &flags)
+	if err := cmd.Flags().Set("dry-run", "true"); err != nil {
+		t.Fatalf("set dry-run: %v", err)
+	}
+	if err := cmd.Flags().Set("output", "."); err != nil {
+		t.Fatalf("set output: %v", err)
+	}
+
+	var output bytes.Buffer
+	cmd.SetOut(&output)
+	err := runDownload(cmd, []string{"https://example.com/file.zip"}, flags)
+	if err != nil {
+		t.Fatalf("runDownload returned error: %v", err)
+	}
+	if !strings.Contains(output.String(), "Output: .") {
+		t.Fatalf("output missing explicit current directory:\n%s", output.String())
+	}
+}
+
+func TestRunDownloadEmptyConfigDownloadDirUsesDownloadsDefault(t *testing.T) {
+	restoreConfig := appconfig.SetUserConfigDirForTest(t.TempDir())
+	t.Cleanup(restoreConfig)
+	home := t.TempDir()
+	t.Cleanup(appconfig.SetUserHomeDirForTest(home))
+	wantOutput := filepath.Join(home, "Downloads")
+
+	cfg := appconfig.Default()
+	cfg.DownloadDir = ""
+	if err := appconfig.Save(cfg); err != nil {
+		t.Fatalf("save config: %v", err)
+	}
+
+	var flags downloadFlagValues
+	cmd := &cobra.Command{Use: "download"}
+	addDownloadFlags(cmd, &flags)
+	if err := cmd.Flags().Set("dry-run", "true"); err != nil {
+		t.Fatalf("set dry-run: %v", err)
+	}
+
+	var output bytes.Buffer
+	cmd.SetOut(&output)
+	err := runDownload(cmd, []string{"https://example.com/file.zip"}, flags)
+	if err != nil {
+		t.Fatalf("runDownload returned error: %v", err)
+	}
+	if !strings.Contains(output.String(), "Output: "+wantOutput) {
+		t.Fatalf("output missing Downloads default %q:\n%s", wantOutput, output.String())
+	}
+}
+
+func TestRunDownloadConfigDotOverridesDownloadsDefault(t *testing.T) {
+	restoreConfig := appconfig.SetUserConfigDirForTest(t.TempDir())
+	t.Cleanup(restoreConfig)
+	t.Cleanup(appconfig.SetUserHomeDirForTest(t.TempDir()))
+
+	cfg := appconfig.Default()
+	cfg.DownloadDir = "."
+	if err := appconfig.Save(cfg); err != nil {
+		t.Fatalf("save config: %v", err)
+	}
+
+	var flags downloadFlagValues
+	cmd := &cobra.Command{Use: "download"}
+	addDownloadFlags(cmd, &flags)
+	if err := cmd.Flags().Set("dry-run", "true"); err != nil {
+		t.Fatalf("set dry-run: %v", err)
+	}
+
+	var output bytes.Buffer
+	cmd.SetOut(&output)
+	err := runDownload(cmd, []string{"https://example.com/file.zip"}, flags)
+	if err != nil {
+		t.Fatalf("runDownload returned error: %v", err)
+	}
+	if !strings.Contains(output.String(), "Output: .") {
+		t.Fatalf("output missing config current directory:\n%s", output.String())
+	}
+}
+
 func TestRunDownloadUsesConfigDownloadDirWhenOutputNotProvided(t *testing.T) {
 	restore := appconfig.SetUserConfigDirForTest(t.TempDir())
 	t.Cleanup(restore)

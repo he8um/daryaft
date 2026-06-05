@@ -8,13 +8,14 @@ LD_FLAGS := -X $(VERSION_PKG).Version=$(VERSION) -X $(VERSION_PKG).Commit=$(COMM
 GO_BIN := $(shell go env GOPATH 2>/dev/null)/bin
 TOOL_PATH := $(GO_BIN):$(PATH)
 
-.PHONY: help test lint security build build-local version ci release-check run clean
+.PHONY: help test lint security rc-check build build-local version ci release-check run clean
 
 help:
 	@echo "Daryaft development commands:"
 	@echo "  make test         Run Go tests"
 	@echo "  make lint         Run golangci-lint"
 	@echo "  make security     Run govulncheck and gosec"
+	@echo "  make rc-check     Run release-candidate checks without govulncheck"
 	@echo "  make build        Build ./bin/$(APP)"
 	@echo "  make build-local  Build ./bin/$(APP) with local version ldflags"
 	@echo "  make version      Run go run . version"
@@ -46,6 +47,20 @@ security:
 	fi
 	@PATH="$(TOOL_PATH)" govulncheck ./...
 	@PATH="$(TOOL_PATH)" gosec ./...
+
+rc-check:
+	@echo "govulncheck remains strict in make security; rc-check excludes it until Go 1.26.4+ is available."
+	go test ./...
+	go build ./...
+	go test -race ./internal/downloader
+	go test -race ./internal/tui
+	$(MAKE) lint
+	@PATH="$(TOOL_PATH)" command -v gosec >/dev/null 2>&1 || { echo "gosec is required. Install it with: go install github.com/securego/gosec/v2/cmd/gosec@latest"; exit 1; }
+	@PATH="$(TOOL_PATH)" gosec ./...
+	@command -v goreleaser >/dev/null 2>&1 || { echo "GoReleaser is required. Install it with: brew install goreleaser"; exit 1; }
+	goreleaser check
+	git diff --check
+	sh -n scripts/manual-qa-server.sh
 
 build:
 	go build -o bin/$(APP) .

@@ -1,13 +1,16 @@
 package config
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 const configFileName = "config.yaml"
 
 var userConfigDir = os.UserConfigDir
+var userHomeDir = os.UserHomeDir
 
 func Path() (string, error) {
 	dir, err := userConfigDir()
@@ -40,5 +43,41 @@ func SetUserConfigDirForTest(dir string) func() {
 	}
 	return func() {
 		userConfigDir = previous
+	}
+}
+
+func BuiltinDownloadDir() string {
+	home, err := userHomeDir()
+	if err != nil || strings.TrimSpace(home) == "" {
+		return "."
+	}
+	return filepath.Join(home, "Downloads")
+}
+
+func EffectiveDownloadDir(value string) string {
+	trimmed := strings.TrimSpace(value)
+	if trimmed == "" {
+		return BuiltinDownloadDir()
+	}
+	return trimmed
+}
+
+func SetUserHomeDirForTest(dir string) func() {
+	return SetUserHomeDirFuncForTest(func() (string, error) {
+		return dir, nil
+	})
+}
+
+func SetUserHomeDirErrorForTest() func() {
+	return SetUserHomeDirFuncForTest(func() (string, error) {
+		return "", errors.New("home unavailable")
+	})
+}
+
+func SetUserHomeDirFuncForTest(fn func() (string, error)) func() {
+	previous := userHomeDir
+	userHomeDir = fn
+	return func() {
+		userHomeDir = previous
 	}
 }

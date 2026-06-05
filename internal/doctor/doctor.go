@@ -142,18 +142,8 @@ func addConfigLoadCheck(report *Report, options Options) (appconfig.Config, bool
 }
 
 func addDownloadChecks(report *Report, options Options, cfg appconfig.Config) {
-	target := cfg.DownloadDir
-	if target == "" {
-		wd, err := options.Getwd()
-		if err != nil {
-			report.Add("Download", StatusFail, "Default output", "current directory unavailable: "+err.Error())
-			return
-		}
-		target = wd
-		report.Add("Download", StatusOK, "Default output", "current directory")
-	} else {
-		report.Add("Download", StatusOK, "Default output", target)
-	}
+	target := appconfig.EffectiveDownloadDir(cfg.DownloadDir)
+	report.Add("Download", StatusOK, "Default output", target)
 
 	info, err := options.Stat(target)
 	if err != nil {

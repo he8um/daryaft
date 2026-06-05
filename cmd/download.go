@@ -217,8 +217,8 @@ func effectiveVerbose(cmd *cobra.Command) bool {
 }
 
 func applyConfigDefaultsToDownloadFlags(cmd *cobra.Command, flags downloadFlagValues, cfg appconfig.Config) downloadFlagValues {
-	if !localFlagChanged(cmd, "output") && cfg.DownloadDir != "" {
-		flags.output = cfg.DownloadDir
+	if !localFlagChanged(cmd, "output") && strings.TrimSpace(flags.output) == "" {
+		flags.output = appconfig.EffectiveDownloadDir(cfg.DownloadDir)
 	}
 	if !localFlagChanged(cmd, "retries") {
 		flags.retries = cfg.Retries

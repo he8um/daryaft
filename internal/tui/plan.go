@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/he8um/daryaft/internal/config"
 	"github.com/he8um/daryaft/internal/download"
 )
 
@@ -35,11 +36,7 @@ func planFromFile(path, output string, retries int, resume bool) (download.Plan,
 }
 
 func defaultOutputDir(value string) string {
-	trimmed := strings.TrimSpace(value)
-	if trimmed == "" {
-		return "."
-	}
-	return trimmed
+	return config.EffectiveDownloadDir(value)
 }
 
 func outputDirValue(value, fallback string) string {

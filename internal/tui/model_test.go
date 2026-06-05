@@ -139,6 +139,10 @@ func TestInvalidURLShowsError(t *testing.T) {
 }
 
 func TestValidURLAdvancesToOutputInput(t *testing.T) {
+	home := t.TempDir()
+	t.Cleanup(config.SetUserHomeDirForTest(home))
+	wantOutput := filepath.Join(home, "Downloads")
+
 	model := NewModel(Options{NoColor: true})
 	model.selected = 0
 	model = updateWithKey(t, model, tea.KeyEnter)
@@ -154,12 +158,16 @@ func TestValidURLAdvancesToOutputInput(t *testing.T) {
 	if !strings.Contains(model.View(), "Enter output directory") {
 		t.Fatalf("output input view missing prompt:\n%s", model.View())
 	}
-	if !strings.Contains(model.View(), "Default/current value: .") {
-		t.Fatalf("output input view missing default:\n%s", model.View())
+	if model.outputDirInput != wantOutput {
+		t.Fatalf("outputDirInput = %q, want %q", model.outputDirInput, wantOutput)
 	}
 }
 
-func TestEmptyOutputDirectoryCreatesPlanWithCurrentDirectory(t *testing.T) {
+func TestEmptyOutputDirectoryCreatesPlanWithDownloadsDefault(t *testing.T) {
+	home := t.TempDir()
+	t.Cleanup(config.SetUserHomeDirForTest(home))
+	wantOutput := filepath.Join(home, "Downloads")
+
 	model := NewModel(Options{NoColor: true})
 	model.selected = 0
 	model = updateWithKey(t, model, tea.KeyEnter)
@@ -184,14 +192,11 @@ func TestEmptyOutputDirectoryCreatesPlanWithCurrentDirectory(t *testing.T) {
 	if model.screen != screenPlan {
 		t.Fatalf("screen = %v, want plan", model.screen)
 	}
-	if model.plan.Output != "." {
-		t.Fatalf("plan.Output = %q, want .", model.plan.Output)
+	if model.plan.Output != wantOutput {
+		t.Fatalf("plan.Output = %q, want %q", model.plan.Output, wantOutput)
 	}
 	if !strings.Contains(model.View(), "Number of URLs: 1") {
 		t.Fatalf("plan view missing URL count:\n%s", model.View())
-	}
-	if !strings.Contains(model.View(), "Output: .") {
-		t.Fatalf("plan view missing current directory output:\n%s", model.View())
 	}
 	if !strings.Contains(model.View(), "Filename: auto-detect") {
 		t.Fatalf("plan view missing auto-detect filename:\n%s", model.View())
@@ -210,6 +215,7 @@ func TestCustomOutputDirectoryAppearsInPlan(t *testing.T) {
 	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithString(t, model, "https://example.com/file.zip")
 	model = updateWithKey(t, model, tea.KeyEnter)
+	model.input.SetValue("")
 	model = updateWithString(t, model, "downloads")
 	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithKey(t, model, tea.KeyEnter)
@@ -282,6 +288,7 @@ func TestURLFlowAdvancesThroughFilenameInput(t *testing.T) {
 		t.Fatalf("screen = %v, want output input", model.screen)
 	}
 
+	model.input.SetValue("")
 	model = updateWithString(t, model, "downloads")
 	model = updateWithKey(t, model, tea.KeyEnter)
 	if model.screen != screenFilenameInput {
@@ -710,6 +717,7 @@ func TestFilePlanUsesCustomOutputDirectory(t *testing.T) {
 	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithString(t, model, path)
 	model = updateWithKey(t, model, tea.KeyEnter)
+	model.input.SetValue("")
 	model = updateWithString(t, model, "/tmp/daryaft-out")
 	model = updateWithKey(t, model, tea.KeyEnter)
 
@@ -768,6 +776,7 @@ func TestEscAndBackspaceNavigation(t *testing.T) {
 	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithString(t, model, "https://example.com/file.zip")
 	model = updateWithKey(t, model, tea.KeyEnter)
+	model.input.SetValue("")
 	model = updateWithKey(t, model, tea.KeyBackspace)
 	if model.screen != screenURLInput {
 		t.Fatalf("screen after output backspace = %v, want URL input", model.screen)
@@ -783,6 +792,7 @@ func TestEscAndBackspaceNavigation(t *testing.T) {
 	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithString(t, model, "https://example.com/file.zip")
 	model = updateWithKey(t, model, tea.KeyEnter)
+	model.input.SetValue("")
 	model = updateWithString(t, model, "downloads")
 	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithKey(t, model, tea.KeyBackspace)
@@ -843,6 +853,7 @@ func TestBackspaceEditsNonEmptyInputs(t *testing.T) {
 				model = updateWithKey(t, model, tea.KeyEnter)
 				model = updateWithString(t, model, "https://example.com/file.zip")
 				model = updateWithKey(t, model, tea.KeyEnter)
+				model.input.SetValue("")
 				return updateWithString(t, model, "abc")
 			},
 			wantScreen: screenOutputInput,
@@ -1483,6 +1494,7 @@ func singleURLChecksumPlanModel(t *testing.T, model Model, rawURL, output, name,
 	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithString(t, model, rawURL)
 	model = updateWithKey(t, model, tea.KeyEnter)
+	model.input.SetValue("")
 	model = updateWithString(t, model, output)
 	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithString(t, model, name)
@@ -1501,6 +1513,7 @@ func batchPlanModel(t *testing.T, model Model, path, output string) Model {
 	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithString(t, model, path)
 	model = updateWithKey(t, model, tea.KeyEnter)
+	model.input.SetValue("")
 	model = updateWithString(t, model, output)
 	model = updateWithKey(t, model, tea.KeyEnter)
 	if model.screen != screenPlan {

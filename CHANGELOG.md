@@ -32,8 +32,8 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
   and show dry-run plans without starting downloads.
 - TUI download execution screen that starts real single URL or sequential batch
   downloads from the plan screen and consumes the downloader event stream.
-- TUI output directory input between source entry and plan review. Empty output
-  means the current directory.
+- TUI output directory input between source entry and plan review, defaulting to
+  the effective output directory and falling back to `~/Downloads`.
 - Optional TUI custom filename input for single URL downloads. Empty filename
   input means auto-detect, and `.txt` batch downloads keep per-item auto-detect.
 - Optional TUI checksum input for single URL downloads, using the existing
@@ -48,6 +48,11 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
   defaults.
 - `DARYAFT_*` environment variable overrides between CLI flags and config file
   values.
+- Built-in `~/Downloads` output default when CLI flags, environment variables,
+  and config do not set an output directory; explicit `.` still means the
+  current directory.
+- `make rc-check` for release-candidate validation without `govulncheck` during
+  the temporary Go 1.26.3 standard-library patch gap.
 - Config management commands for reading, setting, resetting, and listing
   supported config keys.
 - `inspect` command for HTTP/HTTPS URL metadata preflight, with human and JSON

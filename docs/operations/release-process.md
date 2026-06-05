@@ -50,15 +50,17 @@ quality gates when the tools are installed:
 
 ```bash
 make ci
+make rc-check
 make lint
 make security
 ```
 
-`make lint` requires `golangci-lint`. `make security` requires `govulncheck`
-and `gosec`, and remains strict locally even while CI `govulncheck` is
-temporarily advisory for the Go 1.26.3 standard-library patch gap. `make lint`
-and `make security` are the local equivalents of the CI `lint` and `security`
-jobs.
+`make lint` requires `golangci-lint`. `make rc-check` runs the release-candidate
+readiness checks without `govulncheck` for the temporary Go 1.26.3
+standard-library patch gap. `make security` requires `govulncheck` and `gosec`,
+and remains strict locally even while CI `govulncheck` is temporarily advisory.
+`make lint` and `make security` are the local equivalents of the CI `lint` and
+`security` jobs.
 
 Use the local release check before changing release configuration:
 

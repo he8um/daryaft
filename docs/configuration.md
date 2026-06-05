@@ -126,8 +126,10 @@ DARYAFT_NO_TUI=true daryaft
 
 ## Fields
 
-- `download_dir`: default output directory. Empty means current directory unless
-  the CLI or TUI explicitly sets output.
+- `download_dir`: default output directory. Empty means Daryaft uses the
+  built-in default `~/Downloads` unless the CLI, TUI, or environment explicitly
+  sets output. Set `download_dir` to `.` when the current directory should be
+  the saved default.
 - `retries`: default retry attempts after the initial attempt. Valid range:
   `0` through `20`.
 - `resume`: default resume behavior for interrupted `.part` files.
@@ -174,9 +176,10 @@ Malformed YAML is reported as an error and is not silently ignored.
 
 Use `daryaft doctor` to verify that the config path can be resolved, the config
 directory is writable or appears creatable, and the effective config can be
-loaded. Invalid YAML is reported as a critical doctor failure. A configured
-`download_dir` that does not exist is reported as a warning; `doctor` does not
-create download directories.
+loaded. Invalid YAML is reported as a critical doctor failure. The effective
+download directory, including the built-in `~/Downloads` default, is reported
+and checked. A download directory that does not exist is reported as a warning;
+`doctor` does not create download directories.
 
 Related docs:
 

@@ -140,20 +140,22 @@ For single URL downloads, the TUI then prompts `Enter custom filename` and
 `Enter checksum`; leaving those fields empty means auto-detect filename and
 skip checksum verification. The `.txt` batch flow skips custom filename and
 checksum input because one value cannot safely apply to multiple downloads.
-Leaving the output directory empty means `.`, the current directory. Press
-enter on the plan screen to start a real download. The TUI supports one URL and
-sequential `.txt` batch execution using the same downloader event stream as the
-CLI, and both flows honor the selected output directory. The TUI resizes its
-panel and text inputs to the terminal window. Escape navigates back; Backspace
-edits a non-empty text input and navigates back only when the current input is
-empty.
+Leaving the output directory empty uses the effective default output directory,
+which falls back to `~/Downloads` when no CLI flag, environment variable, or
+config value is set. Enter `.` to download to the current directory explicitly.
+Press enter on the plan screen to start a real download. The TUI supports one
+URL and sequential `.txt` batch execution using the same downloader event
+stream as the CLI, and both flows honor the selected output directory. The TUI
+resizes its panel and text inputs to the terminal window. Escape navigates
+back; Backspace edits a non-empty text input and navigates back only when the
+current input is empty.
 Press `q` while a TUI download is running to cancel it. Cancelled downloads
 keep the `.part` file and sidecar metadata for resume and are not retried. CLI
 `-o`/`--output` and `--name` behavior is unchanged. CLI Ctrl+C/SIGTERM also
 cancels through the downloader context, keeps the `.part` file and sidecar
 metadata, stops remaining batch items, and exits non-zero. If `download_dir` is
 set in config, the TUI output directory input starts with that value; otherwise
-it starts with `.`.
+it starts with the built-in `~/Downloads` default.
 
 The Inspect URL menu item prompts for one HTTP/HTTPS URL, runs the same
 read-only metadata probe as `daryaft inspect <url>`, and shows the final URL,
@@ -187,8 +189,10 @@ Current flags:
 - `--resume`: resume interrupted `.part` files, default `true`.
 - `--no-resume`: ignore existing partial state and restart from byte `0`.
 
-If `-o`/`--output` is not provided and `download_dir` is set in config, Daryaft
-uses that directory. `DARYAFT_DOWNLOAD_DIR` can override the config file value.
+If `-o`/`--output` is not provided, Daryaft uses `DARYAFT_DOWNLOAD_DIR`, then
+config `download_dir`, then the built-in `~/Downloads` default. An explicit
+`-o .`, `DARYAFT_DOWNLOAD_DIR=.`, or `download_dir: "."` keeps using the
+current directory.
 If `--retries` is not provided, Daryaft uses `DARYAFT_RETRIES` or config
 `retries`. If neither `--resume` nor `--no-resume` is provided, Daryaft uses
 `DARYAFT_RESUME` or config `resume`.

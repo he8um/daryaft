@@ -45,14 +45,15 @@ The download menu entries open Bubble Tea text input forms:
 - Inspect URL prompts `Enter URL to inspect`.
 
 Pressing enter validates the input with the existing download planning logic and
-opens the output directory input. Empty output means `.`, the current
-directory. Absolute and relative output paths are accepted and are not created
-during planning. For single URL downloads, empty filename input means
-auto-detect. Custom filename input is lightly validated and rejects path
-separators, `.`, and `..`. The `.txt` batch flow does not offer one custom
-filename and keeps auto-detect for each item. Invalid URLs, file paths, or
-unsafe filenames keep the user on the relevant input screen and show a
-validation error.
+opens the output directory input. Empty output uses the effective output
+default, which falls back to `~/Downloads` when no environment or config value
+is set. Enter `.` to use the current directory explicitly. Absolute and
+relative output paths are accepted and are not created during planning. For
+single URL downloads, empty filename input means auto-detect. Custom filename
+input is lightly validated and rejects path separators, `.`, and `..`. The
+`.txt` batch flow does not offer one custom filename and keeps auto-detect for
+each item. Invalid URLs, file paths, or unsafe filenames keep the user on the
+relevant input screen and show a validation error.
 
 Inspect URL validates one HTTP/HTTPS URL and shows remote metadata without
 starting a download. It displays the final URL, status, filename, content
@@ -64,8 +65,9 @@ Pressing enter on the plan screen starts a real download. The execution screen
 uses the same downloader event stream as the CLI and supports both one URL and
 sequential `.txt` batch downloads. It shows status, target path, byte progress,
 percent when known, speed, retry/resume/restart messages, failures, and final
-summary counts. TUI downloads use the current directory as the output path for
-empty output, or the selected output directory when one is entered. Pressing
+summary counts. TUI downloads use the effective default output directory for
+empty output, which falls back to `~/Downloads` when no config or environment
+override is set. Enter `.` to use the current directory explicitly. Pressing
 `q` while a download is running cancels it, keeps the `.part` file and metadata
 sidecar for resume, and stops without retrying. CLI `-o`/`--output` behavior is
 unchanged, and CLI `--name` behavior remains unchanged.

@@ -64,6 +64,7 @@ Build and test locally:
 make test
 make lint
 make security
+make rc-check
 make ci
 make build
 make build-local
@@ -83,6 +84,8 @@ snapshot artifacts are written under ignored local build directories such as
 profile from `.golangci.yml`. `make security` requires `govulncheck` and
 `gosec`, then runs both local security scans. GitHub Actions also runs separate
 `lint` and `security` jobs; the security job uses `govulncheck` and `gosec`.
+`make rc-check` runs release-candidate readiness checks without `govulncheck`;
+local `make security` remains strict.
 
 `make ci` runs the same local pre-release checks expected before opening a PR:
 module tidy verification, tests, build, TUI race test, whitespace diff check,
@@ -128,13 +131,15 @@ then asks for an optional custom filename and optional checksum; leaving them
 empty means auto-detect filename and skip checksum verification. The TUI does
 not offer one custom filename or checksum for `.txt` batch downloads, which
 continue to auto-detect each item filename. Leaving the output directory empty
-means `.`, the current directory. TUI downloads can start real single URL or
-sequential batch downloads from that plan. Inspect URL accepts one HTTP/HTTPS
-URL, shows remote metadata, and does not download or write files. The TUI
-resizes its panel and text inputs to the terminal window. Backspace edits
-non-empty inputs and navigates back only when the input is empty; Escape always
-navigates back. Existing CLI download commands, including `-o`/`--output` and
-`--name`, remain fully supported and unchanged.
+uses the effective default output directory, which falls back to `~/Downloads`
+when no CLI flag, environment variable, or config value is set. Enter `.` to
+download to the current directory explicitly. TUI downloads can start real
+single URL or sequential batch downloads from that plan. Inspect URL accepts
+one HTTP/HTTPS URL, shows remote metadata, and does not download or write
+files. The TUI resizes its panel and text inputs to the terminal window.
+Backspace edits non-empty inputs and navigates back only when the input is
+empty; Escape always navigates back. Existing CLI download commands, including
+`-o`/`--output` and `--name`, remain fully supported and unchanged.
 
 Daryaft can read YAML configuration from the OS user config directory:
 `<UserConfigDir>/daryaft/config.yaml`. On macOS this is usually

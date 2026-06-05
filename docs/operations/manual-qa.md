@@ -53,6 +53,13 @@ make security
 goreleaser check
 ```
 
+For a release-candidate validation pass while Go 1.26.x can still resolve to
+Go 1.26.3 in tooling, run:
+
+```bash
+make rc-check
+```
+
 If GoReleaser is installed and snapshot validation is desired, run:
 
 ```bash
@@ -64,6 +71,7 @@ Expected:
 - All required Go tests and builds pass.
 - Optional lint, `gosec`, and GoReleaser checks pass when their tools are
   installed.
+- `make rc-check` passes without running `govulncheck`.
 - Local `make security` remains strict. Until local Go 1.26.x resolves to Go
   1.26.4 or newer, `govulncheck` may report known Go 1.26.3 standard-library
   vulnerabilities GO-2026-5039 and GO-2026-5037; these are temporarily advisory
@@ -105,6 +113,25 @@ python3 -m http.server 8091 --bind 127.0.0.1
 
 Use another terminal for all Daryaft commands. If you use a different port,
 replace `<port>` in the steps below.
+
+## Default Output Smoke
+
+```bash
+go run . http://localhost:<port>/file.txt --dry-run
+go run . http://localhost:<port>/file.txt --dry-run -o .
+DARYAFT_DOWNLOAD_DIR=/tmp/daryaft-env-out go run . http://localhost:<port>/file.txt --dry-run
+```
+
+Expected:
+
+- With no output flag, environment value, or config value, `Output:` is
+  `~/Downloads` for the current user.
+- With `-o .`, `Output:` is `.`.
+- With `DARYAFT_DOWNLOAD_DIR=/tmp/daryaft-env-out`, `Output:` is
+  `/tmp/daryaft-env-out`.
+- In the TUI, the output directory input starts with the same effective output
+  directory. Clearing it and pressing enter keeps that effective default; typing
+  `.` uses the current directory explicitly.
 
 ## CLI Single Download
 

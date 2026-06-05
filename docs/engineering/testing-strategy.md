@@ -119,6 +119,17 @@ This requires both tools:
 remains strict locally and runs both `govulncheck ./...` and `gosec ./...` as
 blocking checks.
 
+For release-candidate validation during the temporary Go 1.26.3
+standard-library patch gap, use:
+
+```bash
+make rc-check
+```
+
+This runs tests, builds, selected race checks, lint, `gosec`, GoReleaser config
+validation, whitespace checks, and the manual QA script shell syntax check
+without running `govulncheck`.
+
 ## GitHub Actions
 
 The test workflow runs on push and pull request. The Go test/build job runs on
