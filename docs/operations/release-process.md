@@ -1,21 +1,25 @@
 # Release Process
 
-Daryaft is still pre-1.0. Public stable install channels and public release
-publishing remain planned for `v1.0.0` and later.
+Daryaft is still pre-1.0. Public stable release is planned for `v1.0.0`.
+v1.0.0 is a stable baseline release of the current implemented feature set;
+it does not require additional product features before shipping. See
+[Release Readiness: v1.0](../roadmap/release-readiness-v1.0.md) for exact
+v1.0.0 criteria and the post-1.0 roadmap.
 
 See [Pre-Release Readiness](pre-release-readiness.md) for the current
-`0.6.0-dev` internal validation verdict, known toolchain note, and remaining
-`v1.0.0` blockers.
+`0.6.0-dev` internal validation verdict and remaining validation steps.
 For internal RC tags, use
-[Release-Candidate Validation](rc-validation.md). Draft notes for
-`v0.6.0-rc.1` are in
-[Daryaft v0.6.0-rc.1 Internal Release Candidate](release-notes-v0.6.0-rc.1.md).
+[Release-Candidate Validation](rc-validation.md).
+The current RC is `v0.6.0-rc.2`; its release notes are in
+[Daryaft v0.6.0-rc.2 Internal Release Candidate](release-notes-v0.6.0-rc.2.md)
+and its GitHub pre-release status is in
+[v0.6.0-rc.2 Release Status](release-status-v0.6.0-rc.2.md).
 
 ## CI Validation
 
 The test workflow includes a `goreleaser-check` job on push and pull request.
 The workflow's `push` trigger is not limited to branches, so tag pushes such as
-`v0.6.0-rc.1` also run the workflow. This validates the RC tag without adding a
+`v0.6.0-rc.2` also run the workflow. This validates the RC tag without adding a
 tag-triggered release or publishing job.
 It installs GoReleaser v2 and runs:
 
@@ -122,5 +126,21 @@ built_by: source
 
 ## Publishing Policy
 
-Do not publish releases, create release tags, or enable Homebrew, deb, rpm, or
-Arch package publishing before `v1.0.0`.
+Do not publish a stable release or enable package-manager publishing before
+`v1.0.0`. The GitHub pre-release for `v0.6.0-rc.2` is published and marked
+pre-release (not stable). Package-manager publishing (Homebrew, deb, rpm,
+Arch) is post-1.0 work and not required for the v1.0.0 baseline release.
+
+## Post-1.0 Release Work
+
+After a stable v1.0.0 baseline is shipped, the following release process work
+can be addressed:
+
+- Package manager publishing (Homebrew tap, apt/deb, rpm, Arch, Scoop).
+- Automated binary asset upload in the release pipeline.
+- Windows CI and verified binary builds for Windows.
+- Self-update mechanism.
+- Long-term compatibility and backport policy.
+
+See [Release Readiness: v1.0](../roadmap/release-readiness-v1.0.md) for the
+full post-1.0 roadmap.

@@ -127,21 +127,27 @@ GitHub Actions for `v0.6.0-rc.2` passed.
 The workflow does not publish releases and does not run a tag-triggered release
 job.
 
-## Optional GitHub Pre-Release (Manual Only)
+## GitHub Pre-Release Status
 
-If you want to publish an internal GitHub pre-release for sharing, use:
+The GitHub pre-release for `v0.6.0-rc.2` has been published:
+https://github.com/he8um/daryaft/releases/tag/v0.6.0-rc.2
+
+It is marked pre-release (not stable), not a draft, and contains no binary
+assets (source/tag-only). See
+[v0.6.0-rc.2 Release Status](release-status-v0.6.0-rc.2.md) for full details
+including CI status, QA status, and asset recommendation.
+
+For a future RC, the publish command is:
 
 ```bash
-gh release create v0.6.0-rc.2 \
-  --title "Daryaft v0.6.0-rc.2" \
-  --notes-file docs/operations/release-notes-v0.6.0-rc.2.md \
+gh release create v0.6.0-rc.N \
+  --title "Daryaft v0.6.0-rc.N" \
+  --notes-file docs/operations/release-notes-v0.6.0-rc.N.md \
   --prerelease \
   --verify-tag
 ```
 
-Do not run this unless intentionally publishing a GitHub pre-release. Do not
-enable package-manager artifact publishing from an RC tag. This command is
-provided for reference only — it is not run automatically.
+Do not enable package-manager artifact publishing from an RC tag.
 
 ## Confirm No Release Was Published
 
@@ -189,7 +195,12 @@ After an RC validation pass, decide whether to:
 
 - Continue internal validation on the same RC.
 - Fix findings and create another internal RC tag.
-- Continue toward public release readiness work without publishing.
+- Proceed toward `v1.0.0` stable release once RC validation is clean.
 
-Do not publish a public stable release from this RC. Public stable remains
+v1.0.0 is a stable baseline release of the current feature set. No additional
+product features are required before tagging v1.0.0. The remaining steps are
+validation, clean install/use testing, release notes, and the binary asset
+decision. See [Release Readiness: v1.0](../roadmap/release-readiness-v1.0.md).
+
+Do not publish a public stable release from an RC tag. Public stable is
 planned for `v1.0.0`.

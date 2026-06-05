@@ -17,10 +17,11 @@ commands only.
 - [Architecture Overview](architecture/overview.md): planned high-level components.
 - [Testing Strategy](engineering/testing-strategy.md): local and CI checks.
 - [Manual QA Checklist](operations/manual-qa.md): local pre-release validation checklist.
-- [Pre-Release Readiness](operations/pre-release-readiness.md): `0.6.0-dev` internal validation status and blockers.
+- [Pre-Release Readiness](operations/pre-release-readiness.md): `0.6.0-dev` internal validation status and remaining v1.0.0 steps.
 - [QA Results: 0.6.0-dev](operations/qa-results-0.6.0-dev.md): completed internal validation readiness QA pass.
 - [Release-Candidate Validation](operations/rc-validation.md): internal RC tag validation workflow.
-- [RC Release Notes: v0.6.0-rc.2](operations/release-notes-v0.6.0-rc.2.md): current internal RC notes (unpublished).
+- [RC Release Notes: v0.6.0-rc.2](operations/release-notes-v0.6.0-rc.2.md): current internal RC notes (GitHub pre-release published).
+- [v0.6.0-rc.2 Release Status](operations/release-status-v0.6.0-rc.2.md): CI status, QA status, asset status, and recommendation.
 - [RC Release Notes: v0.6.0-rc.1](operations/release-notes-v0.6.0-rc.1.md): superseded RC notes (historical reference).
 - [Release Process](operations/release-process.md): local release readiness checks.
 - [Branch Protection](operations/branch-protection.md): recommended `main` protection.
@@ -28,6 +29,8 @@ commands only.
 ## Roadmap
 
 - [Roadmap](roadmap/index.md): pre-1.0 milestones and post-1 feature packs.
+- [Release Readiness: v1.0](roadmap/release-readiness-v1.0.md): v1.0.0 criteria (stable baseline), required steps, and post-1.0 roadmap.
+- [Post-1.0 Feature Packs](roadmap/post-1-feature-packs.md): features deferred until after stable baseline.
 - [Versioning Policy](roadmap/versioning-policy.md): release version rules.
 
 ## Related Existing Docs

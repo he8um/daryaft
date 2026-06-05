@@ -1,6 +1,6 @@
 # Daryaft v0.6.0-rc.2 Internal Release Candidate
 
-Status: internal validation only
+Status: GitHub pre-release published — internal validation only, not stable
 
 `v0.6.0-rc.2` is an internal release candidate for validating the current
 pre-1.0 Daryaft foundation. It supersedes `v0.6.0-rc.1`. It is not a public
@@ -100,24 +100,17 @@ git show --stat v0.6.0-rc.2
 Use [Release-Candidate Validation](rc-validation.md) for the full validation
 workflow and finding-record guidance.
 
-## No-Publish Note
+## Release Note
 
-This RC is a validation marker only. It does not imply package-manager
-publishing, public GitHub Release publishing, or stable install support.
+The GitHub pre-release for `v0.6.0-rc.2` has been published:
+https://github.com/he8um/daryaft/releases/tag/v0.6.0-rc.2
 
-If creating a GitHub release manually for internal sharing, mark it as
-pre-release:
+It is marked pre-release (not stable), not a draft, and contains no binary
+assets (source/tag-only). Do not promote it as a stable release. Do not enable
+package-manager artifact publishing.
 
-```bash
-gh release create v0.6.0-rc.2 \
-  --title "Daryaft v0.6.0-rc.2" \
-  --notes-file docs/operations/release-notes-v0.6.0-rc.2.md \
-  --prerelease \
-  --verify-tag
-```
-
-Do not run this unless intentionally publishing a GitHub pre-release. Do not
-enable package-manager artifact publishing.
+See [v0.6.0-rc.2 Release Status](release-status-v0.6.0-rc.2.md) for full
+CI status, QA status, and asset recommendations.
 
 If validation finds a blocker, fix the finding on `main` and create a later
 internal RC tag after confirming quality gates and GitHub Actions are healthy.

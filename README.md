@@ -263,6 +263,7 @@ Start here:
 - [Pre-Release Readiness](docs/operations/pre-release-readiness.md)
 - [Release-Candidate Validation](docs/operations/rc-validation.md)
 - [RC Release Notes: v0.6.0-rc.2](docs/operations/release-notes-v0.6.0-rc.2.md)
+- [v0.6.0-rc.2 Release Status](docs/operations/release-status-v0.6.0-rc.2.md)
 - [RC Release Notes: v0.6.0-rc.1](docs/operations/release-notes-v0.6.0-rc.1.md) (superseded)
 - [Release Process](docs/operations/release-process.md)
 - [Branch Protection](docs/operations/branch-protection.md)

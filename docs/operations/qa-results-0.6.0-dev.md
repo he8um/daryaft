@@ -50,9 +50,10 @@ The automated and terminal-driven QA pass completed successfully for internal
 
 ## Next Decision
 
-- The current internal RC is `v0.6.0-rc.2`. See
-  [Release-Candidate Validation](rc-validation.md) and
-  [Daryaft v0.6.0-rc.2 Internal Release Candidate](release-notes-v0.6.0-rc.2.md).
+- The current internal RC is `v0.6.0-rc.2`. GitHub pre-release published. See
+  [Release-Candidate Validation](rc-validation.md),
+  [Daryaft v0.6.0-rc.2 Internal Release Candidate](release-notes-v0.6.0-rc.2.md),
+  and [v0.6.0-rc.2 Release Status](release-status-v0.6.0-rc.2.md).
 - `v0.6.0-rc.1` is superseded; see
   [Daryaft v0.6.0-rc.1 Internal Release Candidate](release-notes-v0.6.0-rc.1.md)
   for historical notes.

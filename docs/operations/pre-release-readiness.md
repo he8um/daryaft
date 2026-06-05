@@ -9,20 +9,23 @@
 
 ## Readiness Verdict
 
-Verdict: Ready for internal/manual `0.6.0-dev` validation, not ready for public
-stable `v1.0.0`.
+Verdict: Ready for internal/manual `0.6.0-dev` validation. v1.0.0 requires
+completing RC validation, clean install/use verification, and release notes —
+not additional features.
 
 Core CLI and TUI functionality exists, stabilization work is complete, quality
-gates exist, and release tooling is validated locally. Public install channels,
-Windows support, and final `v1.0.0` guarantees are not ready.
+gates exist, and release tooling is validated locally. v1.0.0 is a stable
+baseline release of the current feature set. Post-1.0 features (Windows,
+self-update, proxy/auth, concurrency, package managers, etc.) are not blockers.
 
 The completed QA pass is recorded in
 [QA Results: 0.6.0-dev](qa-results-0.6.0-dev.md). Its verdict is PASS WITH
 NOTES for internal validation readiness.
 
-The current internal RC is `v0.6.0-rc.2`, documented in
-[Release-Candidate Validation](rc-validation.md) and
-[Daryaft v0.6.0-rc.2 Internal Release Candidate](release-notes-v0.6.0-rc.2.md).
+The current internal RC is `v0.6.0-rc.2`. GitHub pre-release published.
+See [Release-Candidate Validation](rc-validation.md),
+[Daryaft v0.6.0-rc.2 Internal Release Candidate](release-notes-v0.6.0-rc.2.md),
+and [v0.6.0-rc.2 Release Status](release-status-v0.6.0-rc.2.md).
 `v0.6.0-rc.1` is superseded; its notes remain at
 [Daryaft v0.6.0-rc.1 Internal Release Candidate](release-notes-v0.6.0-rc.1.md).
 
@@ -117,32 +120,39 @@ Manual QA should cover:
 No tag should be created automatically from this document. No public release
 should be published yet.
 
-GoReleaser local snapshot checks are available. Package manager publishing
-remains disabled/future work. Self-update remains future work.
+GoReleaser local snapshot checks are available. Package manager publishing,
+self-update, and other post-1.0 features remain future work and are not
+blockers for v1.0.0. v1.0.0 is a stable baseline release of the currently
+implemented feature set. See
+[Release Readiness: v1.0](../roadmap/release-readiness-v1.0.md) for the full
+v1.0.0 criteria and the post-1.0 roadmap.
 
-## Not Ready For v1.0.0 Because
+## Remaining v1.0.0 Validation Steps
 
-- Public install channels are not enabled.
-- Windows is not officially tested/supported in CI.
+These are the remaining steps before v1.0.0 can be tagged. They do not require
+new features — only validation and release process work.
+
+- Continue internal validation on `v0.6.0-rc.2`.
+- Fix any blocker findings and cut a new RC if needed.
+- Run at least one clean-directory install-and-use validation from GitHub
+  release artifacts or source on the release tag.
+- Confirm GitHub Actions green on the release commit.
+- Complete release notes and document known limitations.
+- Decide whether to attach binary assets to the GitHub release.
+
+## Known Limitations at v1.0.0
+
+The following are known limitations that will be clearly documented in the
+v1.0.0 release notes. They are not blockers for the stable baseline release.
+
+- Windows is not officially supported or tested.
 - Self-update is not implemented.
-- Proxy/custom headers/auth are not implemented.
-- Batch checksum semantics, signed checksums, and checksum file auto-discovery
-  are not implemented.
-- Concurrent/segmented downloads are not implemented.
-- Queue/history is not implemented.
-- Full interactive TUI QA completed during `v0.6.0-rc.2` validation; more
-  manual QA may be needed before public release.
-- Security gate passes with Go `1.26.4`; `govulncheck` is blocking in CI.
-
-## Recommended Next Work
-
-- Run full manual QA.
-- Fix any QA findings.
-- Add inspect polish if needed.
-- Later: proxy/auth, batch checksum semantics, signed checksums, concurrent
-  batch, segmented downloads, queue/history.
-- Consider Windows CI only when ready to support Windows officially.
-- `govulncheck` is blocking in CI with Go `1.26.4`; no further action needed.
+- Proxy, custom headers, and auth are not implemented.
+- Concurrent and segmented downloads are not implemented.
+- Batch checksum semantics, checksum file auto-discovery, and signed checksum
+  verification are not implemented.
+- Queue and history are not implemented.
+- Package manager publishing is not enabled at v1.0.0.
 
 ## Decision Checklist
 
@@ -150,9 +160,11 @@ remains disabled/future work. Self-update remains future work.
 - [ ] Local tests pass.
 - [ ] Local lint passes.
 - [ ] `make rc-check` passes.
-- [ ] Local security passes or known Go toolchain issue documented.
-- [ ] Manual QA completed.
-- [ ] No unexpected generated artifacts.
+- [ ] `make security` passes.
+- [ ] Real-terminal TUI QA passed (completed at `v0.6.0-rc.2`).
+- [ ] No blocker findings from RC validation.
+- [ ] Clean install/use validation from release tag.
+- [ ] Release notes complete with known limitations documented.
+- [ ] Binary asset decision made.
 - [ ] `git status` clean.
 - [ ] No tag/release created accidentally.
-- [ ] Known limitations documented.
