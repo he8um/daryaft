@@ -266,6 +266,8 @@ Start here:
 - [v0.6.0-rc.2 Release Status](docs/operations/release-status-v0.6.0-rc.2.md)
 - [v1.0.0 Release Notes (draft)](docs/operations/release-notes-v1.0.0.md)
 - [v1.0.0 Release Assets](docs/operations/release-assets.md)
+- [v1.0.0 Go/No-Go Checklist](docs/operations/v1.0.0-go-no-go.md)
+- [v1.0.0 Release Plan](docs/operations/v1.0.0-release-plan.md)
 - [RC Release Notes: v0.6.0-rc.1](docs/operations/release-notes-v0.6.0-rc.1.md) (superseded)
 - [Release Process](docs/operations/release-process.md)
 - [Branch Protection](docs/operations/branch-protection.md)

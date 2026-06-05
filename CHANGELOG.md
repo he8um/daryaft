@@ -94,6 +94,10 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 - v1.0.0 release notes draft and binary asset strategy documented; binary
   archives (linux/amd64, linux/arm64, darwin/amd64, darwin/arm64) and
   checksums.txt will be attached to the v1.0.0 GitHub release.
+- v1.0.0 go/no-go checklist and release execution plan documented; version
+  policy confirmed (source default unchanged, GoReleaser ldflags inject release
+  version from tag); GoReleaser publish path analyzed and Option A (build
+  locally with `--skip=publish`, publish via `gh`) recommended as safest path.
 - Clarified v1.0.0 release strategy: stable baseline release of current
   feature set; post-1.0 features (Windows, self-update, proxy/auth,
   concurrency, package managers, etc.) are explicitly deferred and not

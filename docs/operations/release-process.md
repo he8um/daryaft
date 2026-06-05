@@ -17,8 +17,11 @@ and its GitHub pre-release status is in
 
 The v1.0.0 stable release notes draft is at
 [Daryaft v1.0.0 Release Notes (draft)](release-notes-v1.0.0.md). The binary
-asset strategy is documented in
-[v1.0.0 Release Assets](release-assets.md).
+asset strategy is documented in [v1.0.0 Release Assets](release-assets.md).
+
+The final pre-tag go/no-go checklist is at
+[v1.0.0 Go/No-Go Checklist](v1.0.0-go-no-go.md). The step-by-step release
+execution plan is at [v1.0.0 Release Plan](v1.0.0-release-plan.md).
 
 ## CI Validation
 

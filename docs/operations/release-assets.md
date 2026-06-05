@@ -106,6 +106,8 @@ Expected output: `version: 1.0.0`, `built_by: goreleaser`.
 
 ## References
 
+- [v1.0.0 Go/No-Go Checklist](v1.0.0-go-no-go.md)
+- [v1.0.0 Release Plan](v1.0.0-release-plan.md)
 - [Release Readiness: v1.0](../roadmap/release-readiness-v1.0.md)
 - [v0.6.0-rc.2 Release Status](release-status-v0.6.0-rc.2.md)
 - [Release Process](release-process.md)

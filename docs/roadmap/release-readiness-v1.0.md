@@ -110,6 +110,10 @@ Features and decisions deferred until after a stable v1.0.0 baseline:
 
 ## Reference
 
+- [v1.0.0 Go/No-Go Checklist](../operations/v1.0.0-go-no-go.md)
+- [v1.0.0 Release Plan](../operations/v1.0.0-release-plan.md)
+- [v1.0.0 Release Notes (draft)](../operations/release-notes-v1.0.0.md)
+- [v1.0.0 Release Assets](../operations/release-assets.md)
 - [v0.6.0-rc.2 Release Status](../operations/release-status-v0.6.0-rc.2.md)
 - [Release-Candidate Validation](../operations/rc-validation.md)
 - [Pre-Release Readiness](../operations/pre-release-readiness.md)
