@@ -43,11 +43,13 @@ tagging `v1.0.0`.
       [Clean Install Validation: v0.6.0-rc.2](../operations/clean-install-validation-v0.6.0-rc.2.md).
 
 ### Release Artifacts and Notes
-- [ ] GitHub release notes complete and accurate.
-- [ ] Known limitations clearly documented in release notes.
-- [ ] Decision made on whether binary assets are attached to the GitHub release
-      (source-only is acceptable; binary assets are optional for v1.0.0 if the
-      install story is clearly documented).
+- [x] Binary asset strategy decided — binary archives will be attached to the
+      v1.0.0 GitHub release. See
+      [v1.0.0 Release Assets](../operations/release-assets.md).
+- [x] v1.0.0 release notes drafted. See
+      [Daryaft v1.0.0 Release Notes (draft)](../operations/release-notes-v1.0.0.md).
+- [ ] Release notes finalized and accurate for the tagged commit.
+- [x] Known limitations clearly documented in release notes.
 
 ### Documentation
 - [ ] README reflects the stable release.

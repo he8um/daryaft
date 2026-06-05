@@ -21,8 +21,10 @@ commands only.
 - [QA Results: 0.6.0-dev](operations/qa-results-0.6.0-dev.md): completed internal validation readiness QA pass.
 - [Release-Candidate Validation](operations/rc-validation.md): internal RC tag validation workflow.
 - [RC Release Notes: v0.6.0-rc.2](operations/release-notes-v0.6.0-rc.2.md): current internal RC notes (GitHub pre-release published).
-- [v0.6.0-rc.2 Release Status](operations/release-status-v0.6.0-rc.2.md): CI status, QA status, asset status, and recommendation.
+- [v0.6.0-rc.2 Release Status](operations/release-status-v0.6.0-rc.2.md): CI status, QA status, asset decision, and recommendation.
 - [Clean Install Validation: v0.6.0-rc.2](operations/clean-install-validation-v0.6.0-rc.2.md): clean-clone/build/artifact validation pass — PASS WITH NOTES.
+- [v1.0.0 Release Notes (draft)](operations/release-notes-v1.0.0.md): stable release notes draft with highlights, known limitations, install, and upgrade notes.
+- [v1.0.0 Release Assets](operations/release-assets.md): binary asset strategy, GoReleaser build process, and upload/validation commands.
 - [RC Release Notes: v0.6.0-rc.1](operations/release-notes-v0.6.0-rc.1.md): superseded RC notes (historical reference).
 - [Release Process](operations/release-process.md): local release readiness checks.
 - [Branch Protection](operations/branch-protection.md): recommended `main` protection.

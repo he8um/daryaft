@@ -55,9 +55,9 @@ This is acceptable for internal validation:
 - `make release-check` generates local snapshot artifacts for inspection.
 - Source-only is a deliberate choice for pre-stable internal RCs.
 
-For a wider pre-release intended for external users, consider attaching
-GoReleaser-built binary archives and a `checksums.txt` file. This should be an
-explicit decision, not automatic. See the asset recommendation section below.
+For the `v0.6.0-rc.2` internal pre-release, source-only is correct. Binary
+assets will be attached to the v1.0.0 stable release. See the asset section
+below.
 
 ## Publish Status
 
@@ -67,33 +67,30 @@ explicit decision, not automatic. See the asset recommendation section below.
 - No public install-channel guarantee.
 - No self-update support.
 
-## Asset Recommendation
+## Asset Decision
 
-For the current internal validation pre-release, source-tag-only is sufficient.
+The decision has been made: binary assets will be attached to the v1.0.0
+GitHub release. The `v0.6.0-rc.2` source-only pre-release was the correct
+choice for an internal RC.
 
-When the project is ready for a wider pre-release or public release, attach
-compiled binary artifacts. The recommended process:
-
-1. Build with `goreleaser release` (not `--snapshot`) on a clean tag.
-2. Upload `dist/*.tar.gz`, `dist/*.zip`, and `dist/checksums.txt` to the
-   GitHub release.
-3. Verify checksums against the uploaded files before announcing.
-
-Do not implement binary asset upload from this RC. Make it an explicit release
-decision when the project is ready for wider distribution.
+The full v1.0.0 asset list, build process, and upload/validation commands are
+documented in [v1.0.0 Release Assets](release-assets.md).
 
 ## Current Recommendation
 
-- Continue internal validation on `v0.6.0-rc.2`.
-- If blockers are found, fix on `main`, confirm quality gates and CI pass,
-  and create `v0.6.0-rc.3`.
-- If no blockers are found, proceed toward `v1.0.0` stable release.
+`v0.6.0-rc.2` RC validation is complete. No blocker bugs have been identified.
+The remaining steps before tagging `v1.0.0` are:
+
+- Finalize v1.0.0 release notes (see
+  [Daryaft v1.0.0 Release Notes (draft)](release-notes-v1.0.0.md)).
+- Re-verify all quality gates on the final release commit.
+- Tag `v1.0.0`, build release artifacts with `goreleaser release`, and attach
+  binary assets per [v1.0.0 Release Assets](release-assets.md).
 
 v1.0.0 is a **stable baseline release** of the current feature set. No
-additional product features are required. The remaining steps are: completing
-RC validation, clean install/use testing, release notes, and deciding on binary
-assets. Post-1.0 features (Windows, self-update, proxy/auth, package managers,
-concurrency, etc.) are deferred and not blockers.
+additional product features are required. Post-1.0 features (Windows,
+self-update, proxy/auth, package managers, concurrency, etc.) are deferred and
+not blockers.
 
 Public stable release is planned for `v1.0.0`.
 

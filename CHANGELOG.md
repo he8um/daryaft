@@ -91,6 +91,9 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
   pre-release, not stable).
 - Post-RC2 release status document, v1.0.0 readiness roadmap, and doc sync.
 - Clean install validation record for `v0.6.0-rc.2` — PASS WITH NOTES.
+- v1.0.0 release notes draft and binary asset strategy documented; binary
+  archives (linux/amd64, linux/arm64, darwin/amd64, darwin/arm64) and
+  checksums.txt will be attached to the v1.0.0 GitHub release.
 - Clarified v1.0.0 release strategy: stable baseline release of current
   feature set; post-1.0 features (Windows, self-update, proxy/auth,
   concurrency, package managers, etc.) are explicitly deferred and not

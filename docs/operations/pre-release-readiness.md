@@ -132,13 +132,19 @@ v1.0.0 criteria and the post-1.0 roadmap.
 These are the remaining steps before v1.0.0 can be tagged. They do not require
 new features — only validation and release process work.
 
-- Continue internal validation on `v0.6.0-rc.2`.
-- Fix any blocker findings and cut a new RC if needed.
-- Run at least one clean-directory install-and-use validation from GitHub
-  release artifacts or source on the release tag.
-- Confirm GitHub Actions green on the release commit.
-- Complete release notes and document known limitations.
-- Decide whether to attach binary assets to the GitHub release.
+Completed:
+- Internal validation on `v0.6.0-rc.2` — no blockers found.
+- Clean-directory install-and-use validation from source and GoReleaser snapshot
+  artifacts on the `v0.6.0-rc.2` tag — PASS WITH NOTES.
+- v1.0.0 release notes drafted. See
+  [Daryaft v1.0.0 Release Notes (draft)](release-notes-v1.0.0.md).
+- Binary asset decision made: binary archives will be attached. See
+  [v1.0.0 Release Assets](release-assets.md).
+
+Remaining:
+- Confirm GitHub Actions green on the final release commit.
+- Finalize release notes for the tagged commit.
+- Tag `v1.0.0`, build release artifacts, and upload binary assets.
 
 ## Known Limitations at v1.0.0
 
@@ -156,15 +162,18 @@ v1.0.0 release notes. They are not blockers for the stable baseline release.
 
 ## Decision Checklist
 
-- [ ] GitHub Actions green.
-- [ ] Local tests pass.
-- [ ] Local lint passes.
-- [ ] `make rc-check` passes.
-- [ ] `make security` passes.
-- [ ] Real-terminal TUI QA passed (completed at `v0.6.0-rc.2`).
-- [ ] No blocker findings from RC validation.
-- [ ] Clean install/use validation from release tag.
-- [ ] Release notes complete with known limitations documented.
-- [ ] Binary asset decision made.
-- [ ] `git status` clean.
+- [ ] GitHub Actions green on the final release commit.
+- [ ] Local tests pass on the final release commit.
+- [ ] Local lint passes on the final release commit.
+- [ ] `make rc-check` passes on the final release commit.
+- [ ] `make security` passes on the final release commit.
+- [x] Real-terminal TUI QA passed (completed at `v0.6.0-rc.2`).
+- [x] No blocker findings from RC validation.
+- [x] Clean install/use validation from source and snapshot artifacts on
+      `v0.6.0-rc.2` — PASS WITH NOTES.
+- [x] Release notes drafted with known limitations documented. See
+      [Daryaft v1.0.0 Release Notes (draft)](release-notes-v1.0.0.md).
+- [x] Binary asset decision made. See [v1.0.0 Release Assets](release-assets.md).
+- [ ] Release notes finalized for the tagged commit.
+- [ ] `git status` clean on the release commit.
 - [ ] No tag/release created accidentally.

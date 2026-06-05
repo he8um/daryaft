@@ -15,6 +15,11 @@ The current RC is `v0.6.0-rc.2`; its release notes are in
 and its GitHub pre-release status is in
 [v0.6.0-rc.2 Release Status](release-status-v0.6.0-rc.2.md).
 
+The v1.0.0 stable release notes draft is at
+[Daryaft v1.0.0 Release Notes (draft)](release-notes-v1.0.0.md). The binary
+asset strategy is documented in
+[v1.0.0 Release Assets](release-assets.md).
+
 ## CI Validation
 
 The test workflow includes a `goreleaser-check` job on push and pull request.
@@ -130,6 +135,11 @@ Do not publish a stable release or enable package-manager publishing before
 `v1.0.0`. The GitHub pre-release for `v0.6.0-rc.2` is published and marked
 pre-release (not stable). Package-manager publishing (Homebrew, deb, rpm,
 Arch) is post-1.0 work and not required for the v1.0.0 baseline release.
+
+The v1.0.0 stable release will attach compiled binary assets (linux/amd64,
+linux/arm64, darwin/amd64, darwin/arm64) and `checksums.txt`. Build with
+`goreleaser release` (not `--snapshot`) on the `v1.0.0` tag. See
+[v1.0.0 Release Assets](release-assets.md) for the full process.
 
 ## Post-1.0 Release Work
 
