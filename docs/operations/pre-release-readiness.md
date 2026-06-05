@@ -16,6 +16,10 @@ Core CLI and TUI functionality exists, stabilization work is complete, quality
 gates exist, and release tooling is validated locally. Public install channels,
 Windows support, and final `v1.0.0` guarantees are not ready.
 
+The completed QA pass is recorded in
+[QA Results: 0.6.0-dev](qa-results-0.6.0-dev.md). Its verdict is PASS WITH
+NOTES for internal validation readiness.
+
 ## Implemented Capabilities
 
 - CLI foundation.
@@ -87,6 +91,8 @@ Restore CI `govulncheck` to blocking after patched Go is available.
 ## Manual QA
 
 Use the [Manual QA Checklist](manual-qa.md) for local pre-release validation.
+The latest completed pass is documented in
+[QA Results: 0.6.0-dev](qa-results-0.6.0-dev.md).
 Manual QA should cover:
 
 - CLI single download.

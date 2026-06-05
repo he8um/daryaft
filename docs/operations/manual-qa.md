@@ -6,6 +6,9 @@ do not publish releases, create tags, or push changes while running these steps.
 See [Pre-Release Readiness](pre-release-readiness.md) for the current
 `0.6.0-dev` readiness verdict and known release blockers.
 
+The completed `0.6.0-dev` internal validation readiness pass is recorded in
+[QA Results: 0.6.0-dev](qa-results-0.6.0-dev.md).
+
 Run all commands from the repository root unless a step says otherwise.
 
 ## Prerequisites
