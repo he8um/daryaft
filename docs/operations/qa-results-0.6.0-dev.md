@@ -31,14 +31,12 @@ The automated and terminal-driven QA pass completed successfully for internal
 
 ## Known Notes
 
-- On Go `1.26.3`, `govulncheck` reports known Go standard-library advisories:
-  - `GO-2026-5039`
-  - `GO-2026-5037`
-- These advisories are fixed in Go `1.26.4`.
-- This is tracked as a toolchain patch gap, not a Daryaft source-code finding.
-- CI currently treats `govulncheck` as advisory while keeping `gosec`
-  blocking.
-- Local `make security` remains strict.
+- At the time of this QA pass (Go `1.26.3`), `govulncheck` reported known Go
+  standard-library advisories `GO-2026-5039` and `GO-2026-5037`.
+- These advisories are fixed in Go `1.26.4`. This was tracked as a toolchain
+  patch gap, not a Daryaft source-code finding.
+- That gap is now resolved: CI and local tooling use Go `1.26.4` or newer,
+  and `govulncheck` is blocking in CI with no vulnerabilities reported.
 - Windows is not officially tested or supported yet.
 - Full interactive TUI QA should still be completed in a real terminal before a
   wider public release, although automated TUI tests and race tests passed.

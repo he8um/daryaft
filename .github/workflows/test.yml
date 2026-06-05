@@ -97,17 +97,8 @@ jobs:
           go install golang.org/x/vuln/cmd/govulncheck@latest
           go install github.com/securego/gosec/v2/cmd/gosec@latest
 
-      # TODO: Restore govulncheck to blocking once CI can use Go 1.26.4 or newer.
-      - name: Run govulncheck (advisory)
-        run: |
-          set +e
-          govulncheck ./... > govulncheck.log 2>&1
-          status=$?
-          sed 's/^Error:/Trace:/' govulncheck.log
-          if [ "$status" -ne 0 ]; then
-            echo "::warning title=govulncheck advisory::govulncheck failed in CI. This is temporarily non-blocking because CI may still resolve Go 1.26.x to Go 1.26.3, which reports standard-library vulnerabilities GO-2026-5039 and GO-2026-5037 fixed in Go 1.26.4. Restore blocking once CI can use Go 1.26.4 or newer."
-          fi
-          exit 0
+      - name: Run govulncheck
+        run: govulncheck ./...
 
       - name: Run gosec
         run: gosec ./...

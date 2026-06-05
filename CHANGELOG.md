@@ -51,8 +51,8 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 - Built-in `~/Downloads` output default when CLI flags, environment variables,
   and config do not set an output directory; explicit `.` still means the
   current directory.
-- `make rc-check` for release-candidate validation without `govulncheck` during
-  the temporary Go 1.26.3 standard-library patch gap.
+- `make rc-check` for release-candidate validation including blocking
+  `govulncheck` and `gosec` checks.
 - `make rc-info` for printing local release-candidate tag and version metadata
   before RC validation.
 - Config management commands for reading, setting, resetting, and listing
@@ -98,10 +98,9 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 
 - Reviewed checksum QA coverage, strengthened manual QA docs, and confirmed
   narrow `gosec` `#nosec` suppressions remain justified.
-- Made CI `govulncheck ./...` temporarily advisory, with a GitHub Actions
-  warning, while Go 1.26.x on hosted tooling can still resolve to Go 1.26.3
-  and report standard-library vulnerabilities fixed in Go 1.26.4. CI `gosec`
-  remains blocking, and local `make security` remains strict.
+- Restored CI `govulncheck ./...` to blocking after upgrading CI to Go `1.26.4`
+  or newer, resolving the previous standard-library advisory gap. Both
+  `govulncheck` and `gosec` are blocking in CI and in `make rc-check`.
 - Expanded downloader HTTP integration coverage for redirects, unknown-length
   responses, slow-stream cancellation, and exhausted retry failures, and cleaned
   docs so planned update/install/Windows support is not overstated.

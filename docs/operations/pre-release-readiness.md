@@ -74,23 +74,17 @@ CI checks:
 - `lint`.
 - `security`.
 
-`make release-check` remains local/manual and does not publish. `gosec` is
-blocking in CI. `govulncheck` is temporarily advisory in CI only until Go
-`1.26.4` or newer is available, while local `make security` remains strict.
-`make rc-check` is available for release-candidate validation without
-`govulncheck` during this Go toolchain patch gap.
+`make release-check` remains local/manual and does not publish. `govulncheck`
+and `gosec` are both blocking in CI. `make rc-check` includes blocking
+`govulncheck` and `gosec` checks. `make security` is strict locally and in CI.
 
-## Known Toolchain/Security Note
+## Toolchain/Security Note
 
-On Go `1.26.3`, `govulncheck` may report vulnerabilities in Go standard
-library packages. The reported fixed version is Go `1.26.4`.
-
-This should be resolved by using a patched Go toolchain when available. This is
-not currently identified as a Daryaft source-code vulnerability. Do not suppress
-it permanently.
-
-Re-run `make security` after the local and CI Go toolchains receive the patch.
-Restore CI `govulncheck` to blocking after patched Go is available.
+The previous Go `1.26.3` standard-library advisory gap (GO-2026-5039 and
+GO-2026-5037) is resolved by using Go `1.26.4` or newer. CI and local
+`make security` now use Go `1.26.4` or newer, and `govulncheck` reports no
+vulnerabilities. This is not a Daryaft source-code finding and no suppression
+is needed.
 
 ## Manual QA
 
@@ -135,7 +129,7 @@ remains disabled/future work. Self-update remains future work.
 - Concurrent/segmented downloads are not implemented.
 - Queue/history is not implemented.
 - More manual QA is needed before public release.
-- Security gate should be re-run with patched Go toolchain when available.
+- Security gate passes with Go `1.26.4`; `govulncheck` is blocking in CI.
 
 ## Recommended Next Work
 
@@ -145,8 +139,7 @@ remains disabled/future work. Self-update remains future work.
 - Later: proxy/auth, batch checksum semantics, signed checksums, concurrent
   batch, segmented downloads, queue/history.
 - Consider Windows CI only when ready to support Windows officially.
-- Restore `govulncheck` blocking in CI after Go `1.26.4` or newer is
-  available.
+- `govulncheck` is blocking in CI with Go `1.26.4`; no further action needed.
 
 ## Decision Checklist
 

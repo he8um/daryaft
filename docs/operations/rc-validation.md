@@ -53,8 +53,8 @@ make rc-check
 make release-check
 ```
 
-`make rc-check` intentionally excludes `govulncheck` while the Go `1.26.3`
-standard-library advisory gap remains. Local `make security` remains strict.
+`make rc-check` includes blocking `govulncheck` and `gosec` checks. `make
+security` also runs both as blocking checks locally.
 
 `make release-check` runs:
 
@@ -153,11 +153,9 @@ record style.
 
 ## Known Notes
 
-- Go `1.26.3` may cause `govulncheck` to report Go standard-library advisories
-  `GO-2026-5039` and `GO-2026-5037`; both are fixed in Go `1.26.4`.
-- This is tracked as a toolchain patch gap, not a Daryaft source-code finding.
-- CI currently treats `govulncheck` as advisory while keeping `gosec` blocking.
-- Local `make security` remains strict.
+- The previous Go `1.26.3` standard-library advisory gap (GO-2026-5039 and
+  GO-2026-5037) is resolved by using Go `1.26.4` or newer.
+- `govulncheck` and `gosec` are both blocking in CI and in `make rc-check`.
 - Windows is not officially tested or supported yet.
 - Full interactive TUI QA should be completed in a real terminal before wider
   public release.

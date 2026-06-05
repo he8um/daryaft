@@ -119,16 +119,15 @@ This requires both tools:
 remains strict locally and runs both `govulncheck ./...` and `gosec ./...` as
 blocking checks.
 
-For release-candidate validation during the temporary Go 1.26.3
-standard-library patch gap, use:
+For release-candidate validation, use:
 
 ```bash
 make rc-check
 ```
 
-This runs tests, builds, selected race checks, lint, `gosec`, GoReleaser config
-validation, whitespace checks, and the manual QA script shell syntax check
-without running `govulncheck`.
+This runs tests, builds, selected race checks, lint, `govulncheck`, `gosec`,
+GoReleaser config validation, whitespace checks, and the manual QA script shell
+syntax check.
 
 ## GitHub Actions
 
@@ -142,15 +141,13 @@ create tags, or use publishing secrets.
 
 The separate `lint` job installs `golangci-lint` and runs `golangci-lint run`
 with the repository `.golangci.yml`; it is blocking. The separate `security`
-job installs `govulncheck` and `gosec`. `gosec ./...` remains blocking in CI.
-`govulncheck ./...` is temporarily advisory in CI and emits a GitHub Actions
-warning if it fails because Go 1.26.x on hosted tooling can still resolve to Go
-1.26.3, which reports standard-library vulnerabilities GO-2026-5039 in
-`net/textproto` and GO-2026-5037 in `crypto/x509`; both are fixed in Go 1.26.4.
-Restore `govulncheck` to blocking once CI can use Go 1.26.4 or newer. Neither
-job publishes releases or creates tags. These tooling jobs use Go `1.26.x` so
-current quality tools can be installed, while the Go test/build matrix
-continues to use the module Go version from `go.mod`.
+job installs `govulncheck` and `gosec`; both `govulncheck ./...` and
+`gosec ./...` are blocking in CI. The previous Go 1.26.3 standard-library
+advisory gap (GO-2026-5039 in `net/textproto` and GO-2026-5037 in
+`crypto/x509`) is resolved by using Go 1.26.4 or newer, which the CI `security`
+job now does. Neither job publishes releases or creates tags. These tooling jobs
+use Go `1.26.x` so current quality tools can be installed, while the Go
+test/build matrix continues to use the module Go version from `go.mod`.
 
 Workflow actions should stay on stable majors supported by GitHub-hosted
 runners. The current workflow uses Node 24-compatible action majors for

@@ -60,8 +60,7 @@ make security
 goreleaser check
 ```
 
-For a release-candidate validation pass while Go 1.26.x can still resolve to
-Go 1.26.3 in tooling, run:
+For a release-candidate validation pass, run:
 
 ```bash
 make rc-check
@@ -78,12 +77,9 @@ Expected:
 - All required Go tests and builds pass.
 - Optional lint, `gosec`, and GoReleaser checks pass when their tools are
   installed.
-- `make rc-check` passes without running `govulncheck`.
-- Local `make security` remains strict. Until local Go 1.26.x resolves to Go
-  1.26.4 or newer, `govulncheck` may report known Go 1.26.3 standard-library
-  vulnerabilities GO-2026-5039 and GO-2026-5037; these are temporarily advisory
-  only in CI and should be reverted to blocking there once patched Go is
-  available.
+- `make rc-check` passes including blocking `govulncheck` and `gosec` checks.
+- `make security` passes with Go `1.26.4` or newer; `govulncheck` is blocking
+  in CI. The previous Go `1.26.3` standard-library advisory gap is resolved.
 - `make release-check` writes only local snapshot artifacts under ignored build
   directories such as `dist/`; it must not publish.
 

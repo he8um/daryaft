@@ -35,8 +35,10 @@ Public stable release remains planned for `v1.0.0`.
 - Concurrent and segmented downloads are not implemented.
 - Batch checksum semantics are not implemented.
 - Checksum file discovery and signed checksum verification are not implemented.
-- Go `1.26.3` may cause `govulncheck` to report standard-library advisories
-  `GO-2026-5039` and `GO-2026-5037`; both are fixed in Go `1.26.4`.
+- At the time of the initial RC tag, Go `1.26.3` caused `govulncheck` to report
+  standard-library advisories `GO-2026-5039` and `GO-2026-5037`; both are fixed
+  in Go `1.26.4`. This gap is now resolved: CI uses Go `1.26.4` or newer and
+  `govulncheck` is blocking with no findings.
 - Full interactive TUI QA should still be completed in a real terminal before
   wider public release.
 

@@ -32,12 +32,10 @@ tidiness, runs `go test ./...`, runs `go build ./...`, and runs
 
 The CI workflow also runs separate `lint` and `security` jobs. The `lint` job
 runs blocking `golangci-lint run` with `.golangci.yml`. The `security` job
-installs and runs `govulncheck ./...` and `gosec ./...`; `gosec` remains
-blocking. `govulncheck` is temporarily advisory in CI because Go 1.26.x on
-hosted tooling can still resolve to Go 1.26.3 and report standard-library
-vulnerabilities fixed in Go 1.26.4. Restore `govulncheck` to blocking once CI
-can use Go 1.26.4 or newer. These jobs do not publish releases, create tags, or
-run snapshot builds.
+installs and runs `govulncheck ./...` and `gosec ./...`; both are blocking. The
+previous Go 1.26.3 standard-library advisory gap is resolved by using Go 1.26.4
+or newer, which the CI `security` job now does. These jobs do not publish
+releases, create tags, or run snapshot builds.
 
 Recommended branch protection checks:
 
@@ -64,11 +62,9 @@ make security
 ```
 
 `make lint` requires `golangci-lint`. `make rc-check` runs the release-candidate
-readiness checks without `govulncheck` for the temporary Go 1.26.3
-standard-library patch gap. `make security` requires `govulncheck` and `gosec`,
-and remains strict locally even while CI `govulncheck` is temporarily advisory.
-`make lint` and `make security` are the local equivalents of the CI `lint` and
-`security` jobs.
+readiness checks including `govulncheck` and `gosec`. `make security` requires
+`govulncheck` and `gosec`, and runs both as blocking checks. `make lint` and
+`make security` are the local equivalents of the CI `lint` and `security` jobs.
 `make rc-info` prints the current Git describe value, local RC tags, source
 version metadata, and reminders for `make rc-check` and `make release-check`.
 

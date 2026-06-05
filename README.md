@@ -83,10 +83,10 @@ snapshot artifacts are written under ignored local build directories such as
 
 `make lint` requires `golangci-lint` and runs the repository's practical lint
 profile from `.golangci.yml`. `make security` requires `govulncheck` and
-`gosec`, then runs both local security scans. GitHub Actions also runs separate
-`lint` and `security` jobs; the security job uses `govulncheck` and `gosec`.
-`make rc-check` runs release-candidate readiness checks without `govulncheck`;
-local `make security` remains strict.
+`gosec`, then runs both local security scans as blocking checks. GitHub Actions
+also runs separate `lint` and `security` jobs; the security job uses
+`govulncheck` and `gosec`, both blocking. `make rc-check` runs
+release-candidate readiness checks including `govulncheck` and `gosec`.
 `make rc-info` prints the current Git describe value, local RC tags, source
 version metadata, and the next RC validation commands.
 
