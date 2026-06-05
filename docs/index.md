@@ -22,6 +22,7 @@ commands only.
 - [Release-Candidate Validation](operations/rc-validation.md): internal RC tag validation workflow.
 - [RC Release Notes: v0.6.0-rc.2](operations/release-notes-v0.6.0-rc.2.md): current internal RC notes (GitHub pre-release published).
 - [v0.6.0-rc.2 Release Status](operations/release-status-v0.6.0-rc.2.md): CI status, QA status, asset status, and recommendation.
+- [Clean Install Validation: v0.6.0-rc.2](operations/clean-install-validation-v0.6.0-rc.2.md): clean-clone/build/artifact validation pass — PASS WITH NOTES.
 - [RC Release Notes: v0.6.0-rc.1](operations/release-notes-v0.6.0-rc.1.md): superseded RC notes (historical reference).
 - [Release Process](operations/release-process.md): local release readiness checks.
 - [Branch Protection](operations/branch-protection.md): recommended `main` protection.

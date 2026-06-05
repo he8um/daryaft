@@ -90,6 +90,7 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 - `v0.6.0-rc.2` GitHub pre-release published (source/tag-only, marked
   pre-release, not stable).
 - Post-RC2 release status document, v1.0.0 readiness roadmap, and doc sync.
+- Clean install validation record for `v0.6.0-rc.2` — PASS WITH NOTES.
 - Clarified v1.0.0 release strategy: stable baseline release of current
   feature set; post-1.0 features (Windows, self-update, proxy/auth,
   concurrency, package managers, etc.) are explicitly deferred and not

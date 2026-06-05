@@ -21,22 +21,26 @@ GitHub pre-release published. See
 All of the following must be satisfied before tagging `v1.0.0`.
 
 ### Quality Gates
-- [ ] GitHub Actions green on the release commit (Go test/build matrix on Linux
-      and macOS, goreleaser-check, lint, security).
-- [ ] `govulncheck` blocking in CI — no vulnerabilities found.
-- [ ] `gosec` blocking in CI — Issues: 0.
-- [ ] `make rc-check` passes with blocking security checks.
-- [ ] `make release-check` passes (local GoReleaser snapshot, no publishing).
-- [ ] `go test ./...` passes.
-- [ ] `go build ./...` passes.
-- [ ] Race tests pass: `go test -race ./internal/downloader` and
+- [x] GitHub Actions green on the release commit (Go test/build matrix on Linux
+      and macOS, goreleaser-check, lint, security) — green at `v0.6.0-rc.2`.
+- [x] `govulncheck` blocking in CI — no vulnerabilities found.
+- [x] `gosec` blocking in CI — Issues: 0.
+- [x] `make rc-check` passes with blocking security checks.
+- [x] `make release-check` passes (local GoReleaser snapshot, no publishing).
+- [x] `go test ./...` passes.
+- [x] `go build ./...` passes.
+- [x] Race tests pass: `go test -race ./internal/downloader` and
       `go test -race ./internal/tui`.
 
+Note: these gates must be re-verified green on the final release commit before
+tagging `v1.0.0`.
+
 ### Validation
-- [ ] Real-terminal interactive TUI QA passed (completed at `v0.6.0-rc.2`).
+- [x] Real-terminal interactive TUI QA passed (completed at `v0.6.0-rc.2`).
 - [ ] No blocker bugs identified from internal RC validation.
-- [ ] At least one clean-directory install-and-use validation from GitHub
-      release artifacts or from source on the release tag.
+- [x] Clean-directory install-and-use validation from source and GoReleaser
+      snapshot artifacts on the `v0.6.0-rc.2` tag — PASS WITH NOTES. See
+      [Clean Install Validation: v0.6.0-rc.2](../operations/clean-install-validation-v0.6.0-rc.2.md).
 
 ### Release Artifacts and Notes
 - [ ] GitHub release notes complete and accurate.

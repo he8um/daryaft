@@ -41,6 +41,8 @@
 - `make rc-check` passed with blocking security checks.
 - `make release-check` passed; local GoReleaser snapshot artifacts generated
   and verified without publishing.
+- Clean install validation passed. See
+  [Clean Install Validation: v0.6.0-rc.2](clean-install-validation-v0.6.0-rc.2.md).
 
 ## Release Artifact Status
 
