@@ -65,6 +65,7 @@ make test
 make lint
 make security
 make rc-check
+make rc-info
 make ci
 make build
 make build-local
@@ -86,6 +87,8 @@ profile from `.golangci.yml`. `make security` requires `govulncheck` and
 `lint` and `security` jobs; the security job uses `govulncheck` and `gosec`.
 `make rc-check` runs release-candidate readiness checks without `govulncheck`;
 local `make security` remains strict.
+`make rc-info` prints the current Git describe value, local RC tags, source
+version metadata, and the next RC validation commands.
 
 `make ci` runs the same local pre-release checks expected before opening a PR:
 module tidy verification, tests, build, TUI race test, whitespace diff check,
@@ -258,6 +261,8 @@ Start here:
 - [Command Reference](docs/command-reference.md)
 - [Testing Strategy](docs/engineering/testing-strategy.md)
 - [Pre-Release Readiness](docs/operations/pre-release-readiness.md)
+- [Release-Candidate Validation](docs/operations/rc-validation.md)
+- [Draft RC Release Notes](docs/operations/release-notes-v0.6.0-rc.1.md)
 - [Release Process](docs/operations/release-process.md)
 - [Branch Protection](docs/operations/branch-protection.md)
 - [Architecture Overview](docs/architecture/overview.md)

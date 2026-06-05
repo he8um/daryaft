@@ -6,10 +6,17 @@ publishing remain planned for `v1.0.0` and later.
 See [Pre-Release Readiness](pre-release-readiness.md) for the current
 `0.6.0-dev` internal validation verdict, known toolchain note, and remaining
 `v1.0.0` blockers.
+For internal RC tags, use
+[Release-Candidate Validation](rc-validation.md). Draft notes for
+`v0.6.0-rc.1` are in
+[Daryaft v0.6.0-rc.1 Internal Release Candidate](release-notes-v0.6.0-rc.1.md).
 
 ## CI Validation
 
 The test workflow includes a `goreleaser-check` job on push and pull request.
+The workflow's `push` trigger is not limited to branches, so tag pushes such as
+`v0.6.0-rc.1` also run the workflow. This validates the RC tag without adding a
+tag-triggered release or publishing job.
 It installs GoReleaser v2 and runs:
 
 ```bash
@@ -51,6 +58,7 @@ quality gates when the tools are installed:
 ```bash
 make ci
 make rc-check
+make rc-info
 make lint
 make security
 ```
@@ -61,6 +69,8 @@ standard-library patch gap. `make security` requires `govulncheck` and `gosec`,
 and remains strict locally even while CI `govulncheck` is temporarily advisory.
 `make lint` and `make security` are the local equivalents of the CI `lint` and
 `security` jobs.
+`make rc-info` prints the current Git describe value, local RC tags, source
+version metadata, and reminders for `make rc-check` and `make release-check`.
 
 Use the local release check before changing release configuration:
 

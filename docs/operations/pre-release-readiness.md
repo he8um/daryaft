@@ -20,6 +20,10 @@ The completed QA pass is recorded in
 [QA Results: 0.6.0-dev](qa-results-0.6.0-dev.md). Its verdict is PASS WITH
 NOTES for internal validation readiness.
 
+The internal `v0.6.0-rc.1` tag is documented in
+[Release-Candidate Validation](rc-validation.md), with draft unpublished notes
+in [Daryaft v0.6.0-rc.1 Internal Release Candidate](release-notes-v0.6.0-rc.1.md).
+
 ## Implemented Capabilities
 
 - CLI foundation.
@@ -93,6 +97,8 @@ Restore CI `govulncheck` to blocking after patched Go is available.
 Use the [Manual QA Checklist](manual-qa.md) for local pre-release validation.
 The latest completed pass is documented in
 [QA Results: 0.6.0-dev](qa-results-0.6.0-dev.md).
+Use [Release-Candidate Validation](rc-validation.md) for RC tag and
+GoReleaser artifact validation.
 Manual QA should cover:
 
 - CLI single download.

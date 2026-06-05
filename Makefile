@@ -8,7 +8,7 @@ LD_FLAGS := -X $(VERSION_PKG).Version=$(VERSION) -X $(VERSION_PKG).Commit=$(COMM
 GO_BIN := $(shell go env GOPATH 2>/dev/null)/bin
 TOOL_PATH := $(GO_BIN):$(PATH)
 
-.PHONY: help test lint security rc-check build build-local version ci release-check run clean
+.PHONY: help test lint security rc-check rc-info build build-local version ci release-check run clean
 
 help:
 	@echo "Daryaft development commands:"
@@ -16,6 +16,7 @@ help:
 	@echo "  make lint         Run golangci-lint"
 	@echo "  make security     Run govulncheck and gosec"
 	@echo "  make rc-check     Run release-candidate checks without govulncheck"
+	@echo "  make rc-info      Print local release-candidate state"
 	@echo "  make build        Build ./bin/$(APP)"
 	@echo "  make build-local  Build ./bin/$(APP) with local version ldflags"
 	@echo "  make version      Run go run . version"
@@ -61,6 +62,20 @@ rc-check:
 	goreleaser check
 	git diff --check
 	sh -n scripts/manual-qa-server.sh
+
+rc-info:
+	@echo "Git describe:"
+	@git describe --tags --always 2>/dev/null || echo "unavailable"
+	@echo
+	@echo "RC tags:"
+	@git tag --list "v*-rc.*" 2>/dev/null || true
+	@echo
+	@echo "Version:"
+	@go run . version
+	@echo
+	@echo "Next checks:"
+	@echo "  make rc-check"
+	@echo "  make release-check"
 
 build:
 	go build -o bin/$(APP) .

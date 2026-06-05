@@ -8,6 +8,10 @@ See [Pre-Release Readiness](pre-release-readiness.md) for the current
 
 The completed `0.6.0-dev` internal validation readiness pass is recorded in
 [QA Results: 0.6.0-dev](qa-results-0.6.0-dev.md).
+For RC tag and artifact validation, use
+[Release-Candidate Validation](rc-validation.md) and the draft
+[Daryaft v0.6.0-rc.1 Internal Release Candidate](release-notes-v0.6.0-rc.1.md)
+notes.
 
 Run all commands from the repository root unless a step says otherwise.
 

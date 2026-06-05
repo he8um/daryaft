@@ -19,6 +19,8 @@ commands only.
 - [Manual QA Checklist](operations/manual-qa.md): local pre-release validation checklist.
 - [Pre-Release Readiness](operations/pre-release-readiness.md): `0.6.0-dev` internal validation status and blockers.
 - [QA Results: 0.6.0-dev](operations/qa-results-0.6.0-dev.md): completed internal validation readiness QA pass.
+- [Release-Candidate Validation](operations/rc-validation.md): internal RC tag validation workflow.
+- [Draft RC Release Notes](operations/release-notes-v0.6.0-rc.1.md): unpublished `v0.6.0-rc.1` notes for internal validation.
 - [Release Process](operations/release-process.md): local release readiness checks.
 - [Branch Protection](operations/branch-protection.md): recommended `main` protection.
 

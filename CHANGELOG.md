@@ -53,6 +53,8 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
   current directory.
 - `make rc-check` for release-candidate validation without `govulncheck` during
   the temporary Go 1.26.3 standard-library patch gap.
+- `make rc-info` for printing local release-candidate tag and version metadata
+  before RC validation.
 - Config management commands for reading, setting, resetting, and listing
   supported config keys.
 - `inspect` command for HTTP/HTTPS URL metadata preflight, with human and JSON
@@ -85,6 +87,7 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
   milestone.
 - QA results record for the completed `0.6.0-dev` internal validation readiness
   pass.
+- Internal `v0.6.0-rc.1` validation docs and draft unpublished release notes.
 - Safe CLI Ctrl+C/SIGTERM cancellation for single and batch downloads, with
   partial files and metadata preserved for resume.
 - Local `make lint` and `make security` quality gates with a practical

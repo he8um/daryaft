@@ -53,7 +53,10 @@ The automated and terminal-driven QA pass completed successfully for internal
 ## Next Decision
 
 - Continue internal validation without a tag.
-- Create an internal release-candidate tag such as `v0.6.0-rc.1` after
-  confirming GitHub Actions remains green.
+- Continue validation of the internal `v0.6.0-rc.1` tag using
+  [Release-Candidate Validation](rc-validation.md).
+- Use the draft
+  [Daryaft v0.6.0-rc.1 Internal Release Candidate](release-notes-v0.6.0-rc.1.md)
+  notes for internal review only.
 - Do not publish a public stable release yet.
 - Public stable remains planned for `v1.0.0`.
