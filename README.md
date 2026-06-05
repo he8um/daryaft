@@ -8,23 +8,22 @@ packaging, and future self-update support.
 
 ## Status
 
-Daryaft is in pre-1.0 development and is not stable yet. The current codebase
-has a CLI foundation, dry-run planning, and real single URL HTTP/HTTPS
-downloads with simple text progress output. Multiple URLs can also be
-downloaded sequentially in one command. Basic retry execution is implemented
-for temporary network and server failures, and interrupted downloads can resume
-from `.part` files when the server supports HTTP Range requests. Running
-`daryaft` with no arguments opens the interactive TUI home screen. The TUI can
-collect a single URL or `.txt` file path and show the same dry-run download
-plan as the CLI, then start real single or sequential batch downloads from the
-plan screen. The single URL TUI flow can also set an optional custom filename,
-and the Inspect URL menu item can show read-only remote metadata without
-downloading a file.
-The current development version is `0.6.0-dev`.
-This milestone represents the stabilized pre-release foundation after
-downloader/config correctness work, CLI/TUI cancellation alignment, expanded
-HTTP coverage, and local/CI quality gates. Daryaft remains pre-1.0, and
-breaking changes may still happen before `v1.0.0`.
+**v1.0.0 is the first stable release.** Download binary archives from the
+[GitHub releases page](https://github.com/he8um/daryaft/releases/tag/v1.0.0).
+
+Daryaft v1.0.0 is a stable baseline release. It ships CLI and TUI HTTP/HTTPS
+downloading with dry-run planning, single URL and sequential batch downloads,
+resume from `.part` files, retry with exponential backoff, CLI checksum
+verification for single URL downloads, an interactive Bubble Tea TUI, YAML
+configuration with environment overrides, `inspect` metadata preflight,
+`doctor` diagnostics, and shell completions. Running `daryaft` with no
+arguments opens the interactive TUI home screen.
+
+v1.0.0 is a stable baseline, not a feature-complete release. Known limitations
+(Windows, concurrent downloads, proxy/auth, self-update, package managers,
+batch checksum) are documented in the
+[v1.0.0 release notes](docs/operations/release-notes-v1.0.0.md). Post-1.0
+features are tracked in [post-1-feature-packs.md](docs/roadmap/post-1-feature-packs.md).
 
 - Repository: https://github.com/he8um/daryaft
 - Website: https://xhesam.com
@@ -32,13 +31,26 @@ breaking changes may still happen before `v1.0.0`.
 - Author: AmirHesam Piri <info@xhesam.com>
 - License: MIT
 
-## Install Policy
+## Install
 
-Public install channels begin at `v1.0.0`. Before that release, Homebrew, Debian,
-RPM, Arch, and one-line install instructions are planned only and must not be
-presented as stable user-facing install paths. Source builds report
-`0.6.0-dev`, commit `local`, build date `unknown`, and built by `source`.
-Release builds inject version metadata with linker flags.
+Download binary archives for your platform from the
+[v1.0.0 GitHub release](https://github.com/he8um/daryaft/releases/tag/v1.0.0):
+
+```bash
+# Example: macOS Apple Silicon
+curl -L -O https://github.com/he8um/daryaft/releases/download/v1.0.0/daryaft_darwin_arm64.tar.gz
+curl -L -O https://github.com/he8um/daryaft/releases/download/v1.0.0/checksums.txt
+shasum -a 256 --check checksums.txt
+tar -xzf daryaft_darwin_arm64.tar.gz
+./daryaft version
+```
+
+Available archives: `daryaft_linux_amd64.tar.gz`, `daryaft_linux_arm64.tar.gz`,
+`daryaft_darwin_amd64.tar.gz`, `daryaft_darwin_arm64.tar.gz`.
+
+Package manager channels (Homebrew, deb, rpm, Arch) are post-1.0 work.
+Source builds report `0.6.0-dev` (development default); release builds inject
+`1.0.0` via GoReleaser ldflags from the tag.
 
 For local development:
 

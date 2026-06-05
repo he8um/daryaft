@@ -4,7 +4,7 @@ All notable changes to Daryaft will be documented in this file.
 
 Daryaft uses the project versioning policy described in `docs/roadmap/versioning-policy.md`.
 
-## [Unreleased]
+## [1.0.0] - 2026-06-06
 
 ### Added
 
@@ -145,12 +145,16 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 - Added a retry upper bound of `20` across CLI planning, config values, and
   environment overrides.
 
-### Planned
+### Post-1.0 Roadmap
 
 - Concurrent batch downloader engine.
 - Rich progress bars.
 - Queue persistence.
-- Public installation channels from v1.0.0 onward.
+- Package manager publishing (Homebrew, deb, rpm, Arch) from v1.0.0 onward.
+- Windows official support and CI.
+- Self-update mechanism.
+- Proxy, custom headers, and authentication.
+- Checksum file auto-discovery and signed checksum verification.
 
 ## [v0.1.0-dev] - 2026-05-23
 

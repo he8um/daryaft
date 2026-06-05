@@ -1,6 +1,6 @@
 # Daryaft v1.0.0
 
-> **Status: DRAFT** — Not yet tagged or released.
+> **Status: RELEASED** — Stable release. Tag: `v1.0.0`.
 
 ## Summary
 
