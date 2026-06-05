@@ -88,7 +88,7 @@ for single URL commands.
 
 `--checksum` is also rejected for batch input and `--file` input in this
 milestone because one checksum cannot safely apply to multiple files. Manual
-checksum verification is currently single URL CLI-only.
+checksum verification is currently single URL only in both CLI and TUI flows.
 
 ## Planned
 

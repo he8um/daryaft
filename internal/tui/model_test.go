@@ -173,6 +173,13 @@ func TestEmptyOutputDirectoryCreatesPlanWithCurrentDirectory(t *testing.T) {
 		t.Fatalf("filename input view missing help:\n%s", model.View())
 	}
 	model = updateWithKey(t, model, tea.KeyEnter)
+	if model.screen != screenChecksumInput {
+		t.Fatalf("screen = %v, want checksum input", model.screen)
+	}
+	if !strings.Contains(model.View(), "Leave empty to skip") {
+		t.Fatalf("checksum input view missing help:\n%s", model.View())
+	}
+	model = updateWithKey(t, model, tea.KeyEnter)
 
 	if model.screen != screenPlan {
 		t.Fatalf("screen = %v, want plan", model.screen)
@@ -189,6 +196,9 @@ func TestEmptyOutputDirectoryCreatesPlanWithCurrentDirectory(t *testing.T) {
 	if !strings.Contains(model.View(), "Filename: auto-detect") {
 		t.Fatalf("plan view missing auto-detect filename:\n%s", model.View())
 	}
+	if !strings.Contains(model.View(), "Checksum: none") {
+		t.Fatalf("plan view missing empty checksum:\n%s", model.View())
+	}
 	if !strings.Contains(model.View(), "enter start download") {
 		t.Fatalf("plan view missing start action:\n%s", model.View())
 	}
@@ -201,6 +211,7 @@ func TestCustomOutputDirectoryAppearsInPlan(t *testing.T) {
 	model = updateWithString(t, model, "https://example.com/file.zip")
 	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithString(t, model, "downloads")
+	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithKey(t, model, tea.KeyEnter)
 
@@ -238,6 +249,7 @@ func TestConfigDefaultsApplyToTUIPlan(t *testing.T) {
 		t.Fatalf("input value = %q", model.input.Value())
 	}
 
+	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithKey(t, model, tea.KeyEnter)
 
@@ -281,14 +293,17 @@ func TestURLFlowAdvancesThroughFilenameInput(t *testing.T) {
 
 	model = updateWithString(t, model, "custom.zip")
 	model = updateWithKey(t, model, tea.KeyEnter)
-	if model.screen != screenPlan {
-		t.Fatalf("screen = %v, want plan", model.screen)
+	if model.screen != screenChecksumInput {
+		t.Fatalf("screen = %v, want checksum input", model.screen)
 	}
 	if model.plan.Output != "downloads" {
 		t.Fatalf("plan.Output = %q, want downloads", model.plan.Output)
 	}
 	if model.plan.Name != "custom.zip" {
 		t.Fatalf("plan.Name = %q, want custom.zip", model.plan.Name)
+	}
+	if !strings.Contains(model.View(), "Enter checksum") {
+		t.Fatalf("checksum input view missing prompt:\n%s", model.View())
 	}
 }
 
@@ -301,6 +316,7 @@ func TestCustomFilenameAppearsInPlan(t *testing.T) {
 	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithString(t, model, "  custom.txt  ")
 	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithKey(t, model, tea.KeyEnter)
 
 	if model.screen != screenPlan {
 		t.Fatalf("screen = %v, want plan", model.screen)
@@ -310,6 +326,54 @@ func TestCustomFilenameAppearsInPlan(t *testing.T) {
 	}
 	if !strings.Contains(model.View(), "Filename: custom.txt") {
 		t.Fatalf("plan view missing custom filename:\n%s", model.View())
+	}
+}
+
+func TestValidChecksumAppearsInPlan(t *testing.T) {
+	checksum := "sha256:" + strings.Repeat("a", 64)
+	model := NewModel(Options{NoColor: true})
+	model.selected = 0
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithString(t, model, "https://example.com/file.zip")
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithString(t, model, checksum)
+	model = updateWithKey(t, model, tea.KeyEnter)
+
+	if model.screen != screenPlan {
+		t.Fatalf("screen = %v, want plan", model.screen)
+	}
+	if model.plan.Checksum == nil {
+		t.Fatal("plan.Checksum = nil")
+	}
+	if model.plan.Checksum.String() != checksum {
+		t.Fatalf("plan.Checksum = %q, want %q", model.plan.Checksum.String(), checksum)
+	}
+	if !strings.Contains(model.View(), "Checksum:") || !strings.Contains(model.View(), "sha256:") {
+		t.Fatalf("plan view missing checksum:\n%s", model.View())
+	}
+}
+
+func TestInvalidChecksumStaysOnChecksumInput(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model.selected = 0
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithString(t, model, "https://example.com/file.zip")
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithString(t, model, "sha256:not-hex")
+	model = updateWithKey(t, model, tea.KeyEnter)
+
+	if model.screen != screenChecksumInput {
+		t.Fatalf("screen = %v, want checksum input", model.screen)
+	}
+	if model.errorMessage == "" {
+		t.Fatal("errorMessage is empty, want checksum validation error")
+	}
+	if !strings.Contains(model.View(), "sha256 checksum must be 64 hex characters") {
+		t.Fatalf("checksum input view missing validation error:\n%s", model.View())
 	}
 }
 
@@ -728,9 +792,15 @@ func TestEscAndBackspaceNavigation(t *testing.T) {
 
 	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithKey(t, model, tea.KeyBackspace)
+	if model.screen != screenChecksumInput {
+		t.Fatalf("screen after plan backspace = %v, want checksum input", model.screen)
+	}
+
+	model = updateWithKey(t, model, tea.KeyEsc)
 	if model.screen != screenFilenameInput {
-		t.Fatalf("screen after plan backspace = %v, want filename input", model.screen)
+		t.Fatalf("screen after checksum esc = %v, want filename input", model.screen)
 	}
 
 	model = updateWithKey(t, model, tea.KeyEsc)
@@ -791,6 +861,20 @@ func TestBackspaceEditsNonEmptyInputs(t *testing.T) {
 			wantScreen: screenFilenameInput,
 			wantValue:  "ab",
 		},
+		{
+			name: "checksum input",
+			setup: func(model Model) Model {
+				model.selected = 0
+				model = updateWithKey(t, model, tea.KeyEnter)
+				model = updateWithString(t, model, "https://example.com/file.zip")
+				model = updateWithKey(t, model, tea.KeyEnter)
+				model = updateWithKey(t, model, tea.KeyEnter)
+				model = updateWithKey(t, model, tea.KeyEnter)
+				return updateWithString(t, model, "abc")
+			},
+			wantScreen: screenChecksumInput,
+			wantValue:  "ab",
+		},
 	}
 
 	for _, tt := range tests {
@@ -832,6 +916,7 @@ func TestPlanHomeKey(t *testing.T) {
 	model.selected = 0
 	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithString(t, model, "https://example.com/file.zip")
+	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithKey(t, model, tea.KeyEnter)
@@ -911,6 +996,26 @@ func TestSingleURLExecutionPassesSelectedCustomFilename(t *testing.T) {
 	_ = cmd()
 	if received.Name != "custom.zip" {
 		t.Fatalf("runner plan.Name = %q, want custom.zip", received.Name)
+	}
+}
+
+func TestSingleURLExecutionPassesChecksum(t *testing.T) {
+	var received download.Plan
+	model := NewModelWithRunner(Options{NoColor: true}, capturePlanRunner(&received))
+	checksum := "sha256:" + strings.Repeat("a", 64)
+
+	model = singleURLChecksumPlanModel(t, model, "https://example.com/file.zip", "downloads", "custom.zip", checksum)
+	_, cmd := updateWithKeyAndCmd(t, model, tea.KeyEnter)
+	if cmd == nil {
+		t.Fatal("execution command is nil")
+	}
+
+	_ = cmd()
+	if received.Checksum == nil {
+		t.Fatal("runner plan.Checksum = nil")
+	}
+	if received.Checksum.String() != checksum {
+		t.Fatalf("runner plan.Checksum = %q, want %q", received.Checksum.String(), checksum)
 	}
 }
 
@@ -1137,6 +1242,7 @@ func TestExecutionKeepsSelectedCustomFilename(t *testing.T) {
 	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithString(t, model, "custom.zip")
+	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithKey(t, model, tea.KeyEnter)
 
 	model, cmd := updateWithKeyAndCmd(t, model, tea.KeyEnter)
@@ -1368,6 +1474,11 @@ func capturePlanRunner(received *download.Plan) ExecutionRunner {
 
 func singleURLPlanModel(t *testing.T, model Model, rawURL, output, name string) Model {
 	t.Helper()
+	return singleURLChecksumPlanModel(t, model, rawURL, output, name, "")
+}
+
+func singleURLChecksumPlanModel(t *testing.T, model Model, rawURL, output, name, checksum string) Model {
+	t.Helper()
 	model.selected = 0
 	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithString(t, model, rawURL)
@@ -1375,6 +1486,8 @@ func singleURLPlanModel(t *testing.T, model Model, rawURL, output, name string) 
 	model = updateWithString(t, model, output)
 	model = updateWithKey(t, model, tea.KeyEnter)
 	model = updateWithString(t, model, name)
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithString(t, model, checksum)
 	model = updateWithKey(t, model, tea.KeyEnter)
 	if model.screen != screenPlan {
 		t.Fatalf("screen = %v, want plan", model.screen)

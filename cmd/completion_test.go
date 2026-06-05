@@ -73,6 +73,14 @@ func TestConfigSetBoolValueCompletion(t *testing.T) {
 	assertSameStrings(t, got, []string{"true", "false"})
 }
 
+func TestChecksumFlagCompletion(t *testing.T) {
+	got, directive := checksumFlagCompletions(&cobra.Command{}, nil, "")
+	if directive != cobra.ShellCompDirectiveNoFileComp {
+		t.Fatalf("directive = %v, want NoFileComp", directive)
+	}
+	assertSameStrings(t, got, []string{"sha256:", "sha512:"})
+}
+
 func executeCompletionCommand(t *testing.T, args ...string) (string, error) {
 	t.Helper()
 

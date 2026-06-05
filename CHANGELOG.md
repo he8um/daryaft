@@ -36,6 +36,8 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
   means the current directory.
 - Optional TUI custom filename input for single URL downloads. Empty filename
   input means auto-detect, and `.txt` batch downloads keep per-item auto-detect.
+- Optional TUI checksum input for single URL downloads, using the existing
+  `sha256:<hex>` and `sha512:<hex>` checksum validation.
 - Context-aware downloader cancellation with cancelled events, preserved
   partial files and metadata, no retry after cancellation, and TUI `q`
   cancellation from the progress screen.

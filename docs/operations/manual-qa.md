@@ -212,7 +212,7 @@ Expected:
 - Batch and `--file` checksum commands exit non-zero.
 - Batch and `--file` errors include
   `--checksum is currently supported only for single URL downloads`.
-- No checksum behavior is exposed in the TUI yet.
+- TUI checksum behavior is covered separately in the TUI flow section.
 
 ## CLI Resume
 
@@ -292,6 +292,11 @@ go run .
 Test these flows:
 
 - Download from URL: `http://localhost:<port>/file.txt`.
+- Download from URL with empty checksum.
+- Download from URL with valid checksum:
+  `sha256:<file_sha256>`.
+- Download from URL with invalid checksum:
+  `sha256:not-hex`.
 - Download from `.txt` file: `/tmp/daryaft-qa-server/urls.txt`.
 - Inspect URL: `http://localhost:<port>/file.txt`.
 - Press `q` during an active download.
@@ -303,6 +308,11 @@ Expected:
 
 - No panic.
 - Screens navigate correctly.
+- Empty checksum reaches the plan with `Checksum: none`.
+- Valid checksum reaches the plan, then downloads successfully.
+- Invalid checksum stays on the checksum input screen and does not start a
+  download.
+- The `.txt` batch flow does not ask for checksum.
 - Inspect does not write files.
 - A cancelled download keeps the partial file.
 

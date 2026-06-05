@@ -12,14 +12,15 @@ const (
 	tuiDefaultResume  = true
 )
 
-func planFromURL(rawURL, output, name string, retries int, resume bool) (download.Plan, error) {
+func planFromURL(rawURL, output, name, checksum string, retries int, resume bool) (download.Plan, error) {
 	return download.BuildPlan(download.Options{
-		URLs:    []string{strings.TrimSpace(rawURL)},
-		Output:  output,
-		Name:    name,
-		DryRun:  true,
-		Retries: retries,
-		Resume:  resume,
+		URLs:     []string{strings.TrimSpace(rawURL)},
+		Output:   output,
+		Name:     name,
+		DryRun:   true,
+		Checksum: checksum,
+		Retries:  retries,
+		Resume:   resume,
 	})
 }
 

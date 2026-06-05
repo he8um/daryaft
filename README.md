@@ -124,8 +124,9 @@ With no arguments, Daryaft opens a Bubble Tea home screen with menu entries for
 URL input, `.txt` file input, Inspect URL, help, version information, and quit.
 Download actions inside the TUI validate input, then let you set an output
 directory before showing the dry-run plan. For single URL downloads, the TUI
-then asks for an optional custom filename; leaving it empty means auto-detect.
-The TUI does not offer one custom filename for `.txt` batch downloads, which
+then asks for an optional custom filename and optional checksum; leaving them
+empty means auto-detect filename and skip checksum verification. The TUI does
+not offer one custom filename or checksum for `.txt` batch downloads, which
 continue to auto-detect each item filename. Leaving the output directory empty
 means `.`, the current directory. TUI downloads can start real single URL or
 sequential batch downloads from that plan. Inspect URL accepts one HTTP/HTTPS
@@ -200,8 +201,10 @@ daryaft download https://example.com/file.zip --checksum sha512:<hex>
 
 Supported checksum algorithms are `sha256` and `sha512`. Dry-run validates and
 prints the checksum plan but does not compute a digest. `--checksum` is
-currently single URL only, is not exposed in the TUI, does not discover or
-download checksum files, and does not delete the completed file on mismatch.
+currently single URL only. The TUI also accepts an optional checksum in the
+single URL flow. Batch checksum remains unsupported, Daryaft does not discover
+or download checksum files, and it does not delete the completed file on
+mismatch.
 
 Use `--verbose` or `-v` with CLI downloads to print additional diagnostic lines
 prefixed with `Verbose:`. Verbose output includes the effective URL with user
@@ -231,7 +234,7 @@ target, stops remaining batch items, and exits non-zero.
 
 - Concurrent batch downloads
 - Rich progress bars
-- TUI checksum flow and signed checksum handling
+- Signed checksum handling
 - Queue persistence and history management
 - Structured automation output
 - Self-update support after the release model is ready

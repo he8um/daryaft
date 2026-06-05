@@ -106,6 +106,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m.submitFilenameInput()
 		}
 		return m.updateTextInput(msg)
+	case screenChecksumInput:
+		if key.String() == "esc" || key.String() == "backspace" && m.input.Value() == "" {
+			return m.back()
+		}
+		if key.String() == "enter" {
+			return m.submitChecksumInput()
+		}
+		return m.updateTextInput(msg)
 	case screenHelp, screenVersion:
 		if isBackKey(key) {
 			return m.back()
@@ -184,7 +192,7 @@ func (m Model) submitSourceInput() (Model, tea.Cmd) {
 
 	switch m.screen {
 	case screenURLInput:
-		plan, err = planFromURL(m.input.Value(), "", "", m.retries, m.resume)
+		plan, err = planFromURL(m.input.Value(), "", "", "", m.retries, m.resume)
 	case screenFileInput:
 		plan, err = planFromFile(m.input.Value(), "", m.retries, m.resume)
 	default:
@@ -201,6 +209,7 @@ func (m Model) submitSourceInput() (Model, tea.Cmd) {
 	m.sourceScreen = m.screen
 	m.outputDirInput = m.defaultOutputDir
 	m.filenameInput = ""
+	m.checksumInput = ""
 	m.screen = screenOutputInput
 	m.errorMessage = ""
 	m.input = m.newOutputInput(m.outputDirInput)
@@ -231,13 +240,29 @@ func (m Model) submitFilenameInput() (Model, tea.Cmd) {
 		return m, nil
 	}
 
-	plan, err := planFromURL(m.sourceInput, m.outputDirInput, filename, m.retries, m.resume)
+	plan, err := planFromURL(m.sourceInput, m.outputDirInput, filename, m.checksumInput, m.retries, m.resume)
 	if err != nil {
 		m.errorMessage = err.Error()
 		return m, nil
 	}
 
 	m.filenameInput = filename
+	m.plan = plan
+	m.screen = screenChecksumInput
+	m.errorMessage = ""
+	m.input = m.newChecksumInput(m.checksumInput)
+	return m, m.input.Focus()
+}
+
+func (m Model) submitChecksumInput() (Model, tea.Cmd) {
+	checksum := m.input.Value()
+	plan, err := planFromURL(m.sourceInput, m.outputDirInput, m.filenameInput, checksum, m.retries, m.resume)
+	if err != nil {
+		m.errorMessage = err.Error()
+		return m, nil
+	}
+
+	m.checksumInput = checksum
 	m.plan = plan
 	m.screen = screenPlan
 	m.errorMessage = ""

@@ -136,15 +136,17 @@ and Quit.
 Download actions inside the TUI now open input forms. Entering a URL or a path
 to a `.txt` URL file validates the input with the existing download planning
 logic, then opens an output directory input before showing the dry-run plan.
-For single URL downloads, the TUI then prompts `Enter custom filename`; leaving
-that field empty means auto-detect. The `.txt` batch flow skips custom filename
-input because one filename cannot safely apply to multiple downloads. Leaving
-the output directory empty means `.`, the current directory. Press enter on the
-plan screen to start a real download. The TUI supports one URL and sequential
-`.txt` batch execution using the same downloader event stream as the CLI, and
-both flows honor the selected output directory. The TUI resizes its panel and
-text inputs to the terminal window. Escape navigates back; Backspace edits a
-non-empty text input and navigates back only when the current input is empty.
+For single URL downloads, the TUI then prompts `Enter custom filename` and
+`Enter checksum`; leaving those fields empty means auto-detect filename and
+skip checksum verification. The `.txt` batch flow skips custom filename and
+checksum input because one value cannot safely apply to multiple downloads.
+Leaving the output directory empty means `.`, the current directory. Press
+enter on the plan screen to start a real download. The TUI supports one URL and
+sequential `.txt` batch execution using the same downloader event stream as the
+CLI, and both flows honor the selected output directory. The TUI resizes its
+panel and text inputs to the terminal window. Escape navigates back; Backspace
+edits a non-empty text input and navigates back only when the current input is
+empty.
 Press `q` while a TUI download is running to cancel it. Cancelled downloads
 keep the `.part` file and sidecar metadata for resume and are not retried. CLI
 `-o`/`--output` and `--name` behavior is unchanged. CLI Ctrl+C/SIGTERM also
@@ -278,9 +280,10 @@ checksum mismatch: expected <expected>, got <actual>
 ```
 
 The completed final file is not deleted on mismatch in this milestone. Dry-run
-validates and shows the checksum but does not compute it. `--checksum` is
-currently single URL only, is rejected for batch input and `--file`, and is not
-exposed in the TUI.
+validates and shows the checksum but does not compute it. Checksum verification
+is currently single URL only. The TUI supports optional checksum input for
+single URL downloads, while batch input and `--file` remain unsupported for
+checksums.
 
 With `--verbose` or `-v`, CLI downloads also print lines prefixed with
 `Verbose:` for the effective URL with user info, query, and fragment redacted,

@@ -38,6 +38,13 @@ func newFilenameInput(s styles, value string, width int) textinput.Model {
 	return input
 }
 
+func newChecksumInput(s styles, value string, width int) textinput.Model {
+	input := newTextInput(s, width)
+	input.Placeholder = "sha256:<hex>"
+	input.SetValue(value)
+	return input
+}
+
 func (m Model) newTextInput() textinput.Model {
 	return newTextInput(m.styles, m.inputWidth())
 }
@@ -48,6 +55,10 @@ func (m Model) newOutputInput(value string) textinput.Model {
 
 func (m Model) newFilenameInput(value string) textinput.Model {
 	return newFilenameInput(m.styles, value, m.inputWidth())
+}
+
+func (m Model) newChecksumInput(value string) textinput.Model {
+	return newChecksumInput(m.styles, value, m.inputWidth())
 }
 
 func (m Model) panelWidth() int {
@@ -90,6 +101,8 @@ func (m Model) inputPrompt() string {
 		return "Enter output directory"
 	case screenFilenameInput:
 		return "Enter custom filename"
+	case screenChecksumInput:
+		return "Enter checksum"
 	default:
 		return ""
 	}

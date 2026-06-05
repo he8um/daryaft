@@ -9,6 +9,7 @@ const (
 	screenInspectInput
 	screenOutputInput
 	screenFilenameInput
+	screenChecksumInput
 	screenPlan
 	screenExecution
 	screenInspectExecution
@@ -44,6 +45,8 @@ func (s screen) title() string {
 		return "Output directory"
 	case screenFilenameInput:
 		return "Custom filename"
+	case screenChecksumInput:
+		return "Checksum"
 	case screenPlan:
 		return "Download plan"
 	case screenExecution:

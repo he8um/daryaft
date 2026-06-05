@@ -69,9 +69,14 @@ func addDownloadFlags(command *cobra.Command, flags *downloadFlagValues) {
 	command.Flags().StringVar(&flags.name, "name", "", "filename for a single URL")
 	command.Flags().BoolVar(&flags.dryRun, "dry-run", false, "validate inputs and print the download plan")
 	command.Flags().StringVar(&flags.checksum, "checksum", "", "verify completed single URL download with <algorithm>:<hex>")
+	_ = command.RegisterFlagCompletionFunc("checksum", checksumFlagCompletions)
 	command.Flags().IntVar(&flags.retries, "retries", 3, "retry attempts after the initial attempt, 0-20")
 	command.Flags().BoolVar(&flags.resume, "resume", true, "resume interrupted partial downloads")
 	command.Flags().BoolVar(&flags.noResume, "no-resume", false, "disable resume and restart partial downloads")
+}
+
+func checksumFlagCompletions(cmd *cobra.Command, args []string, argToComplete string) ([]string, cobra.ShellCompDirective) {
+	return []string{"sha256:", "sha512:"}, cobra.ShellCompDirectiveNoFileComp
 }
 
 func runDownload(cmd *cobra.Command, args []string, flags downloadFlagValues) error {

@@ -16,7 +16,7 @@ func (m Model) View() string {
 	switch m.screen {
 	case screenHome:
 		content = m.homeView()
-	case screenURLInput, screenFileInput, screenInspectInput, screenOutputInput, screenFilenameInput:
+	case screenURLInput, screenFileInput, screenInspectInput, screenOutputInput, screenFilenameInput, screenChecksumInput:
 		content = m.inputView()
 	case screenPlan:
 		content = m.planView()
@@ -114,6 +114,10 @@ func (m Model) inputView() string {
 		builder.WriteString(m.styles.muted.Render("Leave empty to auto-detect"))
 		builder.WriteString("\n")
 	}
+	if m.screen == screenChecksumInput {
+		builder.WriteString(m.styles.muted.Render("Leave empty to skip. Format: sha256:<hex> or sha512:<hex>"))
+		builder.WriteString("\n")
+	}
 	builder.WriteString(m.input.View())
 	builder.WriteString("\n\n")
 	if m.errorMessage != "" {
@@ -156,6 +160,11 @@ func (m Model) planBody() string {
 	}
 	fmt.Fprintf(&builder, "Output: %s\n", displayValue(m.plan.Output, "."))
 	fmt.Fprintf(&builder, "Filename: %s\n", displayValue(m.plan.Name, "auto-detect"))
+	if m.plan.Checksum == nil {
+		fmt.Fprintln(&builder, "Checksum: none")
+	} else {
+		fmt.Fprintf(&builder, "Checksum: %s\n", m.plan.Checksum.String())
+	}
 	fmt.Fprintf(&builder, "Retries: %d\n", m.plan.Retries)
 	fmt.Fprintf(&builder, "Resume: %t", m.plan.Resume)
 	return builder.String()
@@ -169,6 +178,9 @@ func (m Model) inputHelp() string {
 		return "enter plan • esc previous • backspace empty previous • q quit"
 	}
 	if m.screen == screenFilenameInput {
+		return "enter next • esc previous • backspace empty previous • q quit"
+	}
+	if m.screen == screenChecksumInput {
 		return "enter plan • esc previous • backspace empty previous • q quit"
 	}
 	if m.screen == screenInspectInput {

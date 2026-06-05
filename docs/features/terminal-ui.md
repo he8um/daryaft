@@ -62,11 +62,17 @@ an output directory input screen. The default/current value is config
 `download_dir` when set, otherwise `.`. The single URL flow then opens an
 `Enter custom filename` input screen with `Leave empty to auto-detect` help
 text. Empty filename input means auto-detect; a custom filename is shown on the
-plan and passed to the existing download plan. The `.txt` batch flow skips this
-filename screen and keeps `Filename: auto-detect`. Pressing enter from the last
-input shows a dry-run plan with URL count, the first URLs, selected output
-directory, filename, retries, and resume settings. TUI retries and resume use
-config defaults unless the code path receives explicit values from the CLI.
+plan and passed to the existing download plan. The single URL flow then opens
+an `Enter checksum` input screen with `Leave empty to skip. Format:
+sha256:<hex> or sha512:<hex>` help text. Empty checksum input skips checksum
+verification; a valid checksum is shown on the plan and verified after a
+successful completed single URL download. Invalid checksum input stays on the
+checksum screen with an error. The `.txt` batch flow skips filename and
+checksum screens, keeps `Filename: auto-detect`, and keeps checksum unsupported
+for batch downloads. Pressing enter from the last input shows a dry-run plan
+with URL count, the first URLs, selected output directory, filename, checksum,
+retries, and resume settings. TUI retries and resume use config defaults unless
+the code path receives explicit values from the CLI.
 
 Inspect URL prompts `Enter URL to inspect`, validates HTTP/HTTPS input, then
 runs the shared `internal/inspect` probe through an injectable runner. It shows
@@ -114,8 +120,8 @@ download files.
 
 ## Planned
 
-Queue persistence, concurrent downloads, history, and rich progress bars are
-not implemented yet.
+Queue persistence, concurrent downloads, history, signed checksums, checksum
+file discovery, and rich progress bars are not implemented yet.
 
 ## Examples
 

@@ -404,8 +404,8 @@ prints `Checksum verified: sha256` or `Checksum verified: sha512` on match. On
 mismatch, it returns a non-zero error such as `checksum mismatch: expected
 <expected>, got <actual>` and leaves the completed final file in place.
 Dry-run validates and prints the checksum but does not compute it. `--checksum`
-is rejected for multiple URLs and for `--file` input, and it is not exposed in
-the TUI yet.
+is rejected for multiple URLs and for `--file` input. The TUI also supports
+optional checksum input for single URL downloads only.
 
 ## `daryaft download [url...] --dry-run`
 

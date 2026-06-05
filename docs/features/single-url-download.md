@@ -27,8 +27,8 @@ Current behavior:
   shows the remote file changed.
 - Truncates `.part` files and overwrites metadata when `--no-resume` is used.
 - Does not overwrite existing final files.
-- Verifies manual CLI checksums after successful completed downloads when
-  `--checksum sha256:<hex>` or `--checksum sha512:<hex>` is provided.
+- Verifies manual CLI or TUI checksums after successful completed downloads
+  when `sha256:<hex>` or `sha512:<hex>` is provided.
 - Emits structured downloader events for started, progress, resuming,
   restarting, retrying, completed, and failed states.
 - Uses simple line-based text progress in the CLI.
@@ -44,12 +44,12 @@ Completed: downloads/file.zip
 Checksum verified: sha256
 ```
 
-Checksum verification is CLI-only in this milestone. Daryaft validates the
-checksum format before starting the download. Dry-run shows the checksum but
-does not compute it. A mismatch returns a non-zero error like `checksum
-mismatch: expected <expected>, got <actual>` and leaves the completed final file
-in place. Daryaft does not auto-discover checksum files, download checksum
-files, verify signed checksums, or expose checksum entry in the TUI yet.
+Checksum verification is single URL only in this milestone. Daryaft validates
+the checksum format before starting the download. Dry-run and the TUI plan show
+the checksum but do not compute it. A mismatch returns a non-zero error like
+`checksum mismatch: expected <expected>, got <actual>` and leaves the completed
+final file in place. Daryaft does not auto-discover checksum files, download
+checksum files, verify signed checksums, or apply one checksum to batch input.
 
 Example resume output:
 
@@ -75,19 +75,20 @@ Filename selection:
 
 The CLI `--name` option remains the command-line custom filename path for a
 single URL. In the TUI, Download from URL follows URL input, output directory
-input, custom filename input, then the plan screen. Leaving the TUI filename
-field empty means auto-detect. A custom TUI filename is trimmed, lightly
-validated, shown on the plan screen, and passed to the same download plan used
-by execution.
+input, custom filename input, checksum input, then the plan screen. Leaving the
+TUI filename field empty means auto-detect, and leaving checksum empty skips
+checksum verification. A custom TUI filename is trimmed, lightly validated,
+shown on the plan screen, and passed to the same download plan used by
+execution.
 
 Filenames are sanitized so path traversal and directory separators cannot escape
 the output directory.
 
 ## Planned
 
-Rich progress bars, TUI checksum flow, signed checksum handling, and segmented
-downloads are planned. The Bubble Tea execution screen consumes the existing
-downloader event stream.
+Rich progress bars, signed checksum handling, and segmented downloads are
+planned. The Bubble Tea execution screen consumes the existing downloader event
+stream.
 
 Related docs:
 

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/he8um/daryaft/internal/checksum"
 	"github.com/he8um/daryaft/internal/download"
 	"github.com/he8um/daryaft/internal/downloader"
 
@@ -44,7 +45,19 @@ type executionFailure struct {
 type ExecutionRunner func(context.Context, download.Plan, downloader.BatchHandlers) downloader.BatchResult
 
 func defaultExecutionRunner(ctx context.Context, plan download.Plan, handlers downloader.BatchHandlers) downloader.BatchResult {
-	return downloader.New().DownloadBatchContext(ctx, plan, handlers)
+	result := downloader.New().DownloadBatchContext(ctx, plan, handlers)
+	return verifyCompletedChecksum(plan, result)
+}
+
+func verifyCompletedChecksum(plan download.Plan, result downloader.BatchResult) downloader.BatchResult {
+	if plan.Checksum == nil || len(plan.URLs) != 1 || len(result.Items) != 1 || result.Items[0].Err != nil {
+		return result
+	}
+
+	if _, err := checksum.VerifyFile(result.Items[0].Result.Path, *plan.Checksum); err != nil {
+		result.Items[0].Err = err
+	}
+	return result
 }
 
 func newExecutionState(plan download.Plan) executionState {

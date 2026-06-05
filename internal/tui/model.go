@@ -35,6 +35,7 @@ type Model struct {
 	retries           int
 	resume            bool
 	filenameInput     string
+	checksumInput     string
 	errorMessage      string
 	plan              download.Plan
 	executionRunner   ExecutionRunner
@@ -128,6 +129,7 @@ func (m Model) openInput(next screen) (Model, tea.Cmd) {
 	m.sourceScreen = next
 	m.outputDirInput = m.defaultOutputDir
 	m.filenameInput = ""
+	m.checksumInput = ""
 	m.errorMessage = ""
 	m.plan = download.Plan{}
 	m.execution = executionState{}
@@ -143,8 +145,8 @@ func (m Model) openInput(next screen) (Model, tea.Cmd) {
 func (m Model) back() (Model, tea.Cmd) {
 	if m.screen == screenPlan {
 		if m.sourceScreen == screenURLInput {
-			m.screen = screenFilenameInput
-			m.input = m.newFilenameInput(m.filenameInput)
+			m.screen = screenChecksumInput
+			m.input = m.newChecksumInput(m.checksumInput)
 		} else {
 			m.screen = screenOutputInput
 			m.input = m.newOutputInput(m.outputDirInput)
@@ -155,6 +157,12 @@ func (m Model) back() (Model, tea.Cmd) {
 	if m.screen == screenFilenameInput {
 		m.screen = screenOutputInput
 		m.input = m.newOutputInput(m.outputDirInput)
+		m.errorMessage = ""
+		return m, m.input.Focus()
+	}
+	if m.screen == screenChecksumInput {
+		m.screen = screenFilenameInput
+		m.input = m.newFilenameInput(m.filenameInput)
 		m.errorMessage = ""
 		return m, m.input.Focus()
 	}
@@ -193,5 +201,5 @@ func (m Model) home() Model {
 }
 
 func (m Model) isInputScreen() bool {
-	return m.screen == screenURLInput || m.screen == screenFileInput || m.screen == screenInspectInput || m.screen == screenOutputInput || m.screen == screenFilenameInput
+	return m.screen == screenURLInput || m.screen == screenFileInput || m.screen == screenInspectInput || m.screen == screenOutputInput || m.screen == screenFilenameInput || m.screen == screenChecksumInput
 }
