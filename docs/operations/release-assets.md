@@ -98,8 +98,11 @@ Expected output: `version: 1.0.0`, `built_by: goreleaser`.
 
 ## Notes
 
-- Package-manager publishing (Homebrew, deb, rpm, Arch) is post-1.0 work.
-  Do not enable the commented-out sections of `.goreleaser.yml` at v1.0.0.
+- Package-manager publishing (deb, rpm, Arch) is post-1.0 work.
+  Do not enable the commented-out nfpms sections of `.goreleaser.yml`.
+- A Homebrew tap (`he8um/homebrew-tap`) is the first planned package-manager
+  channel. The tap does not yet exist; the `brews:` block in `.goreleaser.yml`
+  remains commented out. See [Homebrew Tap](homebrew-tap.md) for the plan.
 - The CI workflow does not have a tag-triggered `goreleaser release` job.
   Asset upload at v1.0.0 is a manual step.
 - Automated release pipeline is post-1.0 work.

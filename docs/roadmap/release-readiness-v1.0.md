@@ -91,8 +91,10 @@ The following items are deferred to post-1.0. They are not blockers.
 
 Features and decisions deferred until after a stable v1.0.0 baseline:
 
-- **Install channel expansion**: Homebrew tap, apt/deb repo, rpm, Arch,
-  Scoop, or other package manager publishing.
+- **Install channel expansion**: Homebrew tap (`he8um/homebrew-tap`) is the
+  first planned channel — preparation underway, not yet live. Future channels:
+  apt/deb repo, rpm, Arch, Scoop. See
+  [Homebrew Tap](../operations/homebrew-tap.md).
 - **Windows support**: Add Windows CI and verify binary builds, or explicitly
   document the support tier.
 - **Self-update**: Decide on a self-update mechanism and implement it.

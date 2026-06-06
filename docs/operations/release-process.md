@@ -125,9 +125,12 @@ built_by: source
 
 `v1.0.0` is the stable baseline release and has been published. It includes
 binary assets for linux/amd64, linux/arm64, darwin/amd64, darwin/arm64, and
-`checksums.txt`. Package-manager publishing (Homebrew, deb, rpm, Arch) is
-post-1.0 work and is not yet available. See
-[v1.0.0 Release Assets](release-assets.md) for asset details.
+`checksums.txt`. A Homebrew tap (`he8um/homebrew-tap`) is the first planned
+package-manager channel after `v1.0.0` — the tap does not yet exist and the
+`brews:` block in `.goreleaser.yml` remains commented out. Other
+package-manager channels (deb, rpm, Arch) are later post-1.0 work. See
+[v1.0.0 Release Assets](release-assets.md) and [Homebrew Tap](homebrew-tap.md)
+for details.
 
 ## Post-1.0 Release Work
 

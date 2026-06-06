@@ -80,13 +80,27 @@ daryaft completion powershell
 supported install method at v1.0.0. Package manager channels (Homebrew, deb,
 rpm, Arch, Scoop) are post-1.0 work and are not yet available.
 
-## Planned Future Channels (Post-1.0)
+## Planned Homebrew Tap (Post-1.0)
 
-These are post-1.0 planned channels, not yet available:
+A Homebrew tap is the first planned package-manager install channel after
+`v1.0.0`. The tap repository (`he8um/homebrew-tap`) does not yet exist and the
+formula has not been published.
+
+When the tap is live, installation will work as:
 
 ```bash
+brew tap he8um/tap
 brew install he8um/tap/daryaft
+daryaft version
 ```
+
+See [Homebrew Tap](operations/homebrew-tap.md) for the tap plan, formula
+strategy, SHA-256 checksums, and the checklist before GoReleaser Homebrew
+publishing is enabled.
+
+## Other Planned Future Channels (Post-1.0)
+
+These are post-1.0 planned channels, not yet available:
 
 ```bash
 curl -fsSL https://xhesam.com/daryaft/install.sh | sh

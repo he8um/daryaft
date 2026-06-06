@@ -26,6 +26,7 @@ Package manager channels are post-1.0 work.
 - [Clean Install Validation: v0.6.0-rc.2](operations/clean-install-validation-v0.6.0-rc.2.md): clean-clone/build/artifact validation pass — PASS WITH NOTES.
 - [v1.0.0 Release Notes](operations/release-notes-v1.0.0.md): stable release notes with highlights, known limitations, install, and upgrade notes.
 - [v1.0.0 Release Assets](operations/release-assets.md): binary asset strategy, GoReleaser build process, and upload/validation commands.
+- [Homebrew Tap](operations/homebrew-tap.md): tap repository plan, formula strategy, v1.0.0 checksums, and GoReleaser Homebrew publishing checklist.
 - [v1.0.0 Go/No-Go Checklist](operations/v1.0.0-go-no-go.md): final pre-tag checklist — validated baseline, required checks, asset decision, go/no-go criteria.
 - [v1.0.0 Release Plan](operations/v1.0.0-release-plan.md): step-by-step release execution plan including version policy, tagging, artifact build, publish, and post-release verification.
 - [RC Release Notes: v0.6.0-rc.1](operations/release-notes-v0.6.0-rc.1.md): superseded RC notes (historical reference).
