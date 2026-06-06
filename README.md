@@ -20,7 +20,7 @@ configuration with environment overrides, `inspect` metadata preflight,
 arguments opens the interactive TUI home screen.
 
 v1.0.0 is a stable baseline, not a feature-complete release. Known limitations
-(Windows, concurrent downloads, proxy/auth, self-update, package managers,
+(Windows, concurrent downloads, proxy/auth, auto-update, package managers,
 batch checksum) are documented in the
 [v1.0.0 release notes](docs/operations/release-notes-v1.0.0.md). Post-1.0
 features are tracked in [post-1-feature-packs.md](docs/roadmap/post-1-feature-packs.md).
@@ -145,6 +145,9 @@ daryaft download https://example.com/file.zip --dry-run
 daryaft download https://example.com/file.zip
 daryaft download -f urls.txt --dry-run
 daryaft download -f urls.txt
+daryaft update --check
+daryaft update --check --json
+daryaft update --check --include-prerelease
 ```
 
 With no arguments, Daryaft opens a Bubble Tea home screen with menu entries for
@@ -266,7 +269,7 @@ target, stops remaining batch items, and exits non-zero.
 - Signed checksum handling
 - Queue persistence and history management
 - Structured automation output
-- Self-update support after the release model is ready
+- Auto-update (`daryaft update` without `--check`) after the release model is ready
 - Public packages from `v1.0.0` onward
 
 ## Documentation

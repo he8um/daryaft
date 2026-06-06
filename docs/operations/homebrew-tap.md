@@ -47,6 +47,24 @@ brew update
 brew upgrade daryaft
 ```
 
+## Checking for Updates
+
+Use `daryaft update --check` to verify whether a newer release is available
+before upgrading:
+
+```bash
+daryaft update --check
+```
+
+When installed via Homebrew, the output shows:
+
+```text
+Install channel:  homebrew
+Update command:   brew update && brew upgrade daryaft
+```
+
+`daryaft update --check` is read-only and does not install anything.
+
 ## Verify
 
 After install or upgrade:

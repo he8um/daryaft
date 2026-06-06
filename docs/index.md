@@ -40,6 +40,7 @@ Other package manager channels are post-1.0 work.
 - [Release Readiness: v1.0](roadmap/release-readiness-v1.0.md): v1.0.0 criteria (stable baseline), required steps, and post-1.0 roadmap.
 - [Post-1.0 Feature Packs](roadmap/post-1-feature-packs.md): features deferred until after stable baseline.
 - [Versioning Policy](roadmap/versioning-policy.md): release version rules.
+- [Self-Update Roadmap](roadmap/self-update.md): `update --check` current state and auto-update plan.
 
 ## Related Existing Docs
 

@@ -122,6 +122,24 @@ tar -xzf daryaft_darwin_arm64.tar.gz
 Available archives: `daryaft_linux_amd64.tar.gz`, `daryaft_linux_arm64.tar.gz`,
 `daryaft_darwin_amd64.tar.gz`, `daryaft_darwin_arm64.tar.gz`.
 
+## Checking for Updates
+
+Use `daryaft update --check` to see whether a newer release is available:
+
+```bash
+daryaft update --check
+daryaft update --check --json
+```
+
+This is read-only: it queries the GitHub Releases API but does not download,
+install, or replace the current binary.
+
+For Homebrew installs, the suggested update command is
+`brew update && brew upgrade daryaft`. For binary archive installs, the output
+points to the GitHub Releases page.
+
+Auto-update (`daryaft update` without `--check`) is not yet implemented.
+
 ## Other Planned Future Channels (Post-1.0)
 
 These channels are not yet available:

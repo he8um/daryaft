@@ -375,17 +375,36 @@ item can resume its own `.part` file during retries without affecting the next
 item. If the final target file appears between attempts, Daryaft fails that item
 instead of overwriting it.
 
-## Planned Examples
-
-These examples are roadmap examples and are not implemented yet:
-
 ```bash
-daryaft update
+daryaft update --check
+daryaft update --check --json
+daryaft update --check --include-prerelease
 ```
 
+Checks whether a newer Daryaft release is available. Read-only: it never
+downloads, installs, or replaces the current binary.
+
+`daryaft update --check` queries the GitHub Releases API, compares the current
+version to the latest stable release, and reports the status with install-channel
+aware guidance. Exits `0` on success regardless of whether an update is
+available. Exits non-zero only on network or API failure.
+
+`daryaft update` without `--check` is not implemented. It exits non-zero and
+directs the user to `daryaft update --check`.
+
+For Homebrew installs, the suggested update command is
+`brew update && brew upgrade daryaft`. For other installs, the output points
+to the GitHub Releases URL.
+
+Auto-update is not yet implemented. See [Self-Update Roadmap](roadmap/self-update.md).
+
+## Planned Examples
+
+These examples are roadmap items and are not yet implemented:
+
 Concurrency, queue persistence, rich progress bars, segmented downloads, and
-self-update are planned. CLI download commands remain fully supported alongside
-the TUI.
+full self-update are planned. CLI download commands remain fully supported
+alongside the TUI.
 
 Related docs:
 

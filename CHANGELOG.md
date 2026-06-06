@@ -13,6 +13,12 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
   `brew tap he8um/tap && brew install daryaft`. Formula is manually maintained
   at `v1.0.0`; GoReleaser `brews:` publishing remains disabled. See
   `docs/operations/homebrew-tap.md` for details.
+- `daryaft update --check`: read-only update check against the GitHub Releases
+  API. Reports current version, latest stable release, update availability, and
+  install-channel-aware upgrade instructions. `--json` for machine-readable
+  output. `--include-prerelease` to include pre-release versions.
+  `daryaft update` without `--check` exits non-zero (auto-update not yet
+  implemented). See `docs/roadmap/self-update.md`.
 
 ## [1.0.0] - 2026-06-06
 
