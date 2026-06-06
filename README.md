@@ -33,8 +33,15 @@ features are tracked in [post-1-feature-packs.md](docs/roadmap/post-1-feature-pa
 
 ## Install
 
-Download binary archives for your platform from the
-[v1.0.0 GitHub release](https://github.com/he8um/daryaft/releases/tag/v1.0.0):
+**Homebrew** (macOS, first live package-manager channel):
+
+```bash
+brew tap he8um/tap
+brew install daryaft
+daryaft version
+```
+
+**GitHub binary archives** (all supported platforms):
 
 ```bash
 # Example: macOS Apple Silicon
@@ -48,9 +55,9 @@ tar -xzf daryaft_darwin_arm64.tar.gz
 Available archives: `daryaft_linux_amd64.tar.gz`, `daryaft_linux_arm64.tar.gz`,
 `daryaft_darwin_amd64.tar.gz`, `daryaft_darwin_arm64.tar.gz`.
 
-A Homebrew tap (`he8um/homebrew-tap`) is being prepared as the first
-package-manager channel — not yet live. Other package manager channels (deb,
-rpm, Arch) are post-1.0 work. Source builds on `main` report `1.1.0-dev`
+The Homebrew formula is manually maintained for now. GoReleaser Homebrew
+publishing remains disabled. Other package manager channels (deb, rpm, Arch)
+are later post-1.0 work. Source builds on `main` report `1.1.0-dev`
 (post-release development default); release builds inject the exact tag version
 via GoReleaser ldflags.
 
@@ -280,7 +287,7 @@ Start here:
 - [v0.6.0-rc.2 Release Status](docs/operations/release-status-v0.6.0-rc.2.md)
 - [v1.0.0 Release Notes](docs/operations/release-notes-v1.0.0.md)
 - [v1.0.0 Release Assets](docs/operations/release-assets.md)
-- [Homebrew Tap Plan](docs/operations/homebrew-tap.md)
+- [Homebrew Tap](docs/operations/homebrew-tap.md)
 - [v1.0.0 Go/No-Go Checklist](docs/operations/v1.0.0-go-no-go.md)
 - [v1.0.0 Release Plan](docs/operations/v1.0.0-release-plan.md)
 - [RC Release Notes: v0.6.0-rc.1](docs/operations/release-notes-v0.6.0-rc.1.md) (superseded)

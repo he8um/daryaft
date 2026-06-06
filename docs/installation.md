@@ -1,8 +1,9 @@
 # Installation
 
-Daryaft `v1.0.0` is the first stable release. Download binary archives from
-the [GitHub releases page](https://github.com/he8um/daryaft/releases/tag/v1.0.0).
-Package manager channels (Homebrew, deb, rpm, Arch) are post-1.0 work.
+Daryaft `v1.0.0` is the first stable release. Install via Homebrew or
+download binary archives directly from the
+[GitHub releases page](https://github.com/he8um/daryaft/releases/tag/v1.0.0).
+Other package manager channels (deb, rpm, Arch) are post-1.0 work.
 
 ## Current Local Development
 
@@ -74,37 +75,62 @@ For PowerShell:
 daryaft completion powershell
 ```
 
-## Public Install Policy
+## Homebrew
 
-`v1.0.0` is the first stable public release. GitHub release archives are the
-supported install method at v1.0.0. Package manager channels (Homebrew, deb,
-rpm, Arch, Scoop) are post-1.0 work and are not yet available.
-
-## Planned Homebrew Tap (Post-1.0)
-
-A Homebrew tap is the first planned package-manager install channel after
-`v1.0.0`. The tap repository (`he8um/homebrew-tap`) does not yet exist and the
-formula has not been published.
-
-When the tap is live, installation will work as:
+The `he8um/tap` Homebrew tap is the first live package-manager install channel
+for Daryaft.
 
 ```bash
 brew tap he8um/tap
-brew install he8um/tap/daryaft
+brew install daryaft
 daryaft version
+daryaft doctor
 ```
 
-See [Homebrew Tap](operations/homebrew-tap.md) for the tap plan, formula
-strategy, SHA-256 checksums, and the checklist before GoReleaser Homebrew
-publishing is enabled.
+Alternatively, install with the fully-qualified tap name:
+
+```bash
+brew install he8um/tap/daryaft
+```
+
+A Homebrew trust warning may appear when tapping because this is a user-owned
+custom tap. This is expected for third-party taps.
+
+To upgrade after a new release:
+
+```bash
+brew update
+brew upgrade daryaft
+```
+
+See [Homebrew Tap](operations/homebrew-tap.md) for formula details, SHA-256
+checksums, maintenance instructions, and the GoReleaser publishing checklist.
+
+## GitHub Binary Archives
+
+Download binary archives directly for any supported platform:
+
+```bash
+# Example: macOS Apple Silicon
+curl -L -O https://github.com/he8um/daryaft/releases/download/v1.0.0/daryaft_darwin_arm64.tar.gz
+curl -L -O https://github.com/he8um/daryaft/releases/download/v1.0.0/checksums.txt
+shasum -a 256 --check checksums.txt
+tar -xzf daryaft_darwin_arm64.tar.gz
+./daryaft version
+```
+
+Available archives: `daryaft_linux_amd64.tar.gz`, `daryaft_linux_arm64.tar.gz`,
+`daryaft_darwin_amd64.tar.gz`, `daryaft_darwin_arm64.tar.gz`.
 
 ## Other Planned Future Channels (Post-1.0)
 
-These are post-1.0 planned channels, not yet available:
+These channels are not yet available:
 
 ```bash
 curl -fsSL https://xhesam.com/daryaft/install.sh | sh
 ```
+
+Other package manager channels (deb, rpm, Arch, Scoop) are later post-1.0 work.
 
 Related docs:
 

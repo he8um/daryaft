@@ -27,8 +27,11 @@ Each archive contains: `daryaft` binary, `CHANGELOG.md`, `LICENSE`, `README.md`.
 ## What Is Not Included at v1.0.0
 
 - Windows binaries — Windows is not officially supported at v1.0.0.
-- Package manager publishing (Homebrew tap, deb, rpm, Arch) — post-1.0 work.
-  The nfpms and brews blocks in `.goreleaser.yml` remain commented out.
+- GoReleaser Homebrew publishing — the `brews:` block in `.goreleaser.yml`
+  remains commented out. The Homebrew formula in `he8um/homebrew-tap` is
+  manually maintained. See [Homebrew Tap](homebrew-tap.md).
+- deb, rpm, Arch package publishing — post-1.0 work.
+  The nfpms block in `.goreleaser.yml` remains commented out.
 - Signed checksums — not implemented at v1.0.0.
 - Automatic asset upload pipeline — the release workflow does not have a
   tag-triggered release job; asset upload is a manual step at v1.0.0.
@@ -44,10 +47,9 @@ The current configuration already:
 - Injects version metadata via ldflags.
 - Keeps package-manager publishing commented out with a clear note.
 
-The `snapshot.version_template` (`0.6.0-dev-SNAPSHOT-{{ .ShortCommit }}`) is
-used only for local snapshot builds (`make release-check`). A non-snapshot
-`goreleaser release` on the `v1.0.0` tag will produce binaries reporting
-version `1.0.0`.
+The `snapshot.version_template` (`1.1.0-dev-SNAPSHOT-{{ .ShortCommit }}`) is
+used only for local snapshot builds (`make release-check`). A real
+`goreleaser release` on a tag injects the exact tag version.
 
 ## Build Process
 
@@ -100,9 +102,10 @@ Expected output: `version: 1.0.0`, `built_by: goreleaser`.
 
 - Package-manager publishing (deb, rpm, Arch) is post-1.0 work.
   Do not enable the commented-out nfpms sections of `.goreleaser.yml`.
-- A Homebrew tap (`he8um/homebrew-tap`) is the first planned package-manager
-  channel. The tap does not yet exist; the `brews:` block in `.goreleaser.yml`
-  remains commented out. See [Homebrew Tap](homebrew-tap.md) for the plan.
+- `he8um/homebrew-tap` is live. The formula is manually maintained; GoReleaser
+  `brews:` publishing remains disabled. When publishing a new release, update
+  `Formula/daryaft.rb` in `he8um/homebrew-tap` with the new version and
+  checksums. See [Homebrew Tap](homebrew-tap.md) for details.
 - The CI workflow does not have a tag-triggered `goreleaser release` job.
   Asset upload at v1.0.0 is a manual step.
 - Automated release pipeline is post-1.0 work.

@@ -125,19 +125,31 @@ built_by: source
 
 `v1.0.0` is the stable baseline release and has been published. It includes
 binary assets for linux/amd64, linux/arm64, darwin/amd64, darwin/arm64, and
-`checksums.txt`. A Homebrew tap (`he8um/homebrew-tap`) is the first planned
-package-manager channel after `v1.0.0` — the tap does not yet exist and the
-`brews:` block in `.goreleaser.yml` remains commented out. Other
-package-manager channels (deb, rpm, Arch) are later post-1.0 work. See
-[v1.0.0 Release Assets](release-assets.md) and [Homebrew Tap](homebrew-tap.md)
-for details.
+`checksums.txt`. `he8um/homebrew-tap` is live and is the first package-manager
+install channel — the formula is manually maintained and GoReleaser `brews:`
+publishing remains disabled. Other package-manager channels (deb, rpm, Arch)
+are later post-1.0 work. See [v1.0.0 Release Assets](release-assets.md) and
+[Homebrew Tap](homebrew-tap.md) for details.
+
+### Future Release Process (Post-1.0)
+
+When publishing a new Daryaft release, the Homebrew formula must be updated
+manually until GoReleaser tap publishing is enabled:
+
+1. Build and publish the new GitHub release assets.
+2. Download the new `checksums.txt` from the GitHub release.
+3. Update `Formula/daryaft.rb` in `he8um/homebrew-tap` with the new `version`,
+   `url`, and `sha256` values.
+4. Push the updated formula to `he8um/homebrew-tap`.
+5. Verify with `brew update && brew upgrade daryaft && daryaft version`.
 
 ## Post-1.0 Release Work
 
 After a stable v1.0.0 baseline is shipped, the following release process work
 can be addressed:
 
-- Package manager publishing (Homebrew tap, apt/deb, rpm, Arch, Scoop).
+- Enable GoReleaser `brews:` publishing to automate Homebrew formula updates.
+- Package manager publishing for apt/deb, rpm, Arch, Scoop.
 - Automated binary asset upload in the release pipeline.
 - Windows CI and verified binary builds for Windows.
 - Self-update mechanism.

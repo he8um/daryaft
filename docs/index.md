@@ -3,14 +3,15 @@
 Daryaft is a modern terminal downloader written in Go. **`v1.0.0` is the first
 stable release.** The source development version is now `1.1.0-dev`.
 
-Download binary archives from the
+Install via Homebrew (`brew tap he8um/tap && brew install daryaft`) or download
+binary archives from the
 [GitHub releases page](https://github.com/he8um/daryaft/releases/tag/v1.0.0).
-Package manager channels are post-1.0 work.
+Other package manager channels are post-1.0 work.
 
 ## Core Docs
 
 - [Quick Start](quick-start.md): run the local development CLI.
-- [Installation](installation.md): current local-only policy and future stable install plan.
+- [Installation](installation.md): Homebrew tap install, GitHub binary archives, and source build instructions.
 - [Usage](usage.md): implemented commands and planned examples.
 - [Command Reference](command-reference.md): current command behavior.
 - [Configuration](configuration.md): default metadata and planned config locations.
@@ -26,7 +27,7 @@ Package manager channels are post-1.0 work.
 - [Clean Install Validation: v0.6.0-rc.2](operations/clean-install-validation-v0.6.0-rc.2.md): clean-clone/build/artifact validation pass — PASS WITH NOTES.
 - [v1.0.0 Release Notes](operations/release-notes-v1.0.0.md): stable release notes with highlights, known limitations, install, and upgrade notes.
 - [v1.0.0 Release Assets](operations/release-assets.md): binary asset strategy, GoReleaser build process, and upload/validation commands.
-- [Homebrew Tap](operations/homebrew-tap.md): tap repository plan, formula strategy, v1.0.0 checksums, and GoReleaser Homebrew publishing checklist.
+- [Homebrew Tap](operations/homebrew-tap.md): live tap at `he8um/homebrew-tap`, install instructions, formula details, maintenance guide, and GoReleaser publishing checklist.
 - [v1.0.0 Go/No-Go Checklist](operations/v1.0.0-go-no-go.md): final pre-tag checklist — validated baseline, required checks, asset decision, go/no-go criteria.
 - [v1.0.0 Release Plan](operations/v1.0.0-release-plan.md): step-by-step release execution plan including version policy, tagging, artifact build, publish, and post-release verification.
 - [RC Release Notes: v0.6.0-rc.1](operations/release-notes-v0.6.0-rc.1.md): superseded RC notes (historical reference).

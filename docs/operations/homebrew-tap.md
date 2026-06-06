@@ -1,21 +1,66 @@
 # Homebrew Tap
 
-Daryaft `v1.0.0` is the first stable release. A Homebrew tap is the first
-planned package-manager install channel after `v1.0.0`.
-
-This document covers the tap repository plan, formula strategy, validation
-commands, and the steps required before GoReleaser Homebrew publishing can be
-enabled.
+Daryaft is available via a Homebrew tap. The `he8um/tap` tap is the first live
+package-manager install channel for Daryaft.
 
 ## Status
 
 - `v1.0.0` is the current stable release. GitHub binary assets are available.
-- The `he8um/homebrew-tap` repository **does not yet exist**.
+- `he8um/homebrew-tap` exists at https://github.com/he8um/homebrew-tap.
+- `Formula/daryaft.rb` is live in the tap repository.
+- Homebrew tap installation has been validated:
+  - `brew tap he8um/tap` succeeded.
+  - `brew install daryaft` (or `brew install he8um/tap/daryaft`) succeeded.
+  - `daryaft version` reports `1.0.0`.
+  - `daryaft doctor` runs successfully.
 - GoReleaser Homebrew publishing is **not yet enabled** — the `brews:` block in
   `.goreleaser.yml` remains commented out.
-- A formula draft is available for local review at
-  [docs/operations/homebrew-formula-draft/daryaft.rb](homebrew-formula-draft/daryaft.rb).
-  It is a reference file only — not installed or published.
+- The formula is manually maintained. Future releases require updating
+  `Formula/daryaft.rb` in `he8um/homebrew-tap` with the new version and
+  checksums unless GoReleaser tap publishing is enabled later.
+
+## Install
+
+```bash
+brew tap he8um/tap
+brew install daryaft
+daryaft version
+daryaft doctor
+```
+
+Alternatively, install with the fully-qualified tap name:
+
+```bash
+brew install he8um/tap/daryaft
+```
+
+A Homebrew trust warning may appear when tapping because this is a
+user-owned custom tap, not a Homebrew core formula. This is expected behavior
+for third-party taps.
+
+## Upgrade
+
+After a new release is published and the formula is updated in `he8um/homebrew-tap`:
+
+```bash
+brew update
+brew upgrade daryaft
+```
+
+## Verify
+
+After install or upgrade:
+
+```bash
+daryaft version
+daryaft doctor
+```
+
+To run the Homebrew formula test:
+
+```bash
+HOMEBREW_NO_AUTO_UPDATE=1 brew test --verbose he8um/tap/daryaft
+```
 
 ## Tap Repository
 
@@ -23,31 +68,21 @@ enabled.
 |-------|-------|
 | Tap owner | `he8um` |
 | Tap repository | `he8um/homebrew-tap` |
+| Repository URL | https://github.com/he8um/homebrew-tap |
 | Formula path | `Formula/daryaft.rb` |
 | `brew tap` command | `brew tap he8um/tap` |
-| `brew install` command | `brew install he8um/tap/daryaft` |
+| `brew install` command | `brew install daryaft` |
+| Explicit install | `brew install he8um/tap/daryaft` |
 
-The tap repository must be created before any of the above commands work.
+## Formula Details
 
-### Creating the Tap Repository
-
-When ready, the maintainer can create the tap with:
-
-```bash
-gh repo create he8um/homebrew-tap --public \
-  --description "Homebrew tap for Daryaft" \
-  --clone=false
-```
-
-Do not create the tap repository automatically. The formula must be validated
-locally before it is pushed.
-
-## Formula Strategy
-
-- Formula installs from pre-built GitHub release archives, not from source.
-- Formula selects the archive by architecture at install time.
-- Formula pins the exact version and SHA-256 checksums.
-- Formula does not use `latest` or floating URLs.
+| Field | Value |
+|-------|-------|
+| Current formula version | `1.0.0` |
+| Formula source | GitHub v1.0.0 release assets |
+| macOS Apple Silicon | `daryaft_darwin_arm64.tar.gz` |
+| macOS Intel | `daryaft_darwin_amd64.tar.gz` |
+| Install method | Pre-built binary archive; does not build from source |
 
 ### v1.0.0 Asset SHA-256 Checksums
 
@@ -59,72 +94,40 @@ Extracted from `checksums.txt` attached to the
 | `daryaft_darwin_arm64.tar.gz` | `5874045f452016dd2ccb61e347ab584deb50678b6d64f60d430bdf10fdcb1be3` |
 | `daryaft_darwin_amd64.tar.gz` | `711f6e5cffe77c2d87534119443c1837946e59d02d318b0fc4d9f8c52faa3eca` |
 
-### Formula Draft
+## Formula Maintenance
 
-See [docs/operations/homebrew-formula-draft/daryaft.rb](homebrew-formula-draft/daryaft.rb).
+The formula is manually maintained for now. When a new Daryaft release is
+published:
 
-The draft formula selects URL and SHA-256 by CPU architecture using the
-standard Homebrew `Hardware::CPU.arm?` guard, installs `daryaft` into `bin`,
-and tests with `system "#{bin}/daryaft", "version"`.
+1. Build and publish the new GitHub release assets.
+2. Download the new `checksums.txt` from the GitHub release.
+3. Update `Formula/daryaft.rb` in `he8um/homebrew-tap`:
+   - Bump `version`.
+   - Update both `url` entries to the new tag.
+   - Update both `sha256` entries from the new `checksums.txt`.
+4. Push the updated formula to `he8um/homebrew-tap`.
+5. Verify with `brew update && brew upgrade daryaft && daryaft version`.
+
+A formula draft reference is kept in this repository at
+[docs/operations/homebrew-formula-draft/daryaft.rb](homebrew-formula-draft/daryaft.rb)
+for review, but the canonical formula lives in `he8um/homebrew-tap`.
 
 ## Linuxbrew
 
 Linux archive assets (`daryaft_linux_amd64.tar.gz`,
-`daryaft_linux_arm64.tar.gz`) are shipped with the `v1.0.0` release. Adding
-Linuxbrew support to the formula requires an `on_linux` block with the
-corresponding URL and SHA-256 values.
-
-Linuxbrew coverage is planned for a future formula update after the macOS
-formula is validated. It is not required for the initial tap launch.
+`daryaft_linux_arm64.tar.gz`) are available in the v1.0.0 release. Adding
+Linuxbrew support requires an `on_linux` block in the formula with the
+corresponding URL and SHA-256 values. Linuxbrew support is future work.
 
 ## Security Requirements
 
-- Formula must pin exact version and SHA-256 checksums. Never use `latest`.
-- SHA-256 values must be taken from the `checksums.txt` attached to the
-  official GitHub release, not computed from a re-downloaded archive.
-- Formula must reference official GitHub release archives from
+- Formula pins exact version and SHA-256 checksums. It does not use `latest`.
+- SHA-256 values are taken from the `checksums.txt` attached to the official
+  GitHub release.
+- Formula references official GitHub release archives from
   `https://github.com/he8um/daryaft/releases/download/`.
 - On each new release, update `version`, both `url` entries, and both `sha256`
-  entries.
-
-## Validation Commands
-
-After placing the formula at `Formula/daryaft.rb` in the tap repository, run:
-
-```bash
-# Syntax check
-ruby -c Formula/daryaft.rb
-
-# Homebrew audit (requires local Homebrew)
-brew audit --strict --new-formula Formula/daryaft.rb
-
-# Install from local formula file
-brew install --verbose Formula/daryaft.rb
-
-# Verify binary
-daryaft version
-daryaft doctor
-
-# Run formula test
-brew test daryaft
-```
-
-For end-to-end tap validation after the tap repository is live:
-
-```bash
-brew tap he8um/tap
-brew install he8um/tap/daryaft
-daryaft version
-daryaft doctor
-brew test he8um/tap/daryaft
-```
-
-For upgrades after future releases:
-
-```bash
-brew update
-brew upgrade daryaft
-```
+  entries in the formula.
 
 ## GoReleaser Homebrew Publishing
 
@@ -133,10 +136,9 @@ GoReleaser can automate formula updates via a `brews:` block in
 
 ### Prerequisite Checklist Before Enabling
 
-- [ ] `he8um/homebrew-tap` repository exists and is public.
-- [ ] `Formula/daryaft.rb` is in the tap repository and manually validated.
-- [ ] `brew install`, `daryaft version`, `daryaft doctor`, and `brew test`
-      all pass locally.
+- [x] `he8um/homebrew-tap` repository exists and is public.
+- [x] `Formula/daryaft.rb` is in the tap repository and manually validated.
+- [x] `brew install`, `daryaft version`, and `daryaft doctor` all pass.
 - [ ] A `HOMEBREW_TAP_GITHUB_TOKEN` (or equivalent) secret is configured in
       the `he8um/daryaft` repository CI secrets — with write access to
       `he8um/homebrew-tap` only.
@@ -161,18 +163,6 @@ The commented-out `brews:` block in `.goreleaser.yml` is the placeholder:
 ```
 
 Do not uncomment this block until all prerequisite checks above are satisfied.
-
-## Post-1.0 Homebrew Roadmap
-
-1. Create `he8um/homebrew-tap`.
-2. Add `Formula/daryaft.rb` using the draft from this repository.
-3. Validate formula locally with `ruby -c`, `brew audit`, `brew install`,
-   `daryaft version`, `daryaft doctor`, `brew test`.
-4. Push formula to tap manually for the first install.
-5. Set up `HOMEBREW_TAP_GITHUB_TOKEN` CI secret.
-6. Enable GoReleaser `brews:` block after manual validation.
-7. Add Linuxbrew `on_linux` block to formula.
-8. Document upgrade path in `docs/installation.md`.
 
 ## References
 

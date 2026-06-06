@@ -9,9 +9,10 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 ### Added
 
 - Post-1.0 development begins. Source default version advanced to `1.1.0-dev`.
-- Homebrew tap preparation: `he8um/homebrew-tap` repository plan, `v1.0.0`
-  formula draft with SHA-256 checksums, validation commands, and GoReleaser
-  Homebrew publishing checklist documented in `docs/operations/homebrew-tap.md`.
+- Homebrew tap is live at `he8um/homebrew-tap`. Install with
+  `brew tap he8um/tap && brew install daryaft`. Formula is manually maintained
+  at `v1.0.0`; GoReleaser `brews:` publishing remains disabled. See
+  `docs/operations/homebrew-tap.md` for details.
 
 ## [1.0.0] - 2026-06-06
 

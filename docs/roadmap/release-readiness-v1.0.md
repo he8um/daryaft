@@ -69,14 +69,17 @@ v1.0.0 release notes and README, but do not block the release:
   checksum semantics, checksum file auto-discovery, and signed checksum
   verification are not implemented.
 - Queue and history are not implemented.
-- Package manager publishing is not enabled at v1.0.0.
+- GoReleaser package-manager publishing is not enabled at v1.0.0. A Homebrew
+  tap (`he8um/homebrew-tap`) is live post-v1.0.0 with a manually maintained
+  formula. deb, rpm, Arch publishing is not yet available.
 
 ## Explicitly NOT Required Before v1.0.0
 
 The following items are deferred to post-1.0. They are not blockers.
 
 - Windows official support and CI.
-- Package manager publishing (Homebrew, deb, rpm, Arch).
+- GoReleaser package-manager publishing (Homebrew `brews:`, deb, rpm, Arch).
+  Note: Homebrew tap is live post-v1.0.0, but via manually maintained formula.
 - Self-update.
 - Proxy, custom headers, and auth.
 - Concurrent downloads.
@@ -91,9 +94,10 @@ The following items are deferred to post-1.0. They are not blockers.
 
 Features and decisions deferred until after a stable v1.0.0 baseline:
 
-- **Install channel expansion**: Homebrew tap (`he8um/homebrew-tap`) is the
-  first planned channel — preparation underway, not yet live. Future channels:
-  apt/deb repo, rpm, Arch, Scoop. See
+- **Install channel expansion**: `he8um/homebrew-tap` is now live —
+  `brew tap he8um/tap && brew install daryaft` works. Formula is manually
+  maintained; GoReleaser `brews:` publishing is not yet enabled. Future
+  channels: apt/deb repo, rpm, Arch, Scoop. See
   [Homebrew Tap](../operations/homebrew-tap.md).
 - **Windows support**: Add Windows CI and verify binary builds, or explicitly
   document the support tier.
