@@ -43,3 +43,4 @@ logs/
 /scratch/
 *.private.md
 *.local.md
+.claude/settings.local.json
