@@ -2,11 +2,8 @@
 
 Daryaft uses milestone-oriented semantic versioning.
 
-The current development metadata version is `0.6.0-dev`. It represents the
-stabilized pre-release foundation after downloader/config correctness work,
-CLI/TUI behavior alignment, expanded HTTP coverage, safe CLI signal
-cancellation, and local/CI quality gates. It is not a public stable release,
-and breaking changes may still happen before `v1.0.0`.
+The latest stable release is `v1.0.0`. The current source development metadata
+version is `1.1.0-dev`, representing active post-1.0 development on `main`.
 
 ## Rules
 
@@ -18,17 +15,16 @@ and breaking changes may still happen before `v1.0.0`.
 
 ## Public Install Rule
 
-Before `v1.0.0`, do not implement public install channels as active stable
-channels. The repository can contain future packaging configuration, but
-user-facing install instructions must clearly state that public install is
-available from `v1.0.0` onward.
+`v1.0.0` is the first public stable release. GitHub release archives are the
+supported install method. Package manager channels (Homebrew, deb, rpm, Arch)
+are post-1.0 work.
 
 ## Build Metadata
 
 Source builds default to:
 
 ```text
-version: 0.6.0-dev
+version: 1.1.0-dev
 commit: local
 date: unknown
 built_by: source
@@ -47,11 +43,10 @@ skipped:
 goreleaser release --snapshot --clean --skip=publish
 ```
 
-This check is local release-readiness validation only. It must not be treated as
-a public release, must not create tags, and must not publish package-manager
-artifacts before `v1.0.0`. Snapshot versions are named
-`0.6.0-dev-SNAPSHOT-<short-commit>` so they align with the current development
-metadata instead of deriving from older local tags. Snapshot output is local and
+This check is local validation only. It does not publish a release, create tags,
+or enable package-manager publishing. Snapshot versions are named
+`1.1.0-dev-SNAPSHOT-<short-commit>` so they align with the current development
+metadata instead of deriving from release tags. Snapshot output is local and
 ignored by Git.
 
 Related docs:

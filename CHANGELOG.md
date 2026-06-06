@@ -4,6 +4,12 @@ All notable changes to Daryaft will be documented in this file.
 
 Daryaft uses the project versioning policy described in `docs/roadmap/versioning-policy.md`.
 
+## [Unreleased]
+
+### Added
+
+- Post-1.0 development begins. Source default version advanced to `1.1.0-dev`.
+
 ## [1.0.0] - 2026-06-06
 
 ### Added

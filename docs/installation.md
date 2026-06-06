@@ -1,6 +1,8 @@
 # Installation
 
-Daryaft does not have public stable install channels yet.
+Daryaft `v1.0.0` is the first stable release. Download binary archives from
+the [GitHub releases page](https://github.com/he8um/daryaft/releases/tag/v1.0.0).
+Package manager channels (Homebrew, deb, rpm, Arch) are post-1.0 work.
 
 ## Current Local Development
 
@@ -27,7 +29,7 @@ make build-local
 ./bin/daryaft version
 ```
 
-Source builds report version `0.6.0-dev`, commit `local`, build date
+Source builds report version `1.1.0-dev`, commit `local`, build date
 `unknown`, and built by `source`. Local ldflags builds can inject the current
 git commit, UTC build time, and `built by` value. Release builds use GoReleaser
 ldflags for the same metadata fields.
@@ -49,7 +51,7 @@ GoReleaser is required. Install it with: brew install goreleaser
 The target runs `goreleaser release --snapshot --clean --skip=publish`. It is
 local only: it does not publish releases, create tags, or enable package-manager
 publishing. Snapshot versions are named like
-`0.6.0-dev-SNAPSHOT-<short-commit>`, and snapshot artifacts are written under
+`1.1.0-dev-SNAPSHOT-<short-commit>`, and snapshot artifacts are written under
 ignored local build directories such as `dist/`.
 
 ## Shell Completion
@@ -74,13 +76,13 @@ daryaft completion powershell
 
 ## Public Install Policy
 
-Public install channels are planned for `v1.0.0` and later. Before `v1.0.0`,
-Homebrew, Debian, RPM, Arch, GitHub release archives, and install scripts are
-configuration stubs only, not official stable install paths.
+`v1.0.0` is the first stable public release. GitHub release archives are the
+supported install method at v1.0.0. Package manager channels (Homebrew, deb,
+rpm, Arch, Scoop) are post-1.0 work and are not yet available.
 
-## Planned Stable Channels
+## Planned Future Channels (Post-1.0)
 
-These are planned examples for the `v1.0.0` era:
+These are post-1.0 planned channels, not yet available:
 
 ```bash
 brew install he8um/tap/daryaft

@@ -1,27 +1,16 @@
 # Release Process
 
-Daryaft is still pre-1.0. Public stable release is planned for `v1.0.0`.
-v1.0.0 is a stable baseline release of the current implemented feature set;
-it does not require additional product features before shipping. See
-[Release Readiness: v1.0](../roadmap/release-readiness-v1.0.md) for exact
-v1.0.0 criteria and the post-1.0 roadmap.
+**`v1.0.0` is the first public stable release.** `main` is now on
+`1.1.0-dev` post-release development.
 
-See [Pre-Release Readiness](pre-release-readiness.md) for the current
-`0.6.0-dev` internal validation verdict and remaining validation steps.
-For internal RC tags, use
-[Release-Candidate Validation](rc-validation.md).
-The current RC is `v0.6.0-rc.2`; its release notes are in
-[Daryaft v0.6.0-rc.2 Internal Release Candidate](release-notes-v0.6.0-rc.2.md)
-and its GitHub pre-release status is in
-[v0.6.0-rc.2 Release Status](release-status-v0.6.0-rc.2.md).
-
-The v1.0.0 stable release notes draft is at
-[Daryaft v1.0.0 Release Notes (draft)](release-notes-v1.0.0.md). The binary
-asset strategy is documented in [v1.0.0 Release Assets](release-assets.md).
-
-The final pre-tag go/no-go checklist is at
-[v1.0.0 Go/No-Go Checklist](v1.0.0-go-no-go.md). The step-by-step release
-execution plan is at [v1.0.0 Release Plan](v1.0.0-release-plan.md).
+See [Daryaft v1.0.0 Release Notes](release-notes-v1.0.0.md) for the stable
+release notes and known limitations. The binary asset strategy for v1.0.0 is
+in [v1.0.0 Release Assets](release-assets.md). Historical RC and pre-release
+readiness docs remain available for reference:
+- [Release-Candidate Validation](rc-validation.md)
+- [Pre-Release Readiness](pre-release-readiness.md)
+- [v0.6.0-rc.2 Release Status](release-status-v0.6.0-rc.2.md)
+- [Release Readiness: v1.0](../roadmap/release-readiness-v1.0.md)
 
 ## CI Validation
 
@@ -106,12 +95,12 @@ are written under ignored local build directories such as `dist/`.
 Snapshot versions are intentionally named:
 
 ```text
-0.6.0-dev-SNAPSHOT-<short-commit>
+1.1.0-dev-SNAPSHOT-<short-commit>
 ```
 
 GoReleaser normally derives versions from Git tags. The snapshot template keeps
-local dry-run metadata aligned with Daryaft's current `0.6.0-dev` development
-version without creating or deleting tags.
+local dry-run metadata aligned with the current `1.1.0-dev` development version
+without creating or deleting tags.
 
 ## Release Metadata
 
@@ -126,7 +115,7 @@ with linker flags:
 Source builds keep the default development metadata:
 
 ```text
-version: 0.6.0-dev
+version: 1.1.0-dev
 commit: local
 date: unknown
 built_by: source
@@ -134,15 +123,11 @@ built_by: source
 
 ## Publishing Policy
 
-Do not publish a stable release or enable package-manager publishing before
-`v1.0.0`. The GitHub pre-release for `v0.6.0-rc.2` is published and marked
-pre-release (not stable). Package-manager publishing (Homebrew, deb, rpm,
-Arch) is post-1.0 work and not required for the v1.0.0 baseline release.
-
-The v1.0.0 stable release will attach compiled binary assets (linux/amd64,
-linux/arm64, darwin/amd64, darwin/arm64) and `checksums.txt`. Build with
-`goreleaser release` (not `--snapshot`) on the `v1.0.0` tag. See
-[v1.0.0 Release Assets](release-assets.md) for the full process.
+`v1.0.0` is the stable baseline release and has been published. It includes
+binary assets for linux/amd64, linux/arm64, darwin/amd64, darwin/arm64, and
+`checksums.txt`. Package-manager publishing (Homebrew, deb, rpm, Arch) is
+post-1.0 work and is not yet available. See
+[v1.0.0 Release Assets](release-assets.md) for asset details.
 
 ## Post-1.0 Release Work
 

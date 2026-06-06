@@ -49,8 +49,8 @@ Available archives: `daryaft_linux_amd64.tar.gz`, `daryaft_linux_arm64.tar.gz`,
 `daryaft_darwin_amd64.tar.gz`, `daryaft_darwin_arm64.tar.gz`.
 
 Package manager channels (Homebrew, deb, rpm, Arch) are post-1.0 work.
-Source builds report `0.6.0-dev` (development default); release builds inject
-`1.0.0` via GoReleaser ldflags from the tag.
+Source builds on `main` report `1.1.0-dev` (post-release development default);
+release builds inject the exact tag version via GoReleaser ldflags.
 
 For local development:
 
@@ -89,7 +89,7 @@ make run
 `make release-check` requires GoReleaser v2 and runs a local snapshot release
 check without publishing, creating tags, or enabling package-manager publishing.
 Install GoReleaser with `brew install goreleaser` if the command is missing.
-Snapshot versions are named like `0.6.0-dev-SNAPSHOT-<short-commit>`, and any
+Snapshot versions are named like `1.1.0-dev-SNAPSHOT-<short-commit>`, and any
 snapshot artifacts are written under ignored local build directories such as
 `dist/`.
 

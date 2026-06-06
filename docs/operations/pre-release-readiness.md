@@ -2,21 +2,18 @@
 
 ## Status
 
-- Daryaft current development version: `0.6.0-dev`.
-- This is not a public stable release.
-- Public stable release remains planned for `v1.0.0`.
-- The project is suitable for continued local/internal pre-release validation.
+- `v1.0.0` has been released as the first public stable release.
+- `main` is now on `1.1.0-dev` post-release development.
+- This document is a historical record of the pre-1.0 readiness review.
 
 ## Readiness Verdict
 
-Verdict: Ready for internal/manual `0.6.0-dev` validation. v1.0.0 requires
-completing RC validation, clean install/use verification, and release notes —
-not additional features.
+`v1.0.0` has shipped. The pre-release readiness review for the `0.6.0-dev`
+milestone is complete. This document is retained for historical reference.
 
-Core CLI and TUI functionality exists, stabilization work is complete, quality
-gates exist, and release tooling is validated locally. v1.0.0 is a stable
-baseline release of the current feature set. Post-1.0 features (Windows,
-self-update, proxy/auth, concurrency, package managers, etc.) are not blockers.
+v1.0.0 is a stable baseline release of the current feature set. Post-1.0
+features (Windows, self-update, proxy/auth, concurrency, package managers,
+etc.) are deferred and tracked separately.
 
 The completed QA pass is recorded in
 [QA Results: 0.6.0-dev](qa-results-0.6.0-dev.md). Its verdict is PASS WITH

@@ -1,5 +1,5 @@
 APP := daryaft
-VERSION ?= 0.6.0-dev
+VERSION ?= 1.1.0-dev
 COMMIT ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo local)
 DATE ?= $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
 BUILT_BY ?= make

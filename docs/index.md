@@ -1,10 +1,11 @@
 # Daryaft Documentation
 
-Daryaft is a modern terminal downloader written in Go. The project is currently
-pre-1.0 and only the CLI foundation is implemented.
+Daryaft is a modern terminal downloader written in Go. **`v1.0.0` is the first
+stable release.** The source development version is now `1.1.0-dev`.
 
-Public install channels begin at `v1.0.0`. Until then, use local development
-commands only.
+Download binary archives from the
+[GitHub releases page](https://github.com/he8um/daryaft/releases/tag/v1.0.0).
+Package manager channels are post-1.0 work.
 
 ## Core Docs
 
@@ -17,13 +18,13 @@ commands only.
 - [Architecture Overview](architecture/overview.md): planned high-level components.
 - [Testing Strategy](engineering/testing-strategy.md): local and CI checks.
 - [Manual QA Checklist](operations/manual-qa.md): local pre-release validation checklist.
-- [Pre-Release Readiness](operations/pre-release-readiness.md): `0.6.0-dev` internal validation status and remaining v1.0.0 steps.
+- [Pre-Release Readiness](operations/pre-release-readiness.md): historical pre-1.0 readiness review (v1.0.0 has shipped).
 - [QA Results: 0.6.0-dev](operations/qa-results-0.6.0-dev.md): completed internal validation readiness QA pass.
 - [Release-Candidate Validation](operations/rc-validation.md): internal RC tag validation workflow.
 - [RC Release Notes: v0.6.0-rc.2](operations/release-notes-v0.6.0-rc.2.md): current internal RC notes (GitHub pre-release published).
 - [v0.6.0-rc.2 Release Status](operations/release-status-v0.6.0-rc.2.md): CI status, QA status, asset decision, and recommendation.
 - [Clean Install Validation: v0.6.0-rc.2](operations/clean-install-validation-v0.6.0-rc.2.md): clean-clone/build/artifact validation pass — PASS WITH NOTES.
-- [v1.0.0 Release Notes (draft)](operations/release-notes-v1.0.0.md): stable release notes draft with highlights, known limitations, install, and upgrade notes.
+- [v1.0.0 Release Notes](operations/release-notes-v1.0.0.md): stable release notes with highlights, known limitations, install, and upgrade notes.
 - [v1.0.0 Release Assets](operations/release-assets.md): binary asset strategy, GoReleaser build process, and upload/validation commands.
 - [v1.0.0 Go/No-Go Checklist](operations/v1.0.0-go-no-go.md): final pre-tag checklist — validated baseline, required checks, asset decision, go/no-go criteria.
 - [v1.0.0 Release Plan](operations/v1.0.0-release-plan.md): step-by-step release execution plan including version policy, tagging, artifact build, publish, and post-release verification.
