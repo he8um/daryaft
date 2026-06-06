@@ -1,8 +1,8 @@
 # Installation
 
-Daryaft `v1.0.0` is the first stable release. Install via Homebrew or
+Daryaft `v1.1.0` is the current stable release. Install via Homebrew or
 download binary archives directly from the
-[GitHub releases page](https://github.com/he8um/daryaft/releases/tag/v1.0.0).
+[GitHub releases page](https://github.com/he8um/daryaft/releases/tag/v1.1.0).
 Other package manager channels (deb, rpm, Arch) are post-1.0 work.
 
 ## Current Local Development
@@ -112,8 +112,8 @@ Download binary archives directly for any supported platform:
 
 ```bash
 # Example: macOS Apple Silicon
-curl -L -O https://github.com/he8um/daryaft/releases/download/v1.0.0/daryaft_darwin_arm64.tar.gz
-curl -L -O https://github.com/he8um/daryaft/releases/download/v1.0.0/checksums.txt
+curl -L -O https://github.com/he8um/daryaft/releases/download/v1.1.0/daryaft_darwin_arm64.tar.gz
+curl -L -O https://github.com/he8um/daryaft/releases/download/v1.1.0/checksums.txt
 shasum -a 256 --check checksums.txt
 tar -xzf daryaft_darwin_arm64.tar.gz
 ./daryaft version

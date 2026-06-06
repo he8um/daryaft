@@ -8,21 +8,22 @@ packaging, and future self-update support.
 
 ## Status
 
-**v1.0.0 is the first stable release.** Download binary archives from the
-[GitHub releases page](https://github.com/he8um/daryaft/releases/tag/v1.0.0).
+**v1.1.0 is the current stable release.** Download binary archives from the
+[GitHub releases page](https://github.com/he8um/daryaft/releases/tag/v1.1.0).
 
-Daryaft v1.0.0 is a stable baseline release. It ships CLI and TUI HTTP/HTTPS
-downloading with dry-run planning, single URL and sequential batch downloads,
-resume from `.part` files, retry with exponential backoff, CLI checksum
-verification for single URL downloads, an interactive Bubble Tea TUI, YAML
-configuration with environment overrides, `inspect` metadata preflight,
-`doctor` diagnostics, and shell completions. Running `daryaft` with no
-arguments opens the interactive TUI home screen.
+Daryaft v1.1.0 adds read-only `daryaft update --check` on top of the v1.0.0
+baseline. It ships CLI and TUI HTTP/HTTPS downloading with dry-run planning,
+single URL and sequential batch downloads, resume from `.part` files, retry
+with exponential backoff, CLI checksum verification for single URL downloads,
+an interactive Bubble Tea TUI, YAML configuration with environment overrides,
+`inspect` metadata preflight, `doctor` diagnostics, shell completions, and
+the new update check command. Running `daryaft` with no arguments opens the
+interactive TUI home screen.
 
-v1.0.0 is a stable baseline, not a feature-complete release. Known limitations
-(Windows, concurrent downloads, proxy/auth, auto-update, package managers,
-batch checksum) are documented in the
-[v1.0.0 release notes](docs/operations/release-notes-v1.0.0.md). Post-1.0
+v1.1.0 is a stable incremental release, not a feature-complete release. Known
+limitations (Windows, concurrent downloads, proxy/auth, auto-update, package
+managers, batch checksum) are documented in the
+[v1.1.0 release notes](docs/operations/release-notes-v1.1.0.md). Post-1.0
 features are tracked in [post-1-feature-packs.md](docs/roadmap/post-1-feature-packs.md).
 
 - Repository: https://github.com/he8um/daryaft
@@ -45,8 +46,8 @@ daryaft version
 
 ```bash
 # Example: macOS Apple Silicon
-curl -L -O https://github.com/he8um/daryaft/releases/download/v1.0.0/daryaft_darwin_arm64.tar.gz
-curl -L -O https://github.com/he8um/daryaft/releases/download/v1.0.0/checksums.txt
+curl -L -O https://github.com/he8um/daryaft/releases/download/v1.1.0/daryaft_darwin_arm64.tar.gz
+curl -L -O https://github.com/he8um/daryaft/releases/download/v1.1.0/checksums.txt
 shasum -a 256 --check checksums.txt
 tar -xzf daryaft_darwin_arm64.tar.gz
 ./daryaft version
@@ -58,7 +59,7 @@ Available archives: `daryaft_linux_amd64.tar.gz`, `daryaft_linux_arm64.tar.gz`,
 The Homebrew formula is manually maintained for now. GoReleaser Homebrew
 publishing remains disabled. Other package manager channels (deb, rpm, Arch)
 are later post-1.0 work. Source builds on `main` report `1.1.0-dev`
-(post-release development default); release builds inject the exact tag version
+(current development default); release builds inject the exact tag version
 via GoReleaser ldflags.
 
 For local development:
@@ -288,6 +289,7 @@ Start here:
 - [Release-Candidate Validation](docs/operations/rc-validation.md)
 - [RC Release Notes: v0.6.0-rc.2](docs/operations/release-notes-v0.6.0-rc.2.md)
 - [v0.6.0-rc.2 Release Status](docs/operations/release-status-v0.6.0-rc.2.md)
+- [v1.1.0 Release Notes](docs/operations/release-notes-v1.1.0.md)
 - [v1.0.0 Release Notes](docs/operations/release-notes-v1.0.0.md)
 - [v1.0.0 Release Assets](docs/operations/release-assets.md)
 - [Homebrew Tap](docs/operations/homebrew-tap.md)

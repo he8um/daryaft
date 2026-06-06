@@ -5,14 +5,15 @@ package-manager install channel for Daryaft.
 
 ## Status
 
-- `v1.0.0` is the current stable release. GitHub binary assets are available.
+- `v1.1.0` is the current stable release. GitHub binary assets are available.
 - `he8um/homebrew-tap` exists at https://github.com/he8um/homebrew-tap.
-- `Formula/daryaft.rb` is live in the tap repository.
+- `Formula/daryaft.rb` is live in the tap repository, updated to `v1.1.0`.
 - Homebrew tap installation has been validated:
   - `brew tap he8um/tap` succeeded.
   - `brew install daryaft` (or `brew install he8um/tap/daryaft`) succeeded.
-  - `daryaft version` reports `1.0.0`.
+  - `daryaft version` reports `1.1.0`.
   - `daryaft doctor` runs successfully.
+  - `daryaft update --check` works correctly.
 - GoReleaser Homebrew publishing is **not yet enabled** — the `brews:` block in
   `.goreleaser.yml` remains commented out.
 - The formula is manually maintained. Future releases require updating
@@ -96,13 +97,21 @@ HOMEBREW_NO_AUTO_UPDATE=1 brew test --verbose he8um/tap/daryaft
 
 | Field | Value |
 |-------|-------|
-| Current formula version | `1.0.0` |
-| Formula source | GitHub v1.0.0 release assets |
+| Current formula version | `1.1.0` |
+| Formula source | GitHub v1.1.0 release assets |
 | macOS Apple Silicon | `daryaft_darwin_arm64.tar.gz` |
 | macOS Intel | `daryaft_darwin_amd64.tar.gz` |
 | Install method | Pre-built binary archive; does not build from source |
 
-### v1.0.0 Asset SHA-256 Checksums
+### v1.1.0 Asset SHA-256 Checksums
+
+Extracted from `checksums.txt` attached to the
+[v1.1.0 GitHub release](https://github.com/he8um/daryaft/releases/tag/v1.1.0):
+
+See [v1.1.0 Release Notes](release-notes-v1.1.0.md) for the full asset list.
+SHA-256 values are available in `checksums.txt` attached to the release.
+
+### v1.0.0 Asset SHA-256 Checksums (historical)
 
 Extracted from `checksums.txt` attached to the
 [v1.0.0 GitHub release](https://github.com/he8um/daryaft/releases/tag/v1.0.0):
@@ -184,6 +193,7 @@ Do not uncomment this block until all prerequisite checks above are satisfied.
 
 ## References
 
+- [v1.1.0 Release Notes](release-notes-v1.1.0.md)
 - [v1.0.0 Release Assets](release-assets.md)
 - [v1.0.0 Release Notes](release-notes-v1.0.0.md)
 - [Release Process](release-process.md)

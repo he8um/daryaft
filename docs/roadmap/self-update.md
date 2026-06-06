@@ -3,7 +3,7 @@
 Daryaft's self-update story is being built incrementally to avoid unsafe
 in-place binary replacement before the release infrastructure is trusted.
 
-## Current State (v1.1.0-dev)
+## Current State (v1.1.0)
 
 `daryaft update --check` is implemented and live.
 
