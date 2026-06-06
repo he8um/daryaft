@@ -58,7 +58,7 @@ Available archives: `daryaft_linux_amd64.tar.gz`, `daryaft_linux_arm64.tar.gz`,
 
 The Homebrew formula is manually maintained for now. GoReleaser Homebrew
 publishing remains disabled. Other package manager channels (deb, rpm, Arch)
-are later post-1.0 work. Source builds on `main` report `1.1.0-dev`
+are later post-1.0 work. Source builds on `main` report `1.2.0-dev`
 (current development default); release builds inject the exact tag version
 via GoReleaser ldflags.
 
@@ -99,7 +99,7 @@ make run
 `make release-check` requires GoReleaser v2 and runs a local snapshot release
 check without publishing, creating tags, or enabling package-manager publishing.
 Install GoReleaser with `brew install goreleaser` if the command is missing.
-Snapshot versions are named like `1.1.0-dev-SNAPSHOT-<short-commit>`, and any
+Snapshot versions are named like `1.2.0-dev-SNAPSHOT-<short-commit>`, and any
 snapshot artifacts are written under ignored local build directories such as
 `dist/`.
 

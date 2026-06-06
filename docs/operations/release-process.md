@@ -1,7 +1,7 @@
 # Release Process
 
 **`v1.0.0` is the first public stable release.** `main` is now on
-`1.1.0-dev` post-release development.
+`1.2.0-dev` post-release development.
 
 See [Daryaft v1.0.0 Release Notes](release-notes-v1.0.0.md) for the stable
 release notes and known limitations. The binary asset strategy for v1.0.0 is
@@ -95,11 +95,11 @@ are written under ignored local build directories such as `dist/`.
 Snapshot versions are intentionally named:
 
 ```text
-1.1.0-dev-SNAPSHOT-<short-commit>
+1.2.0-dev-SNAPSHOT-<short-commit>
 ```
 
 GoReleaser normally derives versions from Git tags. The snapshot template keeps
-local dry-run metadata aligned with the current `1.1.0-dev` development version
+local dry-run metadata aligned with the current `1.2.0-dev` development version
 without creating or deleting tags.
 
 ## Release Metadata
@@ -115,7 +115,7 @@ with linker flags:
 Source builds keep the default development metadata:
 
 ```text
-version: 1.1.0-dev
+version: 1.2.0-dev
 commit: local
 date: unknown
 built_by: source

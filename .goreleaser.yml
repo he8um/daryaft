@@ -5,7 +5,7 @@ version: 2
 project_name: daryaft
 
 snapshot:
-  version_template: 1.1.0-dev-SNAPSHOT-{{ .ShortCommit }}
+  version_template: 1.2.0-dev-SNAPSHOT-{{ .ShortCommit }}
 
 before:
   hooks:
