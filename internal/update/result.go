@@ -1,6 +1,7 @@
 package update
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -148,7 +149,7 @@ func isHomebrewPath(path string) bool {
 }
 
 func execBrewPrefix() string {
-	out, err := exec.Command("brew", "--prefix", "daryaft").Output()
+	out, err := exec.CommandContext(context.Background(), "brew", "--prefix", "daryaft").Output()
 	if err != nil {
 		return ""
 	}

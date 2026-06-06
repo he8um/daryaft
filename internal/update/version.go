@@ -1,7 +1,6 @@
 package update
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 )
@@ -76,9 +75,4 @@ func isDevBuild(v string) bool {
 // normalizeVersion strips a leading "v" for display consistency.
 func normalizeVersion(v string) string {
 	return strings.TrimPrefix(v, "v")
-}
-
-// versionTagURL returns the GitHub release tag URL.
-func versionTagURL(owner, repo, tag string) string {
-	return fmt.Sprintf("https://github.com/%s/%s/releases/tag/%s", owner, repo, tag)
 }

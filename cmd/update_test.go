@@ -3,8 +3,6 @@ package cmd
 import (
 	"bytes"
 	"encoding/json"
-	"net/http"
-	"net/http/httptest"
 	"strings"
 	"testing"
 
@@ -23,24 +21,6 @@ func newUpdateTestCommand(t *testing.T) func(args ...string) (string, string, er
 		err = cmd.Execute()
 		return outBuf.String(), errBuf.String(), err
 	}
-}
-
-// startFakeReleaseServer starts an httptest.Server that responds to GitHub
-// Releases API calls. It returns the server and a "owner/host:port" repo string
-// that can be passed via --repo to the update command.
-func startFakeReleaseServer(t *testing.T, handler http.HandlerFunc) (*httptest.Server, string) {
-	t.Helper()
-	srv := httptest.NewServer(handler)
-	t.Cleanup(srv.Close)
-	// Extract host:port from the URL to use as the fake "owner/repo".
-	// The update command's --repo flag feeds into CheckOptions.Owner/Repo,
-	// but our rewriteTransport in the package tests rewrites the host. For
-	// CLI tests we instead need a different approach: we inject a custom
-	// HTTP client via the package-level test hook. Since that hook doesn't
-	// exist in the CLI layer, we verify CLI behaviour through the package
-	// layer's own tests and keep CLI tests focused on flag parsing and
-	// output structure.
-	return srv, ""
 }
 
 func TestUpdateCommand_WithoutCheck(t *testing.T) {

@@ -33,9 +33,9 @@ your install channel to upgrade after a new release is available.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if !check {
 				return fmt.Errorf(
-					"auto-update is not implemented.\n\n" +
+					"auto-update is not implemented\n\n" +
 						"To check for a new release run:\n\n" +
-						"  daryaft update --check\n",
+						"  daryaft update --check",
 				)
 			}
 
