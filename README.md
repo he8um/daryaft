@@ -143,6 +143,7 @@ daryaft
 daryaft doctor
 daryaft inspect https://example.com/file.zip
 daryaft inspect https://example.com/file.zip --json
+daryaft inspect https://example.com/file.zip --header "X-Token: abc" --user-agent "MyApp/1.0"
 daryaft completion zsh
 daryaft config path
 daryaft config show
@@ -161,6 +162,10 @@ daryaft download https://example.com/file.zip --dry-run
 daryaft download https://example.com/file.zip
 daryaft download -f urls.txt --dry-run
 daryaft download -f urls.txt
+daryaft download https://example.com/file.zip --proxy http://proxy:8080
+daryaft download https://example.com/file.zip --header "X-Custom: value" --header "Accept: application/json"
+daryaft download https://example.com/file.zip --user-agent "MyApp/1.0"
+daryaft download https://example.com/file.zip --username alice --password secret
 daryaft update --check
 daryaft update --check --json
 daryaft update --check --include-prerelease
@@ -221,8 +226,9 @@ filename, content length when known, content type, `Accept-Ranges`, resume
 support, `ETag`, and `Last-Modified`. Use `daryaft inspect <url> --json` for
 stable machine-readable CLI output. The no-argument TUI also has a read-only
 Inspect URL flow for the same metadata, but JSON output remains CLI-only. Some
-fields may be unknown when a server omits headers. Inspect does not implement
-checksum, proxy, custom-header, or auth yet.
+fields may be unknown when a server omits headers. Inspect supports the same
+HTTP customization flags as download: `--proxy`, `--header`, `--user-agent`,
+`--username`, and `--password`.
 
 Daryaft can generate shell completion scripts with Cobra's standard completion
 command. Installation paths depend on your OS and shell setup:

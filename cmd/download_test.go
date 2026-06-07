@@ -17,6 +17,7 @@ import (
 
 	appconfig "github.com/he8um/daryaft/internal/config"
 	"github.com/he8um/daryaft/internal/downloader"
+	"github.com/he8um/daryaft/internal/httpopts"
 	"github.com/spf13/cobra"
 )
 
@@ -943,4 +944,202 @@ func TestRunDownloadRejectsNameWithMultipleURLs(t *testing.T) {
 	if !strings.Contains(err.Error(), "--name can only be used with a single URL") {
 		t.Fatalf("error = %q", err)
 	}
+}
+
+// --- HTTP options CLI tests ---
+
+func TestDownloadCLICustomHeader(t *testing.T) {
+	var gotHeader string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotHeader = r.Header.Get("X-CLI")
+		_, _ = w.Write([]byte("ok"))
+	}))
+	defer server.Close()
+
+	var out bytes.Buffer
+	root := newDownloadCmdForTest(&out)
+	root.SetArgs([]string{"download", server.URL + "/file.txt", "--header", "X-CLI: clivalue", "--output", t.TempDir()})
+	if err := root.Execute(); err != nil {
+		t.Fatalf("Execute returned error: %v\n%s", err, out.String())
+	}
+	if gotHeader != "clivalue" {
+		t.Errorf("X-CLI = %q, want clivalue", gotHeader)
+	}
+}
+
+func TestDownloadCLIUserAgent(t *testing.T) {
+	var gotUA string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotUA = r.UserAgent()
+		_, _ = w.Write([]byte("ok"))
+	}))
+	defer server.Close()
+
+	var out bytes.Buffer
+	root := newDownloadCmdForTest(&out)
+	root.SetArgs([]string{"download", server.URL + "/file.txt", "--user-agent", "CLIAgent/4.0", "--output", t.TempDir()})
+	if err := root.Execute(); err != nil {
+		t.Fatalf("Execute returned error: %v\n%s", err, out.String())
+	}
+	if gotUA != "CLIAgent/4.0" {
+		t.Errorf("User-Agent = %q, want CLIAgent/4.0", gotUA)
+	}
+}
+
+func TestDownloadCLIBasicAuth(t *testing.T) {
+	var gotUser, gotPass string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotUser, gotPass, _ = r.BasicAuth()
+		_, _ = w.Write([]byte("ok"))
+	}))
+	defer server.Close()
+
+	var out bytes.Buffer
+	root := newDownloadCmdForTest(&out)
+	root.SetArgs([]string{"download", server.URL + "/file.txt", "--username", "alice", "--password", "secret", "--output", t.TempDir()})
+	if err := root.Execute(); err != nil {
+		t.Fatalf("Execute returned error: %v\n%s", err, out.String())
+	}
+	if gotUser != "alice" || gotPass != "secret" {
+		t.Errorf("BasicAuth = %q/%q, want alice/secret", gotUser, gotPass)
+	}
+}
+
+func TestDownloadCLIDryRunRedactsPassword(t *testing.T) {
+	var out bytes.Buffer
+	root := newDownloadCmdForTest(&out)
+	root.SetArgs([]string{
+		"download",
+		"https://example.com/file.zip",
+		"--username", "alice",
+		"--password", "topsecret",
+		"--dry-run",
+	})
+	if err := root.Execute(); err != nil {
+		t.Fatalf("Execute returned error: %v\n%s", err, out.String())
+	}
+	output := out.String()
+	if strings.Contains(output, "topsecret") {
+		t.Errorf("dry-run output must not contain raw password:\n%s", output)
+	}
+	if !strings.Contains(output, "[REDACTED]") {
+		t.Errorf("dry-run output must contain [REDACTED]:\n%s", output)
+	}
+}
+
+func TestDownloadCLIDryRunRedactsSensitiveHeader(t *testing.T) {
+	var out bytes.Buffer
+	root := newDownloadCmdForTest(&out)
+	root.SetArgs([]string{
+		"download",
+		"https://example.com/file.zip",
+		"--header", "Authorization: Bearer supersecret",
+		"--dry-run",
+	})
+	if err := root.Execute(); err != nil {
+		t.Fatalf("Execute returned error: %v\n%s", err, out.String())
+	}
+	output := out.String()
+	if strings.Contains(output, "supersecret") {
+		t.Errorf("dry-run output must not contain raw Authorization value:\n%s", output)
+	}
+	if !strings.Contains(output, "[REDACTED]") {
+		t.Errorf("dry-run output must contain [REDACTED]:\n%s", output)
+	}
+}
+
+func TestDownloadCLIRejectsInvalidHeader(t *testing.T) {
+	var out bytes.Buffer
+	root := newDownloadCmdForTest(&out)
+	root.SetArgs([]string{"download", "https://example.com/file.zip", "--header", "NoColon", "--dry-run"})
+	if err := root.Execute(); err == nil {
+		t.Fatal("expected error for invalid header")
+	}
+}
+
+func TestDownloadCLIRejectsInvalidProxy(t *testing.T) {
+	var out bytes.Buffer
+	root := newDownloadCmdForTest(&out)
+	root.SetArgs([]string{"download", "https://example.com/file.zip", "--proxy", "socks5://proxy:1080", "--dry-run"})
+	if err := root.Execute(); err == nil {
+		t.Fatal("expected error for socks5 proxy")
+	}
+}
+
+func TestDownloadCLIRejectsPasswordWithoutUsername(t *testing.T) {
+	var out bytes.Buffer
+	root := newDownloadCmdForTest(&out)
+	root.SetArgs([]string{"download", "https://example.com/file.zip", "--password", "secret", "--dry-run"})
+	if err := root.Execute(); err == nil {
+		t.Fatal("expected error: password without username")
+	}
+}
+
+func TestDownloadCLIRejectsAuthHeaderPlusBasicAuth(t *testing.T) {
+	var out bytes.Buffer
+	root := newDownloadCmdForTest(&out)
+	root.SetArgs([]string{
+		"download",
+		"https://example.com/file.zip",
+		"--username", "alice",
+		"--password", "pass",
+		"--header", "Authorization: Bearer tok",
+		"--dry-run",
+	})
+	if err := root.Execute(); err == nil {
+		t.Fatal("expected error: basic auth + Authorization header")
+	}
+}
+
+func TestDownloadCLIBatchSendsHeaderToAllURLs(t *testing.T) {
+	counts := map[string]int{}
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		counts[r.Header.Get("X-Batch")]++
+		_, _ = w.Write([]byte("ok"))
+	}))
+	defer server.Close()
+
+	var out bytes.Buffer
+	root := newDownloadCmdForTest(&out)
+	root.SetArgs([]string{
+		"download",
+		server.URL + "/a.txt",
+		server.URL + "/b.txt",
+		"--header", "X-Batch: yes",
+		"--output", t.TempDir(),
+	})
+	if err := root.Execute(); err != nil {
+		t.Fatalf("Execute returned error: %v\n%s", err, out.String())
+	}
+	if counts["yes"] != 2 {
+		t.Errorf("X-Batch header received %d times, want 2", counts["yes"])
+	}
+}
+
+// newDownloadCmdForTest builds a fresh root+download command pair for CLI flag tests.
+// Returns the root command; callers should prepend "download" to args when needed,
+// or use the download subcommand args directly via root.SetArgs([]string{"download", ...}).
+// For convenience, returns the root so SetArgs("download", url, ...) routes correctly.
+func newDownloadCmdForTest(out *bytes.Buffer) *cobra.Command {
+	_ = httpopts.Options{} // ensure import is used
+
+	flags := downloadFlagValues{}
+	flags.resume = true
+
+	sub := &cobra.Command{
+		Use:           "download [url...]",
+		SilenceUsage:  true,
+		SilenceErrors: true,
+		Args:          cobra.ArbitraryArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runDownload(cmd, args, flags)
+		},
+	}
+	addDownloadFlags(sub, &flags)
+
+	root := &cobra.Command{Use: "daryaft", SilenceUsage: true, SilenceErrors: true}
+	root.AddCommand(sub)
+	root.SetOut(out)
+	root.SetErr(out)
+	return root
 }

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/he8um/daryaft/internal/checksum"
+	"github.com/he8um/daryaft/internal/httpopts"
 	"github.com/he8um/daryaft/internal/input"
 )
 
@@ -44,13 +45,18 @@ func BuildPlan(options Options) (Plan, error) {
 		return Plan{}, err
 	}
 
+	if err := httpopts.Validate(options.HTTPOptions); err != nil {
+		return Plan{}, err
+	}
+
 	return Plan{
-		URLs:     urls,
-		Output:   strings.TrimSpace(options.Output),
-		Name:     strings.TrimSpace(options.Name),
-		Checksum: parsedChecksum,
-		Retries:  options.Retries,
-		Resume:   options.Resume,
+		URLs:        urls,
+		Output:      strings.TrimSpace(options.Output),
+		Name:        strings.TrimSpace(options.Name),
+		Checksum:    parsedChecksum,
+		Retries:     options.Retries,
+		Resume:      options.Resume,
+		HTTPOptions: options.HTTPOptions,
 	}, nil
 }
 

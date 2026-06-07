@@ -16,6 +16,7 @@ Other package manager channels are post-1.0 work.
 - [Command Reference](command-reference.md): current command behavior.
 - [Configuration](configuration.md): default metadata and planned config locations.
 - [Inspect and Dry Run](features/inspect-and-dry-run.md): URL metadata inspection and dry-run preflight behavior.
+- [HTTP Request Customization](features/http-request-customization.md): proxy, custom headers, user-agent, and Basic Auth for download and inspect.
 - [Architecture Overview](architecture/overview.md): planned high-level components.
 - [Testing Strategy](engineering/testing-strategy.md): local and CI checks.
 - [Manual QA Checklist](operations/manual-qa.md): local pre-release validation checklist.
@@ -30,6 +31,7 @@ Other package manager channels are post-1.0 work.
 - [v1.1.0 Release Notes](operations/release-notes-v1.1.0.md): stable release notes for `v1.1.0` — read-only update check feature.
 - [v1.2.0 Release Notes](operations/release-notes-v1.2.0.md): stable release notes for `v1.2.0` — update check UX polish and install-channel hardening.
 - [Update Check QA](operations/update-check-qa.md): manual QA checklist for `daryaft update --check`.
+- [HTTP Customization QA](operations/http-customization-qa.md): manual QA checklist for HTTP request customization flags.
 - [v1.2.0 Scope](roadmap/v1.2.0-update-ux.md): v1.2.0 update UX polish scope and quality gates.
 - [Homebrew Tap](operations/homebrew-tap.md): live tap at `he8um/homebrew-tap`, install instructions, formula details, maintenance guide, and GoReleaser publishing checklist.
 - [Homebrew Release Automation](operations/homebrew-release-automation.md): helper script for updating the tap formula after a release; dry-run support, safety rules, and future GoReleaser automation path.
@@ -46,6 +48,7 @@ Other package manager channels are post-1.0 work.
 - [Post-1.0 Feature Packs](roadmap/post-1-feature-packs.md): features deferred until after stable baseline.
 - [Versioning Policy](roadmap/versioning-policy.md): release version rules.
 - [Self-Update Roadmap](roadmap/self-update.md): `update --check` current state and auto-update plan.
+- [v1.3.0 HTTP Customization Scope](roadmap/v1.3.0-http-customization.md): scope, quality gates, and future track for HTTP request customization.
 
 ## Related Existing Docs
 

@@ -8,6 +8,8 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/he8um/daryaft/internal/httpopts"
 )
 
 func TestInspectValidatesURL(t *testing.T) {
@@ -246,6 +248,159 @@ func TestInspectClosesResponseBodies(t *testing.T) {
 	}
 	if transport.closed != 1 {
 		t.Fatalf("closed bodies = %d, want 1", transport.closed)
+	}
+}
+
+func TestInspectCustomHeader(t *testing.T) {
+	var gotHeader string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotHeader = r.Header.Get("X-Custom")
+		w.Header().Set("Content-Length", "4")
+		w.Header().Set("Content-Type", "text/plain")
+		w.Header().Set("Accept-Ranges", "bytes")
+		w.Header().Set("ETag", `"e1"`)
+		w.Header().Set("Last-Modified", "Tue, 01 Jun 2026 12:00:00 GMT")
+	}))
+	defer server.Close()
+
+	headers, _ := httpopts.ParseHeaders([]string{"X-Custom: headerval"})
+	_, err := URL(context.Background(), Options{
+		URL:         server.URL + "/file.txt",
+		HTTPOptions: httpopts.Options{Headers: headers},
+	})
+	if err != nil {
+		t.Fatalf("URL returned error: %v", err)
+	}
+	if gotHeader != "headerval" {
+		t.Errorf("X-Custom = %q, want headerval", gotHeader)
+	}
+}
+
+func TestInspectCustomUserAgent(t *testing.T) {
+	var gotUA string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotUA = r.UserAgent()
+		w.Header().Set("Content-Length", "4")
+		w.Header().Set("Content-Type", "text/plain")
+		w.Header().Set("Accept-Ranges", "bytes")
+		w.Header().Set("ETag", `"e1"`)
+		w.Header().Set("Last-Modified", "Tue, 01 Jun 2026 12:00:00 GMT")
+	}))
+	defer server.Close()
+
+	_, err := URL(context.Background(), Options{
+		URL:         server.URL + "/file.txt",
+		HTTPOptions: httpopts.Options{UserAgent: "InspectAgent/3.0"},
+	})
+	if err != nil {
+		t.Fatalf("URL returned error: %v", err)
+	}
+	if gotUA != "InspectAgent/3.0" {
+		t.Errorf("User-Agent = %q, want InspectAgent/3.0", gotUA)
+	}
+}
+
+func TestInspectBasicAuth(t *testing.T) {
+	var gotUser, gotPass string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotUser, gotPass, _ = r.BasicAuth()
+		w.Header().Set("Content-Length", "4")
+		w.Header().Set("Content-Type", "text/plain")
+		w.Header().Set("Accept-Ranges", "bytes")
+		w.Header().Set("ETag", `"e1"`)
+		w.Header().Set("Last-Modified", "Tue, 01 Jun 2026 12:00:00 GMT")
+	}))
+	defer server.Close()
+
+	_, err := URL(context.Background(), Options{
+		URL:         server.URL + "/file.txt",
+		HTTPOptions: httpopts.Options{Username: "bob", Password: "pass123"},
+	})
+	if err != nil {
+		t.Fatalf("URL returned error: %v", err)
+	}
+	if gotUser != "bob" || gotPass != "pass123" {
+		t.Errorf("BasicAuth = %q/%q, want bob/pass123", gotUser, gotPass)
+	}
+}
+
+func TestInspectFallbackGETSendsCustomHeader(t *testing.T) {
+	var headHeader, getHeader string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodHead:
+			headHeader = r.Header.Get("X-Probe")
+			w.WriteHeader(http.StatusMethodNotAllowed)
+		case http.MethodGet:
+			getHeader = r.Header.Get("X-Probe")
+			w.Header().Set("Content-Range", "bytes 0-0/100")
+			w.Header().Set("Content-Type", "text/plain")
+			w.WriteHeader(http.StatusPartialContent)
+			_, _ = w.Write([]byte("x"))
+		}
+	}))
+	defer server.Close()
+
+	headers, _ := httpopts.ParseHeaders([]string{"X-Probe: probe"})
+	_, err := URL(context.Background(), Options{
+		URL:         server.URL + "/file.txt",
+		HTTPOptions: httpopts.Options{Headers: headers},
+	})
+	if err != nil {
+		t.Fatalf("URL returned error: %v", err)
+	}
+	if headHeader != "probe" {
+		t.Errorf("HEAD X-Probe = %q, want probe", headHeader)
+	}
+	if getHeader != "probe" {
+		t.Errorf("GET fallback X-Probe = %q, want probe", getHeader)
+	}
+}
+
+func TestInspectRejectsInvalidHTTPOptions(t *testing.T) {
+	tests := []struct {
+		name string
+		opts httpopts.Options
+		want string
+	}{
+		{
+			name: "invalid header",
+			opts: httpopts.Options{Headers: []httpopts.Header{{Name: "Bad Header", Value: "v"}}},
+			want: "invalid character",
+		},
+		{
+			name: "invalid proxy",
+			opts: httpopts.Options{ProxyURL: "socks5://proxy:1080"},
+			want: "proxy scheme",
+		},
+		{
+			name: "password without username",
+			opts: httpopts.Options{Password: "secret"},
+			want: "--password requires --username",
+		},
+		{
+			name: "auth header plus basic auth",
+			opts: httpopts.Options{
+				Username: "alice",
+				Password: "pass",
+				Headers:  []httpopts.Header{{Name: "Authorization", Value: "Bearer tok"}},
+			},
+			want: "Authorization header",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := URL(context.Background(), Options{
+				URL:         "https://example.com/file.txt",
+				HTTPOptions: tt.opts,
+			})
+			if err == nil {
+				t.Fatal("expected error")
+			}
+			if !strings.Contains(err.Error(), tt.want) {
+				t.Errorf("error = %q, want %q", err.Error(), tt.want)
+			}
+		})
 	}
 }
 

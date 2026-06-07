@@ -311,6 +311,34 @@ Expected:
 - No files are written.
 - JSON output is valid JSON.
 
+## HTTP Request Customization Smoke Tests
+
+These are quick sanity checks. Full coverage is in
+[HTTP Customization QA](http-customization-qa.md).
+
+```bash
+go run . download --help | grep -E '^\s+--proxy|--header|--user-agent|--username|--password'
+go run . inspect --help | grep -E '^\s+--proxy|--header|--user-agent|--username|--password'
+```
+
+Expected: all five flags appear in each command's help output.
+
+```bash
+go run . download http://localhost:<port>/file.txt --header "NoColon" --dry-run
+go run . inspect http://localhost:<port>/file.txt --header "NoColon"
+```
+
+Expected: clear error about invalid header format, no download or inspection.
+
+```bash
+go run . download http://localhost:<port>/file.txt \
+  --username alice \
+  --password topsecret \
+  --dry-run
+```
+
+Expected: dry-run output does not contain `topsecret`; contains `[REDACTED]`.
+
 ## TUI Flows
 
 Start the TUI:

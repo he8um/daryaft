@@ -10,17 +10,22 @@ import (
 
 	"github.com/he8um/daryaft/internal/config"
 	"github.com/he8um/daryaft/internal/downloader"
+	"github.com/he8um/daryaft/internal/httpopts"
 	"github.com/he8um/daryaft/pkg/version"
 )
 
 type Options struct {
-	URL    string
-	Client *http.Client
+	URL         string
+	Client      *http.Client
+	HTTPOptions httpopts.Options
 }
 
 func URL(ctx context.Context, options Options) (Result, error) {
 	rawURL := strings.TrimSpace(options.URL)
 	if err := ValidateURL(rawURL); err != nil {
+		return Result{}, err
+	}
+	if err := httpopts.Validate(options.HTTPOptions); err != nil {
 		return Result{}, err
 	}
 	if ctx == nil {
@@ -29,10 +34,14 @@ func URL(ctx context.Context, options Options) (Result, error) {
 
 	client := options.Client
 	if client == nil {
-		client = downloader.DefaultHTTPClient()
+		var err error
+		client, err = httpopts.NewClient(downloader.DefaultHTTPClient(), options.HTTPOptions)
+		if err != nil {
+			return Result{}, err
+		}
 	}
 
-	head, err := request(ctx, client, http.MethodHead, rawURL, false)
+	head, err := request(ctx, client, http.MethodHead, rawURL, false, options.HTTPOptions)
 	if err != nil {
 		return Result{}, err
 	}
@@ -41,12 +50,12 @@ func URL(ctx context.Context, options Options) (Result, error) {
 	}()
 
 	if head.StatusCode == http.StatusMethodNotAllowed {
-		return inspectWithRangeFallback(ctx, client, rawURL)
+		return inspectWithRangeFallback(ctx, client, rawURL, options.HTTPOptions)
 	}
 
 	result := resultFromResponse(rawURL, head)
 	if !metadataSufficient(result) {
-		fallback, err := inspectWithRangeFallback(ctx, client, rawURL)
+		fallback, err := inspectWithRangeFallback(ctx, client, rawURL, options.HTTPOptions)
 		if err == nil {
 			return fallback, nil
 		}
@@ -55,8 +64,8 @@ func URL(ctx context.Context, options Options) (Result, error) {
 	return result, nil
 }
 
-func inspectWithRangeFallback(ctx context.Context, client *http.Client, rawURL string) (Result, error) {
-	response, err := request(ctx, client, http.MethodGet, rawURL, true)
+func inspectWithRangeFallback(ctx context.Context, client *http.Client, rawURL string, opts httpopts.Options) (Result, error) {
+	response, err := request(ctx, client, http.MethodGet, rawURL, true, opts)
 	if err != nil {
 		return Result{}, err
 	}
@@ -67,17 +76,20 @@ func inspectWithRangeFallback(ctx context.Context, client *http.Client, rawURL s
 	return resultFromResponse(rawURL, response), nil
 }
 
-func request(ctx context.Context, client *http.Client, method, rawURL string, rangeProbe bool) (*http.Response, error) {
-	request, err := http.NewRequestWithContext(ctx, method, rawURL, nil)
+func request(ctx context.Context, client *http.Client, method, rawURL string, rangeProbe bool, opts httpopts.Options) (*http.Response, error) {
+	req, err := http.NewRequestWithContext(ctx, method, rawURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("create inspect request: %w", err)
 	}
-	request.Header.Set("User-Agent", config.AppName+"/"+version.Version)
+	if opts.UserAgent == "" {
+		req.Header.Set("User-Agent", config.AppName+"/"+version.Version)
+	}
+	httpopts.ApplyToRequest(req, opts)
 	if rangeProbe {
-		request.Header.Set("Range", "bytes=0-0")
+		req.Header.Set("Range", "bytes=0-0")
 	}
 
-	response, err := client.Do(request)
+	response, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("inspect %q: %w", rawURL, err)
 	}

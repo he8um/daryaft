@@ -11,13 +11,15 @@ import (
 	"time"
 
 	"github.com/he8um/daryaft/internal/download"
+	"github.com/he8um/daryaft/internal/httpopts"
 )
 
 const progressInterval = 200 * time.Millisecond
 
 type Downloader struct {
-	client  *http.Client
-	sleeper Sleeper
+	client   *http.Client
+	sleeper  Sleeper
+	httpOpts httpopts.Options
 }
 
 func New() *Downloader {
@@ -34,6 +36,17 @@ func NewWithClient(client *http.Client) *Downloader {
 	return &Downloader{
 		client:  client,
 		sleeper: timerSleep,
+	}
+}
+
+func NewWithOptions(client *http.Client, opts httpopts.Options) *Downloader {
+	if client == nil {
+		client = defaultHTTPClient()
+	}
+	return &Downloader{
+		client:   client,
+		sleeper:  timerSleep,
+		httpOpts: opts,
 	}
 }
 
@@ -147,7 +160,7 @@ func (d *Downloader) downloadAttempt(ctx context.Context, plan download.Plan, ha
 		resumeOffset = candidate.PartialSize
 	}
 
-	request, err := newRequestWithContext(ctx, rawURL)
+	request, err := newRequestWithContext(ctx, rawURL, d.httpOpts)
 	if err != nil {
 		return Result{}, nonRetryableError{err: fmt.Errorf("create download request: %w", err)}
 	}
@@ -382,7 +395,7 @@ func (d *Downloader) restartWithNewRequest(ctx context.Context, plan download.Pl
 		Message:         message,
 	})
 
-	request, err := newRequestWithContext(ctx, rawURL)
+	request, err := newRequestWithContext(ctx, rawURL, d.httpOpts)
 	if err != nil {
 		return preparedDownload{}, nonRetryableError{err: fmt.Errorf("create download request: %w", err)}
 	}

@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/he8um/daryaft/internal/download"
+	"github.com/he8um/daryaft/internal/httpopts"
 	"github.com/he8um/daryaft/pkg/version"
 )
 
@@ -501,4 +502,136 @@ func TestDownloadEmitsFailedEventForNon2xx(t *testing.T) {
 	if !strings.Contains(events[0].Error.Error(), "server returned 418") {
 		t.Fatalf("failed event error = %q", events[0].Error)
 	}
+}
+
+func TestDownloadCustomHeader(t *testing.T) {
+	var gotHeader string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotHeader = r.Header.Get("X-Custom")
+		_, _ = w.Write([]byte("ok"))
+	}))
+	defer server.Close()
+
+	headers, _ := httpopts.ParseHeaders([]string{"X-Custom: testval"})
+	opts := httpopts.Options{Headers: headers}
+	client, _ := httpopts.NewClient(defaultHTTPClient(), opts)
+	d := NewWithOptions(client, opts)
+	_, err := d.Download(download.Plan{
+		URLs:        []string{server.URL + "/file.txt"},
+		Output:      t.TempDir(),
+		HTTPOptions: opts,
+	})
+	if err != nil {
+		t.Fatalf("Download returned error: %v", err)
+	}
+	if gotHeader != "testval" {
+		t.Errorf("X-Custom = %q, want %q", gotHeader, "testval")
+	}
+}
+
+func TestDownloadCustomUserAgent(t *testing.T) {
+	var gotUA string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotUA = r.UserAgent()
+		_, _ = w.Write([]byte("ok"))
+	}))
+	defer server.Close()
+
+	opts := httpopts.Options{UserAgent: "CustomAgent/2.0"}
+	d := NewWithOptions(defaultHTTPClient(), opts)
+	_, err := d.Download(download.Plan{
+		URLs:        []string{server.URL + "/file.txt"},
+		Output:      t.TempDir(),
+		HTTPOptions: opts,
+	})
+	if err != nil {
+		t.Fatalf("Download returned error: %v", err)
+	}
+	if gotUA != "CustomAgent/2.0" {
+		t.Errorf("User-Agent = %q, want %q", gotUA, "CustomAgent/2.0")
+	}
+}
+
+func TestDownloadBasicAuth(t *testing.T) {
+	var gotUser, gotPass string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotUser, gotPass, _ = r.BasicAuth()
+		_, _ = w.Write([]byte("ok"))
+	}))
+	defer server.Close()
+
+	opts := httpopts.Options{Username: "alice", Password: "s3cr3t"}
+	d := NewWithOptions(defaultHTTPClient(), opts)
+	_, err := d.Download(download.Plan{
+		URLs:        []string{server.URL + "/file.txt"},
+		Output:      t.TempDir(),
+		HTTPOptions: opts,
+	})
+	if err != nil {
+		t.Fatalf("Download returned error: %v", err)
+	}
+	if gotUser != "alice" || gotPass != "s3cr3t" {
+		t.Errorf("BasicAuth = %q/%q, want alice/s3cr3t", gotUser, gotPass)
+	}
+}
+
+func TestDownloadRetryPreservesCustomHeader(t *testing.T) {
+	attempts := 0
+	var lastHeader string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		attempts++
+		lastHeader = r.Header.Get("X-Retry")
+		if attempts == 1 {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			return
+		}
+		_, _ = w.Write([]byte("ok"))
+	}))
+	defer server.Close()
+
+	headers, _ := httpopts.ParseHeaders([]string{"X-Retry: yes"})
+	opts := httpopts.Options{Headers: headers}
+	d := newTestDownloaderWithOpts(server, opts)
+	_, err := d.Download(download.Plan{
+		URLs:        []string{server.URL + "/file.txt"},
+		Output:      t.TempDir(),
+		Retries:     2,
+		HTTPOptions: opts,
+	})
+	if err != nil {
+		t.Fatalf("Download returned error: %v", err)
+	}
+	if attempts != 2 {
+		t.Errorf("attempts = %d, want 2", attempts)
+	}
+	if lastHeader != "yes" {
+		t.Errorf("X-Retry on retry = %q, want yes", lastHeader)
+	}
+}
+
+func TestDownloadDefaultBehaviorUnchangedWithNoOptions(t *testing.T) {
+	var gotUA string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotUA = r.UserAgent()
+		_, _ = w.Write([]byte("ok"))
+	}))
+	defer server.Close()
+
+	_, err := New().Download(download.Plan{
+		URLs:   []string{server.URL + "/file.txt"},
+		Output: t.TempDir(),
+	})
+	if err != nil {
+		t.Fatalf("Download returned error: %v", err)
+	}
+	if gotUA != "Daryaft/"+version.Version {
+		t.Errorf("User-Agent = %q, want default", gotUA)
+	}
+}
+
+func newTestDownloaderWithOpts(server *httptest.Server, opts httpopts.Options) *Downloader {
+	client, _ := httpopts.NewClient(server.Client(), opts)
+	d := NewWithOptions(client, opts)
+	d.sleeper = func(context.Context, time.Duration) error { return nil }
+	return d
 }

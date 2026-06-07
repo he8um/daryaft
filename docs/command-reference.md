@@ -120,6 +120,18 @@ Daryaft tries `HEAD` first and may fall back to `GET` with
 closes response bodies and does not write `.part` files, metadata sidecars, or
 final downloads. Metadata may be unknown when the server omits headers.
 
+`daryaft inspect` accepts the same HTTP customization flags as download:
+
+| Flag | Description |
+|------|-------------|
+| `--proxy <url>` | HTTP or HTTPS proxy URL |
+| `--header "Name: Value"` | Custom request header (repeatable) |
+| `--user-agent <value>` | Override the default `User-Agent` |
+| `--username <value>` | HTTP Basic Auth username |
+| `--password <value>` | HTTP Basic Auth password |
+
+See [HTTP Request Customization](../features/http-request-customization.md) for full details.
+
 ## `daryaft doctor`
 
 Implemented. Prints a local diagnostics report using simple text output.
@@ -423,6 +435,18 @@ daryaft download -f urls.txt --dry-run
 ## `daryaft download <url>`
 
 Implemented. Explicit form of single URL real download.
+
+The download commands accept HTTP customization flags:
+
+| Flag | Description |
+|------|-------------|
+| `--proxy <url>` | HTTP or HTTPS proxy URL |
+| `--header "Name: Value"` | Custom request header (repeatable) |
+| `--user-agent <value>` | Override the default `User-Agent` |
+| `--username <value>` | HTTP Basic Auth username |
+| `--password <value>` | HTTP Basic Auth password |
+
+See [HTTP Request Customization](../features/http-request-customization.md) for full details, validation rules, and security warnings.
 
 ## `daryaft [url...]`
 

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/he8um/daryaft/internal/config"
+	"github.com/he8um/daryaft/internal/httpopts"
 	"github.com/he8um/daryaft/pkg/version"
 )
 
@@ -36,12 +37,15 @@ func DefaultHTTPClient() *http.Client {
 	return defaultHTTPClient()
 }
 
-func newRequestWithContext(ctx context.Context, rawURL string) (*http.Request, error) {
+func newRequestWithContext(ctx context.Context, rawURL string, opts httpopts.Options) (*http.Request, error) {
 	request, err := http.NewRequestWithContext(ctx, http.MethodGet, rawURL, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	request.Header.Set("User-Agent", config.AppName+"/"+version.Version)
+	if opts.UserAgent == "" {
+		request.Header.Set("User-Agent", config.AppName+"/"+version.Version)
+	}
+	httpopts.ApplyToRequest(request, opts)
 	return request, nil
 }

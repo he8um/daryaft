@@ -404,6 +404,37 @@ Update guidance by install channel:
 See [Self-Update Roadmap](roadmap/self-update.md) and
 [Update Check QA](operations/update-check-qa.md).
 
+## HTTP Request Customization
+
+`--proxy`, `--header`, `--user-agent`, `--username`, and `--password` apply to
+both `download` (and the root URL form) and `inspect`.
+
+```bash
+daryaft download https://example.com/file.zip --proxy http://proxy.corp:8080
+daryaft download https://example.com/file.zip --header "X-Token: abc" --header "Accept: application/zip"
+daryaft download https://example.com/file.zip --user-agent "MyApp/1.0"
+daryaft download https://example.com/file.zip --username alice --password secret
+daryaft inspect https://example.com/file.zip --header "X-Probe: yes" --user-agent "Inspector/1.0"
+```
+
+Dry-run and verbose output redact passwords and sensitive header values:
+
+```bash
+daryaft download https://example.com/file.zip --username alice --password topsecret --dry-run
+# Prints: Auth: [REDACTED]
+```
+
+Validation rules:
+- `--proxy` accepts `http://` or `https://` URLs only. `socks5://` is rejected.
+- `--header "Name: Value"` requires a colon separator. Repeatable.
+- `--password` requires `--username`.
+- `--username`/`--password` and an explicit `Authorization` header cannot be
+  combined; use one or the other.
+- `--user-agent` overrides any `User-Agent` custom header.
+
+See [HTTP Request Customization](features/http-request-customization.md) and
+[HTTP Customization QA](operations/http-customization-qa.md).
+
 ## Planned Examples
 
 These examples are roadmap items and are not yet implemented:

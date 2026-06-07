@@ -15,19 +15,25 @@ import (
 	appconfig "github.com/he8um/daryaft/internal/config"
 	"github.com/he8um/daryaft/internal/download"
 	"github.com/he8um/daryaft/internal/downloader"
+	"github.com/he8um/daryaft/internal/httpopts"
 	"github.com/he8um/daryaft/internal/utils"
 	"github.com/spf13/cobra"
 )
 
 type downloadFlagValues struct {
-	file     string
-	output   string
-	name     string
-	dryRun   bool
-	checksum string
-	retries  int
-	resume   bool
-	noResume bool
+	file      string
+	output    string
+	name      string
+	dryRun    bool
+	checksum  string
+	retries   int
+	resume    bool
+	noResume  bool
+	proxy     string
+	headers   []string
+	userAgent string
+	username  string
+	password  string
 }
 
 var (
@@ -73,6 +79,11 @@ func addDownloadFlags(command *cobra.Command, flags *downloadFlagValues) {
 	command.Flags().IntVar(&flags.retries, "retries", 3, "retry attempts after the initial attempt, 0-20")
 	command.Flags().BoolVar(&flags.resume, "resume", true, "resume interrupted partial downloads")
 	command.Flags().BoolVar(&flags.noResume, "no-resume", false, "disable resume and restart partial downloads")
+	command.Flags().StringVar(&flags.proxy, "proxy", "", "proxy URL (http or https)")
+	command.Flags().StringArrayVar(&flags.headers, "header", nil, "custom request header in \"Name: Value\" format (repeatable)")
+	command.Flags().StringVar(&flags.userAgent, "user-agent", "", "override the default User-Agent header")
+	command.Flags().StringVar(&flags.username, "username", "", "HTTP Basic Auth username")
+	command.Flags().StringVar(&flags.password, "password", "", "HTTP Basic Auth password")
 }
 
 func checksumFlagCompletions(cmd *cobra.Command, args []string, argToComplete string) ([]string, cobra.ShellCompDirective) {
@@ -90,16 +101,29 @@ func runDownloadWithContext(cmd *cobra.Command, args []string, flags downloadFla
 	}
 	flags = applyConfigDefaultsToDownloadFlags(cmd, flags, cfg)
 
+	parsedHeaders, err := httpopts.ParseHeaders(flags.headers)
+	if err != nil {
+		return err
+	}
+	httpOpts := httpopts.Options{
+		ProxyURL:  flags.proxy,
+		Headers:   parsedHeaders,
+		UserAgent: flags.userAgent,
+		Username:  flags.username,
+		Password:  flags.password,
+	}
+
 	options := download.Options{
-		URLs:     args,
-		File:     flags.file,
-		Output:   flags.output,
-		Name:     flags.name,
-		DryRun:   flags.dryRun,
-		Checksum: flags.checksum,
-		Retries:  flags.retries,
-		Resume:   flags.resume,
-		NoResume: flags.noResume,
+		URLs:        args,
+		File:        flags.file,
+		Output:      flags.output,
+		Name:        flags.name,
+		DryRun:      flags.dryRun,
+		Checksum:    flags.checksum,
+		Retries:     flags.retries,
+		Resume:      flags.resume,
+		NoResume:    flags.noResume,
+		HTTPOptions: httpOpts,
 	}
 
 	plan, err := download.BuildPlan(options)
@@ -118,13 +142,19 @@ func runDownloadWithContext(cmd *cobra.Command, args []string, flags downloadFla
 		ctx = signalCtx
 	}
 
+	httpClient, err := httpopts.NewClient(downloader.DefaultHTTPClient(), plan.HTTPOptions)
+	if err != nil {
+		return err
+	}
+	d := downloader.NewWithOptions(httpClient, plan.HTTPOptions)
+
 	verboseMode := effectiveVerbose(cmd)
 	startedAt := time.Now()
 	printVerbosePlan(cmd, plan, verboseMode)
 
 	if len(plan.URLs) > 1 {
 		savingPrinted := make(map[int]bool)
-		result := downloader.New().DownloadBatchContext(ctx, plan, downloader.BatchHandlers{
+		result := d.DownloadBatchContext(ctx, plan, downloader.BatchHandlers{
 			ItemStarted: func(item downloader.BatchItem) {
 				fmt.Fprintf(cmd.OutOrStdout(), "[%d/%d] Downloading: %s\n", item.Index, item.Total, item.URL)
 				printVerboseItem(cmd, item, verboseMode)
@@ -160,7 +190,7 @@ func runDownloadWithContext(cmd *cobra.Command, args []string, flags downloadFla
 	fmt.Fprintf(cmd.OutOrStdout(), "Downloading: %s\n", plan.URLs[0])
 
 	savingPrinted := false
-	result, err := downloader.New().DownloadWithEventsContext(ctx, plan, func(event downloader.Event) {
+	result, err := d.DownloadWithEventsContext(ctx, plan, func(event downloader.Event) {
 		switch event.Type {
 		case downloader.EventStarted:
 			if !savingPrinted {
@@ -283,6 +313,21 @@ func printVerbosePlan(cmd *cobra.Command, plan download.Plan, enabled bool) {
 	if len(plan.URLs) == 1 {
 		fmt.Fprintf(cmd.OutOrStdout(), "Verbose: effective URL: %s\n", redactURL(plan.URLs[0]))
 	}
+	if httpopts.HasAny(plan.HTTPOptions) {
+		redacted := httpopts.Redact(plan.HTTPOptions)
+		if redacted.ProxyURL != "" {
+			fmt.Fprintf(cmd.OutOrStdout(), "Verbose: proxy: %s\n", redacted.ProxyURL)
+		}
+		for _, h := range redacted.Headers {
+			fmt.Fprintf(cmd.OutOrStdout(), "Verbose: header: %s: %s\n", h.Name, h.Value)
+		}
+		if redacted.UserAgent != "" {
+			fmt.Fprintf(cmd.OutOrStdout(), "Verbose: user-agent: %s\n", redacted.UserAgent)
+		}
+		if redacted.Username != "" {
+			fmt.Fprintf(cmd.OutOrStdout(), "Verbose: auth: %s:[REDACTED]\n", redacted.Username)
+		}
+	}
 }
 
 func printVerboseItem(cmd *cobra.Command, item downloader.BatchItem, enabled bool) {
@@ -351,7 +396,7 @@ func redactURL(rawURL string) string {
 }
 
 func hasDownloadFlagChanges(cmd *cobra.Command) bool {
-	for _, name := range []string{"file", "output", "name", "dry-run", "retries", "resume", "no-resume"} {
+	for _, name := range []string{"file", "output", "name", "dry-run", "retries", "resume", "no-resume", "proxy", "header", "user-agent", "username", "password"} {
 		if localFlagChanged(cmd, name) {
 			return true
 		}

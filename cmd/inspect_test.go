@@ -114,3 +114,99 @@ func inspectCommandServer() *httptest.Server {
 		w.Header().Set("Last-Modified", "Tue, 01 Jun 2026 12:00:00 GMT")
 	}))
 }
+
+func TestInspectCLICustomHeader(t *testing.T) {
+	var gotHeader string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotHeader = r.Header.Get("X-Inspect")
+		w.Header().Set("Content-Length", "4")
+		w.Header().Set("Content-Type", "text/plain")
+		w.Header().Set("Accept-Ranges", "bytes")
+		w.Header().Set("ETag", `"e1"`)
+		w.Header().Set("Last-Modified", "Tue, 01 Jun 2026 12:00:00 GMT")
+	}))
+	defer server.Close()
+
+	_, err := executeInspectCommand(t, server.URL+"/file.txt", "--header", "X-Inspect: inspectval")
+	if err != nil {
+		t.Fatalf("inspect returned error: %v", err)
+	}
+	if gotHeader != "inspectval" {
+		t.Errorf("X-Inspect = %q, want inspectval", gotHeader)
+	}
+}
+
+func TestInspectCLIUserAgent(t *testing.T) {
+	var gotUA string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotUA = r.UserAgent()
+		w.Header().Set("Content-Length", "4")
+		w.Header().Set("Content-Type", "text/plain")
+		w.Header().Set("Accept-Ranges", "bytes")
+		w.Header().Set("ETag", `"e1"`)
+		w.Header().Set("Last-Modified", "Tue, 01 Jun 2026 12:00:00 GMT")
+	}))
+	defer server.Close()
+
+	_, err := executeInspectCommand(t, server.URL+"/file.txt", "--user-agent", "InspectCLIAgent/5.0")
+	if err != nil {
+		t.Fatalf("inspect returned error: %v", err)
+	}
+	if gotUA != "InspectCLIAgent/5.0" {
+		t.Errorf("User-Agent = %q, want InspectCLIAgent/5.0", gotUA)
+	}
+}
+
+func TestInspectCLIBasicAuth(t *testing.T) {
+	var gotUser, gotPass string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotUser, gotPass, _ = r.BasicAuth()
+		w.Header().Set("Content-Length", "4")
+		w.Header().Set("Content-Type", "text/plain")
+		w.Header().Set("Accept-Ranges", "bytes")
+		w.Header().Set("ETag", `"e1"`)
+		w.Header().Set("Last-Modified", "Tue, 01 Jun 2026 12:00:00 GMT")
+	}))
+	defer server.Close()
+
+	_, err := executeInspectCommand(t, server.URL+"/file.txt", "--username", "carol", "--password", "pw123")
+	if err != nil {
+		t.Fatalf("inspect returned error: %v", err)
+	}
+	if gotUser != "carol" || gotPass != "pw123" {
+		t.Errorf("BasicAuth = %q/%q, want carol/pw123", gotUser, gotPass)
+	}
+}
+
+func TestInspectCLIRejectsInvalidHeader(t *testing.T) {
+	_, err := executeInspectCommand(t, "https://example.com/file.txt", "--header", "NoColon")
+	if err == nil {
+		t.Fatal("expected error for invalid header")
+	}
+}
+
+func TestInspectCLIRejectsInvalidProxy(t *testing.T) {
+	_, err := executeInspectCommand(t, "https://example.com/file.txt", "--proxy", "socks5://proxy:1080")
+	if err == nil {
+		t.Fatal("expected error for socks5 proxy")
+	}
+}
+
+func TestInspectCLIRejectsPasswordWithoutUsername(t *testing.T) {
+	_, err := executeInspectCommand(t, "https://example.com/file.txt", "--password", "secret")
+	if err == nil {
+		t.Fatal("expected error: password without username")
+	}
+}
+
+func TestInspectCLIRejectsAuthHeaderPlusBasicAuth(t *testing.T) {
+	_, err := executeInspectCommand(t,
+		"https://example.com/file.txt",
+		"--username", "alice",
+		"--password", "pass",
+		"--header", "Authorization: Bearer tok",
+	)
+	if err == nil {
+		t.Fatal("expected error: basic auth + Authorization header")
+	}
+}
