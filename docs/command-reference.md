@@ -593,8 +593,8 @@ Human output (development build):
 ```text
 Daryaft update check
 
-Current version:  1.4.0-dev
-Latest stable:    1.3.0
+Current version:  1.5.0-dev
+Latest stable:    1.4.0
 Status:           development build
 
 Release: https://github.com/he8um/daryaft/releases/tag/v1.3.0

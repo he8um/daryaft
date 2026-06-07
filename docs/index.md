@@ -1,11 +1,11 @@
 # Daryaft Documentation
 
-Daryaft is a modern terminal downloader written in Go. **`v1.3.0` is the
+Daryaft is a modern terminal downloader written in Go. **`v1.4.0` is the
 current stable release.**
 
 Install via Homebrew (`brew tap he8um/tap && brew install daryaft`) or download
 binary archives from the
-[GitHub releases page](https://github.com/he8um/daryaft/releases/tag/v1.3.0).
+[GitHub releases page](https://github.com/he8um/daryaft/releases/tag/v1.4.0).
 Other package manager channels are post-1.0 work.
 
 ## Core Docs
@@ -29,6 +29,7 @@ Other package manager channels are post-1.0 work.
 - [v1.0.0 Release Notes](operations/release-notes-v1.0.0.md): stable release notes with highlights, known limitations, install, and upgrade notes.
 - [v1.0.0 Release Assets](operations/release-assets.md): binary asset strategy, GoReleaser build process, and upload/validation commands.
 - [v1.1.0 Release Notes](operations/release-notes-v1.1.0.md): stable release notes for `v1.1.0` — read-only update check feature.
+- [v1.4.0 Release Notes](operations/release-notes-v1.4.0.md): stable release notes for `v1.4.0` — reliability and test determinism.
 - [v1.3.0 Release Notes](operations/release-notes-v1.3.0.md): stable release notes for `v1.3.0` — HTTP request customization.
 - [v1.2.0 Release Notes](operations/release-notes-v1.2.0.md): stable release notes for `v1.2.0` — update check UX polish and install-channel hardening.
 - [Update Check QA](operations/update-check-qa.md): manual QA checklist for `daryaft update --check`.

@@ -1,10 +1,11 @@
 # Release Process
 
-**`v1.3.0` is the current stable release.** `main` is now on `1.4.0-dev`
+**`v1.4.0` is the current stable release.** `main` is now on `1.5.0-dev`
 post-release development.
 
-See [Daryaft v1.3.0 Release Notes](release-notes-v1.3.0.md) for the latest
+See [Daryaft v1.4.0 Release Notes](release-notes-v1.4.0.md) for the latest
 stable release notes and known limitations. Earlier releases:
+- [v1.3.0 Release Notes](release-notes-v1.3.0.md): HTTP request customization.
 - [v1.2.0 Release Notes](release-notes-v1.2.0.md): update check UX polish.
 - [v1.1.0 Release Notes](release-notes-v1.1.0.md): read-only update check.
 - [v1.0.0 Release Notes](release-notes-v1.0.0.md): initial stable baseline.
@@ -99,11 +100,11 @@ are written under ignored local build directories such as `dist/`.
 Snapshot versions are intentionally named:
 
 ```text
-1.4.0-dev-SNAPSHOT-<short-commit>
+1.5.0-dev-SNAPSHOT-<short-commit>
 ```
 
 GoReleaser normally derives versions from Git tags. The snapshot template keeps
-local dry-run metadata aligned with the current `1.4.0-dev` development version
+local dry-run metadata aligned with the current `1.5.0-dev` development version
 without creating or deleting tags.
 
 ## Release Metadata
@@ -119,7 +120,7 @@ with linker flags:
 Source builds keep the default development metadata:
 
 ```text
-version: 1.4.0-dev
+version: 1.5.0-dev
 commit: local
 date: unknown
 built_by: source
