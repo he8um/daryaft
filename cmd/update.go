@@ -13,6 +13,7 @@ func newUpdateCommand() *cobra.Command {
 	var jsonOutput bool
 	var includePrerelease bool
 	var repo string
+	var apiBaseURL string
 
 	command := &cobra.Command{
 		Use:          "update",
@@ -41,6 +42,7 @@ your install channel to upgrade after a new release is available.`,
 
 			opts := update.CheckOptions{
 				IncludePrerelease: includePrerelease,
+				APIBaseURL:        apiBaseURL,
 			}
 			if repo != "" {
 				// Allow owner/repo override for testing; hidden flag.
@@ -75,6 +77,8 @@ your install channel to upgrade after a new release is available.`,
 	command.Flags().BoolVar(&includePrerelease, "include-prerelease", false, "include pre-release versions in the check")
 	command.Flags().StringVar(&repo, "repo", "", "override owner/repo for the release check (for testing)")
 	_ = command.Flags().MarkHidden("repo")
+	command.Flags().StringVar(&apiBaseURL, "api-base-url", "", "override GitHub API base URL (for testing)")
+	_ = command.Flags().MarkHidden("api-base-url")
 
 	return command
 }

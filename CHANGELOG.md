@@ -6,6 +6,23 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 
 ## [Unreleased]
 
+### Added
+
+- `daryaft update --check` error messages improved: 403 Forbidden now reports a
+  clear rate-limit message; 404 reports repository not found; 5xx reports
+  temporary unavailability; network timeout and connectivity failures each have
+  distinct messages.
+- `APIBaseURL` field on `update.CheckOptions` and hidden `--api-base-url` CLI
+  flag for test injection, eliminating all real GitHub API calls from the default
+  test suite.
+- `DARYAFT_RUN_NETWORK_TESTS=1` opt-in guard for real-network update smoke tests
+  (`TestUpdateCommand_RealNetwork_Check`, `TestUpdateCommand_RealNetwork_JSON`).
+- `go test ./...` and `make rc-check` are now fully deterministic and will not
+  fail due to GitHub API rate limits.
+- Error-classification tests for 403, 404, 500, and invalid-JSON responses in
+  `cmd/update_test.go`.
+- `TestUpdateCommand_HiddenAPIBaseURLFlag` verifying the new hidden test flag.
+
 - Post-1.3.0 development begins. Source default version advanced to `1.4.0-dev`.
 
 ## [1.3.0] - 2026-06-07

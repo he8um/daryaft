@@ -35,6 +35,10 @@ type CheckOptions struct {
 	// CurrentVersion overrides version.Version for the comparison.
 	// Empty string means use version.Info().Version.
 	CurrentVersion string
+
+	// APIBaseURL overrides the GitHub API base URL (e.g. for tests).
+	// Empty string uses https://api.github.com.
+	APIBaseURL string
 }
 
 // githubRelease is a minimal representation of a GitHub Releases API entry.
@@ -68,7 +72,12 @@ func Check(ctx context.Context, opts CheckOptions) (Result, error) {
 	currentDisplay := normalizeVersion(currentRaw)
 	isDev := isDevBuild(currentRaw)
 
-	latest, err := fetchLatestRelease(ctx, client, opts.Owner, opts.Repo, opts.IncludePrerelease)
+	apiBase := opts.APIBaseURL
+	if apiBase == "" {
+		apiBase = "https://api.github.com"
+	}
+
+	latest, err := fetchLatestRelease(ctx, client, apiBase, opts.Owner, opts.Repo, opts.IncludePrerelease)
 	if err != nil {
 		return Result{}, err
 	}
@@ -114,17 +123,17 @@ func Check(ctx context.Context, opts CheckOptions) (Result, error) {
 	}, nil
 }
 
-func fetchLatestRelease(ctx context.Context, client *http.Client, owner, repo string, includePrerelease bool) (githubRelease, error) {
+func fetchLatestRelease(ctx context.Context, client *http.Client, apiBase, owner, repo string, includePrerelease bool) (githubRelease, error) {
 	if includePrerelease {
-		return fetchNewestRelease(ctx, client, owner, repo)
+		return fetchNewestRelease(ctx, client, apiBase, owner, repo)
 	}
-	return fetchStableRelease(ctx, client, owner, repo)
+	return fetchStableRelease(ctx, client, apiBase, owner, repo)
 }
 
 // fetchStableRelease uses /releases/latest which GitHub guarantees is the
 // newest non-prerelease, non-draft release.
-func fetchStableRelease(ctx context.Context, client *http.Client, owner, repo string) (githubRelease, error) {
-	apiURL := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", owner, repo)
+func fetchStableRelease(ctx context.Context, client *http.Client, apiBase, owner, repo string) (githubRelease, error) {
+	apiURL := fmt.Sprintf("%s/repos/%s/%s/releases/latest", apiBase, owner, repo)
 	var release githubRelease
 	if err := githubGet(ctx, client, apiURL, &release); err != nil {
 		return githubRelease{}, err
@@ -134,8 +143,8 @@ func fetchStableRelease(ctx context.Context, client *http.Client, owner, repo st
 
 // fetchNewestRelease queries /releases and returns the newest non-draft entry,
 // including prereleases.
-func fetchNewestRelease(ctx context.Context, client *http.Client, owner, repo string) (githubRelease, error) {
-	apiURL := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases?per_page=20", owner, repo)
+func fetchNewestRelease(ctx context.Context, client *http.Client, apiBase, owner, repo string) (githubRelease, error) {
+	apiURL := fmt.Sprintf("%s/repos/%s/%s/releases?per_page=20", apiBase, owner, repo)
 	var releases []githubRelease
 	if err := githubGet(ctx, client, apiURL, &releases); err != nil {
 		return githubRelease{}, err
@@ -160,12 +169,26 @@ func githubGet(ctx context.Context, client *http.Client, url string, dest interf
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return fmt.Errorf("github releases query: %w", err)
+		// Distinguish timeout/deadline from general network failure.
+		if ctx.Err() != nil {
+			return fmt.Errorf("request to GitHub timed out. Check your network and try again")
+		}
+		return fmt.Errorf("could not reach GitHub Releases API. Check your network and try again")
 	}
 	defer func() { _ = resp.Body.Close() }()
 
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("github releases API returned %s", resp.Status)
+	switch resp.StatusCode {
+	case http.StatusOK:
+		// continue to parse body
+	case http.StatusForbidden:
+		return fmt.Errorf("GitHub API returned 403 Forbidden, likely due to rate limiting or access restrictions. Try again later")
+	case http.StatusNotFound:
+		return fmt.Errorf("GitHub release repository was not found (404 Not Found)")
+	default:
+		if resp.StatusCode >= 500 {
+			return fmt.Errorf("GitHub API is temporarily unavailable (%s). Try again later", resp.Status)
+		}
+		return fmt.Errorf("GitHub API returned unexpected status %s", resp.Status)
 	}
 
 	body, err := io.ReadAll(io.LimitReader(resp.Body, maxReleaseBody))
@@ -173,7 +196,7 @@ func githubGet(ctx context.Context, client *http.Client, url string, dest interf
 		return fmt.Errorf("read github response: %w", err)
 	}
 	if err := json.Unmarshal(body, dest); err != nil {
-		return fmt.Errorf("parse github response: %w", err)
+		return fmt.Errorf("GitHub API returned an invalid response")
 	}
 	return nil
 }
