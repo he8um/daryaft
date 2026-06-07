@@ -1,12 +1,15 @@
 # Release Process
 
-**`v1.0.0` is the first public stable release.** `main` is now on
-`1.2.0-dev` post-release development.
+**`v1.2.0` is the current stable release.** `main` is now on
+`1.3.0-dev` post-release development.
 
-See [Daryaft v1.0.0 Release Notes](release-notes-v1.0.0.md) for the stable
-release notes and known limitations. The binary asset strategy for v1.0.0 is
-in [v1.0.0 Release Assets](release-assets.md). Historical RC and pre-release
-readiness docs remain available for reference:
+See [Daryaft v1.2.0 Release Notes](release-notes-v1.2.0.md) for the latest
+stable release notes and known limitations. Earlier releases:
+- [v1.1.0 Release Notes](release-notes-v1.1.0.md): read-only update check.
+- [v1.0.0 Release Notes](release-notes-v1.0.0.md): initial stable baseline.
+
+The binary asset strategy for v1.0.0 is in [v1.0.0 Release Assets](release-assets.md).
+Historical RC and pre-release readiness docs remain available for reference:
 - [Release-Candidate Validation](rc-validation.md)
 - [Pre-Release Readiness](pre-release-readiness.md)
 - [v0.6.0-rc.2 Release Status](release-status-v0.6.0-rc.2.md)

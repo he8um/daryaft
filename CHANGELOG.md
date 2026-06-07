@@ -6,15 +6,16 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-06-07
+
+### Added
+
 - Post-1.1.0 development begins. Source default version advanced to `1.2.0-dev`.
 - Added `scripts/update-homebrew-formula.sh`: a safe Homebrew formula update
   helper for future release maintenance. Fetches checksums from a GitHub
   release, updates a local tap checkout, and never pushes or commits
   automatically. Includes dry-run support and `make homebrew-formula-update`
   targets.
-
-### v1.2.0 — Update UX Polish and Install-Channel Hardening
-
 - `daryaft update --check` now shows `Release:` URL in all status modes, not
   only when an update is available.
 - Per-channel update guidance: Homebrew → `brew update && brew upgrade daryaft`;
@@ -34,6 +35,7 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
   `updateCommand()`, `detectInstallChannel()`, and JSON contract.
 - Added `docs/operations/update-check-qa.md`: manual QA checklist for all
   `update --check` commands, channels, and edge cases.
+- Added `docs/roadmap/v1.2.0-update-ux.md`: v1.2.0 scope and quality gates.
 - Updated `docs/command-reference.md`, `docs/usage.md`, `docs/roadmap/self-update.md`
   to reflect per-channel guidance and v1.2.0 scope.
 

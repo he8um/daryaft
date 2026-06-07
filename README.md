@@ -8,17 +8,17 @@ packaging, and future self-update support.
 
 ## Status
 
-**v1.1.0 is the current stable release.** Download binary archives from the
-[GitHub releases page](https://github.com/he8um/daryaft/releases/tag/v1.1.0).
+**v1.2.0 is the current stable release.** Download binary archives from the
+[GitHub releases page](https://github.com/he8um/daryaft/releases/tag/v1.2.0).
 
-Daryaft v1.1.0 adds read-only `daryaft update --check` on top of the v1.0.0
-baseline. It ships CLI and TUI HTTP/HTTPS downloading with dry-run planning,
-single URL and sequential batch downloads, resume from `.part` files, retry
-with exponential backoff, CLI checksum verification for single URL downloads,
-an interactive Bubble Tea TUI, YAML configuration with environment overrides,
-`inspect` metadata preflight, `doctor` diagnostics, shell completions, and
-the new update check command. Running `daryaft` with no arguments opens the
-interactive TUI home screen.
+Daryaft v1.2.0 polishes the `daryaft update --check` UX and hardens
+install-channel detection on top of the v1.1.0 baseline. It ships CLI and TUI
+HTTP/HTTPS downloading with dry-run planning, single URL and sequential batch
+downloads, resume from `.part` files, retry with exponential backoff, CLI
+checksum verification for single URL downloads, an interactive Bubble Tea TUI,
+YAML configuration with environment overrides, `inspect` metadata preflight,
+`doctor` diagnostics, shell completions, and a polished update check command.
+Running `daryaft` with no arguments opens the interactive TUI home screen.
 
 `daryaft update --check` is read-only: it queries the GitHub Releases API and
 reports the current version, the latest stable release, and install-channel-aware
@@ -34,10 +34,10 @@ Upgrade guidance depends on how Daryaft was installed:
 
 Auto-update (`daryaft update` without `--check`) is not yet implemented.
 
-v1.1.0 is a stable incremental release, not a feature-complete release. Known
-limitations (Windows, concurrent downloads, proxy/auth, auto-update, package
-managers, batch checksum) are documented in the
-[v1.1.0 release notes](docs/operations/release-notes-v1.1.0.md). Post-1.0
+v1.2.0 is a stable incremental release. Known limitations (Windows, concurrent
+downloads, proxy/auth, auto-update, package managers, batch checksum) are
+documented in the
+[v1.2.0 release notes](docs/operations/release-notes-v1.2.0.md). Post-1.0
 features are tracked in [post-1-feature-packs.md](docs/roadmap/post-1-feature-packs.md).
 
 - Repository: https://github.com/he8um/daryaft
