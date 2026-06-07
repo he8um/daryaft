@@ -7,6 +7,9 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 ## [Unreleased]
 
 - Post-1.4.0 development begins. Source default version advanced to `1.5.0-dev`.
+- Added `scripts/release-preflight.sh` and `make release-preflight` guardrail
+  to validate a target version before tagging. Detects version skips, missing
+  release notes, missing CHANGELOG entries, and pre-existing tags/releases.
 
 ## [1.4.0] - 2026-06-07
 
@@ -29,6 +32,10 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 - Post-1.3.0 development begins. Source default version advanced to `1.4.0-dev`.
 
 ## [1.3.0] - 2026-06-07
+
+> **Note:** `v1.3.0` was tagged but no GitHub Release was published. The
+> changes shipped as part of `v1.4.0`. Do not backfill a `v1.3.0` GitHub
+> Release. See [versioning policy](docs/roadmap/versioning-policy.md).
 
 ### Added
 

@@ -5,6 +5,14 @@ Daryaft uses milestone-oriented semantic versioning.
 The latest stable release is `v1.4.0`. The current source development metadata
 version is `1.5.0-dev`, representing active post-1.4.0 development on `main`.
 
+## Version History Note
+
+`v1.3.0` was tagged in source history but was intentionally not published as a
+GitHub Release. The first GitHub Release after `v1.2.0` is `v1.4.0`. Do not
+backfill or recreate `v1.3.0`. The `release-preflight` script enforces this
+by detecting unexpected version gaps and requiring `--allow-skip` when a skip
+is intentional.
+
 ## Rules
 
 - `v0.x.0`: pre-1.0 local development / preview versions.
@@ -33,6 +41,24 @@ built_by: source
 Release builds inject version metadata through linker flags into
 `github.com/he8um/daryaft/pkg/version`. GoReleaser sets version, commit, date,
 and `built_by`.
+
+## Release Preflight
+
+Before tagging a release, always run:
+
+```bash
+make release-preflight VERSION=X.Y.Z
+```
+
+The preflight guardrail validates: clean tree, correct branch, source dev
+version alignment, release notes existence, CHANGELOG entry, and absence of
+the local/remote tag and GitHub release. It never creates tags or pushes.
+
+If intentionally skipping a version, use:
+
+```bash
+make release-preflight-allow-skip VERSION=X.Y.Z
+```
 
 ## Local Release Checks
 

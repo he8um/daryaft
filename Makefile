@@ -8,7 +8,7 @@ LD_FLAGS := -X $(VERSION_PKG).Version=$(VERSION) -X $(VERSION_PKG).Commit=$(COMM
 GO_BIN := $(shell go env GOPATH 2>/dev/null)/bin
 TOOL_PATH := $(GO_BIN):$(PATH)
 
-.PHONY: help test lint security rc-check rc-info build build-local version ci release-check run clean homebrew-formula-update homebrew-formula-update-dry-run
+.PHONY: help test lint security rc-check rc-info build build-local version ci release-check run clean homebrew-formula-update homebrew-formula-update-dry-run release-preflight release-preflight-allow-skip
 
 help:
 	@echo "Daryaft development commands:"
@@ -26,6 +26,8 @@ help:
 	@echo "  make clean        Remove local build artifacts"
 	@echo "  make homebrew-formula-update VERSION=X.Y.Z TAP_DIR=/path  Update tap formula (no push)"
 	@echo "  make homebrew-formula-update-dry-run VERSION=X.Y.Z TAP_DIR=/path  Preview tap update"
+	@echo "  make release-preflight VERSION=X.Y.Z  Run release version guardrail checks"
+	@echo "  make release-preflight-allow-skip VERSION=X.Y.Z  Same but allow version skips"
 
 test:
 	go test ./...
@@ -77,6 +79,7 @@ rc-check:
 	git diff --check
 	sh -n scripts/manual-qa-server.sh
 	bash -n scripts/update-homebrew-formula.sh
+	bash -n scripts/release-preflight.sh
 
 rc-info:
 	@echo "Git describe:"
@@ -133,3 +136,11 @@ homebrew-formula-update-dry-run:
 	@test -n "$(VERSION)" || (echo "VERSION is required. Example: make homebrew-formula-update-dry-run VERSION=1.2.0 TAP_DIR=/tmp/homebrew-tap" && exit 1)
 	@test -n "$(TAP_DIR)" || (echo "TAP_DIR is required. Example: TAP_DIR=/tmp/homebrew-tap" && exit 1)
 	./scripts/update-homebrew-formula.sh --version "$(VERSION)" --tap-dir "$(TAP_DIR)" --dry-run
+
+release-preflight:
+	@test -n "$(VERSION)" || (echo "VERSION is required, e.g. make release-preflight VERSION=1.5.0" && exit 1)
+	./scripts/release-preflight.sh "$(VERSION)"
+
+release-preflight-allow-skip:
+	@test -n "$(VERSION)" || (echo "VERSION is required, e.g. make release-preflight-allow-skip VERSION=1.5.0" && exit 1)
+	./scripts/release-preflight.sh "$(VERSION)" --allow-skip

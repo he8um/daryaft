@@ -3,9 +3,17 @@
 **`v1.4.0` is the current stable release.** `main` is now on `1.5.0-dev`
 post-release development.
 
+> **Version skip note:** `v1.3.0` was tagged in source history but no GitHub
+> Release was published for it. The tag exists locally and on the remote as
+> part of normal commit history, but it was intentionally not promoted to a
+> stable release. `v1.4.0` is the first release after `v1.2.0` that was
+> published as a stable GitHub release with binary assets. Do **not** backfill
+> or recreate a `v1.3.0` release.
+
 See [Daryaft v1.4.0 Release Notes](release-notes-v1.4.0.md) for the latest
 stable release notes and known limitations. Earlier releases:
-- [v1.3.0 Release Notes](release-notes-v1.3.0.md): HTTP request customization.
+- [v1.3.0 Release Notes](release-notes-v1.3.0.md): HTTP request customization
+  (tag exists; no GitHub release published — intentionally skipped).
 - [v1.2.0 Release Notes](release-notes-v1.2.0.md): update check UX polish.
 - [v1.1.0 Release Notes](release-notes-v1.1.0.md): read-only update check.
 - [v1.0.0 Release Notes](release-notes-v1.0.0.md): initial stable baseline.
@@ -16,6 +24,64 @@ Historical RC and pre-release readiness docs remain available for reference:
 - [Pre-Release Readiness](pre-release-readiness.md)
 - [v0.6.0-rc.2 Release Status](release-status-v0.6.0-rc.2.md)
 - [Release Readiness: v1.0](../roadmap/release-readiness-v1.0.md)
+
+## Release Preflight Guardrail
+
+Before creating a release tag, always run the release preflight script to
+validate the target version against the current repository state:
+
+```bash
+make release-preflight VERSION=X.Y.Z
+```
+
+For example, to validate that `v1.5.0` is ready to tag:
+
+```bash
+make release-preflight VERSION=1.5.0
+```
+
+The preflight script checks:
+
+1. Working tree is clean and on `main`, up to date with `origin/main`.
+2. Source dev version in `pkg/version/version.go` matches `X.Y.Z-dev`.
+3. Latest stable tag is the expected predecessor (no accidental version skip).
+4. `docs/operations/release-notes-vX.Y.Z.md` exists and mentions the version.
+5. `CHANGELOG.md` has a `[X.Y.Z]` section.
+6. Local tag `vX.Y.Z` does not exist.
+7. Remote tag `refs/tags/vX.Y.Z` does not exist.
+8. GitHub release `vX.Y.Z` does not exist.
+
+The script is read-only. It never creates tags, pushes, or modifies files.
+
+### Intentional Version Skip
+
+If a version is intentionally skipped (as happened with `v1.3.0`), use:
+
+```bash
+make release-preflight-allow-skip VERSION=X.Y.Z
+```
+
+This allows the skip but prints an explicit warning. Document the reason in
+the release notes and CHANGELOG before tagging.
+
+### Release Execution Order
+
+```text
+release notes finalized (docs/operations/release-notes-vX.Y.Z.md)
+→ CHANGELOG.md [X.Y.Z] section ready
+→ make release-preflight VERSION=X.Y.Z    ← must pass
+→ quality gates (make rc-check)
+→ git tag -a vX.Y.Z -m "Daryaft vX.Y.Z"
+→ git push origin vX.Y.Z
+→ wait for tag CI (green)
+→ goreleaser release --clean --skip=publish
+→ gh release create vX.Y.Z --notes-file ...
+→ gh release upload vX.Y.Z dist/*.tar.gz dist/checksums.txt
+→ post-release verification
+→ Homebrew formula update
+→ advance source version to next -dev
+→ commit and push
+```
 
 ## CI Validation
 
