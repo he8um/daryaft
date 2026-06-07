@@ -127,13 +127,32 @@ The formula is manually maintained for now. When a new Daryaft release is
 published:
 
 1. Build and publish the new GitHub release assets.
-2. Download the new `checksums.txt` from the GitHub release.
-3. Update `Formula/daryaft.rb` in `he8um/homebrew-tap`:
-   - Bump `version`.
-   - Update both `url` entries to the new tag.
-   - Update both `sha256` entries from the new `checksums.txt`.
-4. Push the updated formula to `he8um/homebrew-tap`.
-5. Verify with `brew update && brew upgrade daryaft && daryaft version`.
+2. Clone the tap: `git clone https://github.com/he8um/homebrew-tap.git /tmp/homebrew-tap`
+3. Run the helper script:
+   ```bash
+   scripts/update-homebrew-formula.sh --version X.Y.Z --tap-dir /tmp/homebrew-tap
+   ```
+   The script fetches `checksums.txt` from the GitHub release, updates
+   `Formula/daryaft.rb` in the local clone, and prints next steps.
+4. Review the diff, validate with `ruby -c` and `brew reinstall`.
+5. In the tap clone: `git add Formula/daryaft.rb && git commit -m "Update daryaft to vX.Y.Z" && git push`
+6. Verify with `brew update && brew upgrade daryaft && daryaft version`.
+
+For a dry run preview without modifying files:
+
+```bash
+scripts/update-homebrew-formula.sh --version X.Y.Z --tap-dir /tmp/homebrew-tap --dry-run
+```
+
+Or use the Makefile helper:
+
+```bash
+make homebrew-formula-update VERSION=X.Y.Z TAP_DIR=/tmp/homebrew-tap
+make homebrew-formula-update-dry-run VERSION=X.Y.Z TAP_DIR=/tmp/homebrew-tap
+```
+
+The script never pushes, commits, or creates releases. See
+[Homebrew Release Automation](homebrew-release-automation.md) for full details.
 
 A formula draft reference is kept in this repository at
 [docs/operations/homebrew-formula-draft/daryaft.rb](homebrew-formula-draft/daryaft.rb)
@@ -193,6 +212,7 @@ Do not uncomment this block until all prerequisite checks above are satisfied.
 
 ## References
 
+- [Homebrew Release Automation](homebrew-release-automation.md)
 - [v1.1.0 Release Notes](release-notes-v1.1.0.md)
 - [v1.0.0 Release Assets](release-assets.md)
 - [v1.0.0 Release Notes](release-notes-v1.0.0.md)

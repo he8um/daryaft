@@ -8,7 +8,7 @@ LD_FLAGS := -X $(VERSION_PKG).Version=$(VERSION) -X $(VERSION_PKG).Commit=$(COMM
 GO_BIN := $(shell go env GOPATH 2>/dev/null)/bin
 TOOL_PATH := $(GO_BIN):$(PATH)
 
-.PHONY: help test lint security rc-check rc-info build build-local version ci release-check run clean
+.PHONY: help test lint security rc-check rc-info build build-local version ci release-check run clean homebrew-formula-update homebrew-formula-update-dry-run
 
 help:
 	@echo "Daryaft development commands:"
@@ -24,6 +24,8 @@ help:
 	@echo "  make release-check  Run local GoReleaser snapshot check without publishing"
 	@echo "  make run          Run the local CLI"
 	@echo "  make clean        Remove local build artifacts"
+	@echo "  make homebrew-formula-update VERSION=X.Y.Z TAP_DIR=/path  Update tap formula (no push)"
+	@echo "  make homebrew-formula-update-dry-run VERSION=X.Y.Z TAP_DIR=/path  Preview tap update"
 
 test:
 	go test ./...
@@ -74,6 +76,7 @@ rc-check:
 	goreleaser check
 	git diff --check
 	sh -n scripts/manual-qa-server.sh
+	bash -n scripts/update-homebrew-formula.sh
 
 rc-info:
 	@echo "Git describe:"
@@ -120,3 +123,13 @@ run:
 
 clean:
 	rm -rf bin dist build coverage.out coverage.html
+
+homebrew-formula-update:
+	@test -n "$(VERSION)" || (echo "VERSION is required. Example: make homebrew-formula-update VERSION=1.2.0 TAP_DIR=/tmp/homebrew-tap" && exit 1)
+	@test -n "$(TAP_DIR)" || (echo "TAP_DIR is required. Example: TAP_DIR=/tmp/homebrew-tap" && exit 1)
+	./scripts/update-homebrew-formula.sh --version "$(VERSION)" --tap-dir "$(TAP_DIR)"
+
+homebrew-formula-update-dry-run:
+	@test -n "$(VERSION)" || (echo "VERSION is required. Example: make homebrew-formula-update-dry-run VERSION=1.2.0 TAP_DIR=/tmp/homebrew-tap" && exit 1)
+	@test -n "$(TAP_DIR)" || (echo "TAP_DIR is required. Example: TAP_DIR=/tmp/homebrew-tap" && exit 1)
+	./scripts/update-homebrew-formula.sh --version "$(VERSION)" --tap-dir "$(TAP_DIR)" --dry-run

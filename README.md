@@ -56,11 +56,12 @@ tar -xzf daryaft_darwin_arm64.tar.gz
 Available archives: `daryaft_linux_amd64.tar.gz`, `daryaft_linux_arm64.tar.gz`,
 `daryaft_darwin_amd64.tar.gz`, `daryaft_darwin_arm64.tar.gz`.
 
-The Homebrew formula is manually maintained for now. GoReleaser Homebrew
-publishing remains disabled. Other package manager channels (deb, rpm, Arch)
-are later post-1.0 work. Source builds on `main` report `1.2.0-dev`
-(current development default); release builds inject the exact tag version
-via GoReleaser ldflags.
+For future releases, `scripts/update-homebrew-formula.sh` updates a local tap
+clone from the published GitHub release checksums — the maintainer reviews the
+diff and pushes manually. GoReleaser Homebrew publishing remains disabled.
+Other package manager channels (deb, rpm, Arch) are later post-1.0 work.
+Source builds on `main` report `1.2.0-dev` (current development default);
+release builds inject the exact tag version via GoReleaser ldflags.
 
 For local development:
 

@@ -29,6 +29,7 @@ Other package manager channels are post-1.0 work.
 - [v1.0.0 Release Assets](operations/release-assets.md): binary asset strategy, GoReleaser build process, and upload/validation commands.
 - [v1.1.0 Release Notes](operations/release-notes-v1.1.0.md): stable release notes for `v1.1.0` — read-only update check feature.
 - [Homebrew Tap](operations/homebrew-tap.md): live tap at `he8um/homebrew-tap`, install instructions, formula details, maintenance guide, and GoReleaser publishing checklist.
+- [Homebrew Release Automation](operations/homebrew-release-automation.md): helper script for updating the tap formula after a release; dry-run support, safety rules, and future GoReleaser automation path.
 - [v1.0.0 Go/No-Go Checklist](operations/v1.0.0-go-no-go.md): final pre-tag checklist — validated baseline, required checks, asset decision, go/no-go criteria.
 - [v1.0.0 Release Plan](operations/v1.0.0-release-plan.md): step-by-step release execution plan including version policy, tagging, artifact build, publish, and post-release verification.
 - [RC Release Notes: v0.6.0-rc.1](operations/release-notes-v0.6.0-rc.1.md): superseded RC notes (historical reference).

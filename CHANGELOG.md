@@ -7,6 +7,11 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 ## [Unreleased]
 
 - Post-1.1.0 development begins. Source default version advanced to `1.2.0-dev`.
+- Added `scripts/update-homebrew-formula.sh`: a safe Homebrew formula update
+  helper for future release maintenance. Fetches checksums from a GitHub
+  release, updates a local tap checkout, and never pushes or commits
+  automatically. Includes dry-run support and `make homebrew-formula-update`
+  targets.
 
 ## [1.1.0] - 2026-06-06
 

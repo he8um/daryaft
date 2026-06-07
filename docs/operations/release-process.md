@@ -133,15 +133,20 @@ are later post-1.0 work. See [v1.0.0 Release Assets](release-assets.md) and
 
 ### Future Release Process (Post-1.0)
 
-When publishing a new Daryaft release, the Homebrew formula must be updated
-manually until GoReleaser tap publishing is enabled:
+When publishing a new Daryaft release, use the helper script to update the
+Homebrew formula after GitHub release assets are published:
 
 1. Build and publish the new GitHub release assets.
-2. Download the new `checksums.txt` from the GitHub release.
-3. Update `Formula/daryaft.rb` in `he8um/homebrew-tap` with the new `version`,
-   `url`, and `sha256` values.
-4. Push the updated formula to `he8um/homebrew-tap`.
-5. Verify with `brew update && brew upgrade daryaft && daryaft version`.
+2. Clone the tap: `git clone https://github.com/he8um/homebrew-tap.git /tmp/homebrew-tap`
+3. Run the helper: `scripts/update-homebrew-formula.sh --version X.Y.Z --tap-dir /tmp/homebrew-tap`
+4. Review the diff and validate with `ruby -c` and `brew reinstall`.
+5. In the tap clone: commit and push the formula update.
+6. Verify with `brew update && brew upgrade daryaft && daryaft version`.
+
+The script fetches checksums from the GitHub release, updates the formula
+locally, runs a Ruby syntax check, and prints next steps. It never pushes or
+commits automatically. See [Homebrew Release Automation](homebrew-release-automation.md)
+for full details, dry-run usage, and safety rules.
 
 ## Post-1.0 Release Work
 

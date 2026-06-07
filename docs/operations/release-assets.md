@@ -102,10 +102,12 @@ Expected output: `version: 1.0.0`, `built_by: goreleaser`.
 
 - Package-manager publishing (deb, rpm, Arch) is post-1.0 work.
   Do not enable the commented-out nfpms sections of `.goreleaser.yml`.
-- `he8um/homebrew-tap` is live. The formula is manually maintained; GoReleaser
-  `brews:` publishing remains disabled. When publishing a new release, update
-  `Formula/daryaft.rb` in `he8um/homebrew-tap` with the new version and
-  checksums. See [Homebrew Tap](homebrew-tap.md) for details.
+- `he8um/homebrew-tap` is live. The formula is maintained with
+  `scripts/update-homebrew-formula.sh`; GoReleaser `brews:` publishing remains
+  disabled. After publishing a new GitHub release, run the helper script to
+  update the tap formula locally, then commit and push manually.
+  See [Homebrew Tap](homebrew-tap.md) and
+  [Homebrew Release Automation](homebrew-release-automation.md) for details.
 - The CI workflow does not have a tag-triggered `goreleaser release` job.
   Asset upload at v1.0.0 is a manual step.
 - Automated release pipeline is post-1.0 work.
