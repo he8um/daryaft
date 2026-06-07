@@ -385,18 +385,24 @@ Checks whether a newer Daryaft release is available. Read-only: it never
 downloads, installs, or replaces the current binary.
 
 `daryaft update --check` queries the GitHub Releases API, compares the current
-version to the latest stable release, and reports the status with install-channel
-aware guidance. Exits `0` on success regardless of whether an update is
-available. Exits non-zero only on network or API failure.
+version to the latest stable release, and reports the status with
+install-channel-aware guidance. Exits `0` on success regardless of whether an
+update is available. Exits non-zero only on network or API failure.
 
-`daryaft update` without `--check` is not implemented. It exits non-zero and
-directs the user to `daryaft update --check`.
+`daryaft update` without `--check` exits non-zero and directs the user to
+`daryaft update --check`. Auto-update is not implemented.
 
-For Homebrew installs, the suggested update command is
-`brew update && brew upgrade daryaft`. For other installs, the output points
-to the GitHub Releases URL.
+Update guidance by install channel:
 
-Auto-update is not yet implemented. See [Self-Update Roadmap](roadmap/self-update.md).
+| Channel | Guidance |
+|---------|----------|
+| `homebrew` | `brew update && brew upgrade daryaft` |
+| `goreleaser` | Download the latest release archive from the GitHub release URL |
+| `source` | Pull and rebuild: `git pull && go build .` |
+| `unknown` | Download the latest release from the GitHub release URL |
+
+See [Self-Update Roadmap](roadmap/self-update.md) and
+[Update Check QA](operations/update-check-qa.md).
 
 ## Planned Examples
 

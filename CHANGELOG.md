@@ -13,6 +13,30 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
   automatically. Includes dry-run support and `make homebrew-formula-update`
   targets.
 
+### v1.2.0 — Update UX Polish and Install-Channel Hardening
+
+- `daryaft update --check` now shows `Release:` URL in all status modes, not
+  only when an update is available.
+- Per-channel update guidance: Homebrew → `brew update && brew upgrade daryaft`;
+  source → `git pull && go build .`; goreleaser → archive download URL;
+  unknown → GitHub release URL.
+- `update --check` output adds a clear `A new version is available.` notice when
+  an update is detected, and a development build note for pre-release versions.
+- JSON output contract hardened: all fields always present (empty strings, not
+  omitted), boolean fields are real JSON booleans, `update_command` reflects
+  the correct channel guidance.
+- Install-channel detection hardened: `source` BuiltBy takes fast path;
+  goreleaser BuiltBy with Homebrew Cellar path → `homebrew`; goreleaser +
+  non-Homebrew path → `goreleaser`; `brew --prefix daryaft` fallback for
+  symlinked installs. All detection paths covered by injected-function unit
+  tests (no real OS calls).
+- Added `result_test.go` with comprehensive coverage of `Format()`, `Status()`,
+  `updateCommand()`, `detectInstallChannel()`, and JSON contract.
+- Added `docs/operations/update-check-qa.md`: manual QA checklist for all
+  `update --check` commands, channels, and edge cases.
+- Updated `docs/command-reference.md`, `docs/usage.md`, `docs/roadmap/self-update.md`
+  to reflect per-channel guidance and v1.2.0 scope.
+
 ## [1.1.0] - 2026-06-06
 
 ### Added

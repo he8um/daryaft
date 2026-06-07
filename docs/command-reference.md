@@ -524,7 +524,7 @@ DARYAFT_NO_TUI=true daryaft
 
 Implemented. Queries the GitHub Releases API and compares the current version to
 the latest stable release. Read-only: it does not download, install, or replace
-the current binary.
+the current binary. Auto-update is not implemented.
 
 ```bash
 daryaft update --check
@@ -532,20 +532,22 @@ daryaft update --check --json
 daryaft update --check --include-prerelease
 ```
 
-Human output:
+Human output (up to date):
 
 ```text
 Daryaft update check
 
-Current version:  1.0.0
-Latest stable:    1.0.0
+Current version:  1.1.0
+Latest stable:    1.1.0
 Status:           up to date
+
+Release: https://github.com/he8um/daryaft/releases/tag/v1.1.0
 
 Install channel:  homebrew
 Update command:   brew update && brew upgrade daryaft
 ```
 
-When an update is available:
+Human output (update available):
 
 ```text
 Daryaft update check
@@ -558,62 +560,68 @@ Release: https://github.com/he8um/daryaft/releases/tag/v1.1.0
 
 Install channel:  homebrew
 Update command:   brew update && brew upgrade daryaft
+
+A new version is available. Use the update command above to upgrade.
 ```
 
-When run from a development build:
+Human output (development build):
 
 ```text
 Daryaft update check
 
-Current version:  1.1.0-dev
-Latest stable:    1.0.0
+Current version:  1.2.0-dev
+Latest stable:    1.1.0
 Status:           development build
 
-Release: https://github.com/he8um/daryaft/releases/tag/v1.0.0
+Release: https://github.com/he8um/daryaft/releases/tag/v1.1.0
 
 Install channel:  source
-Update command:   Download the latest release from: ...
+Update command:   Pull the repository and rebuild: git pull && go build .
 
 Note: development builds may be ahead of the latest stable release.
 ```
+
+The `Release:` URL is shown in all status modes.
 
 Use `--json` for stable machine-readable output:
 
 ```json
 {
-  "current_version": "1.0.0",
-  "latest_version": "1.0.0",
+  "current_version": "1.1.0",
+  "latest_version": "1.1.0",
   "update_available": false,
   "development_build": false,
   "include_prerelease": false,
   "install_channel": "homebrew",
-  "release_url": "https://github.com/he8um/daryaft/releases/tag/v1.0.0",
+  "release_url": "https://github.com/he8um/daryaft/releases/tag/v1.1.0",
   "update_command": "brew update && brew upgrade daryaft",
   "message": "Daryaft is up to date."
 }
 ```
 
-`--include-prerelease` includes pre-release versions in the check.
+All JSON fields are always present. Boolean fields are JSON booleans.
+String fields that are empty are present as `""`, not omitted.
+
+`--include-prerelease` queries the releases list and may return a newer
+pre-release version as `latest_version`.
 
 Exits `0` on success regardless of whether an update is available.
 Exits non-zero only on network or API failure.
 
-`daryaft update` without `--check` is not implemented and exits non-zero with a
-message directing the user to `daryaft update --check`.
+`daryaft update` without `--check` exits non-zero with a clear message
+directing the user to `daryaft update --check`.
 
-Install channel detection:
+Install channel detection and update guidance:
 
-| Channel | When detected |
-|---------|--------------|
-| `homebrew` | Executable path is under a Homebrew prefix/Cellar |
-| `goreleaser` | Binary built by GoReleaser, path not under Homebrew |
-| `source` | Binary built from source (`built_by: source`) |
-| `unknown` | Cannot determine install channel |
+| Channel | Detected when | Update command |
+|---------|--------------|----------------|
+| `homebrew` | Executable path is under a Homebrew prefix/Cellar | `brew update && brew upgrade daryaft` |
+| `goreleaser` | Built by GoReleaser, path not under Homebrew | Download the latest release archive from the GitHub release URL |
+| `source` | Built from source (`built_by: source`) | `git pull && go build .` |
+| `unknown` | Cannot determine install channel | Download the latest release from the GitHub release URL |
 
-For Homebrew installs, the update command is `brew update && brew upgrade daryaft`.
-For other channels, the output points to the GitHub Releases URL.
-
-Auto-update is not implemented. See [Self-Update Roadmap](../roadmap/self-update.md).
+Auto-update is not implemented. See [Self-Update Roadmap](../roadmap/self-update.md)
+and [Update Check QA](../operations/update-check-qa.md).
 
 ## Planned Commands And Forms
 

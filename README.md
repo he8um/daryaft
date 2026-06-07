@@ -20,6 +20,20 @@ an interactive Bubble Tea TUI, YAML configuration with environment overrides,
 the new update check command. Running `daryaft` with no arguments opens the
 interactive TUI home screen.
 
+`daryaft update --check` is read-only: it queries the GitHub Releases API and
+reports the current version, the latest stable release, and install-channel-aware
+upgrade guidance. It never downloads, installs, or replaces the current binary.
+Upgrade guidance depends on how Daryaft was installed:
+
+| Install channel | Suggested command |
+|----------------|-------------------|
+| Homebrew | `brew update && brew upgrade daryaft` |
+| Binary archive | Download the latest release archive from the GitHub release URL |
+| Source build | `git pull && go build .` |
+| Unknown | Download the latest release from the GitHub Releases page |
+
+Auto-update (`daryaft update` without `--check`) is not yet implemented.
+
 v1.1.0 is a stable incremental release, not a feature-complete release. Known
 limitations (Windows, concurrent downloads, proxy/auth, auto-update, package
 managers, batch checksum) are documented in the

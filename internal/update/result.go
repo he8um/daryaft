@@ -58,7 +58,7 @@ func (r Result) Format() string {
 	fmt.Fprintf(&b, "Latest stable:    %s\n", r.LatestVersion)
 	fmt.Fprintf(&b, "Status:           %s\n", string(r.Status()))
 
-	if r.ReleaseURL != "" && (r.UpdateAvailable || r.DevelopmentBuild) {
+	if r.ReleaseURL != "" {
 		fmt.Fprintf(&b, "\nRelease: %s\n", r.ReleaseURL)
 	}
 
@@ -67,8 +67,11 @@ func (r Result) Format() string {
 		fmt.Fprintf(&b, "Update command:   %s\n", r.UpdateCommand)
 	}
 
-	if r.DevelopmentBuild {
+	switch {
+	case r.DevelopmentBuild:
 		b.WriteString("\nNote: development builds may be ahead of the latest stable release.\n")
+	case r.UpdateAvailable:
+		b.WriteString("\nA new version is available. Use the update command above to upgrade.\n")
 	}
 
 	return b.String()
@@ -161,6 +164,13 @@ func updateCommand(channel InstallChannel, releaseURL string) string {
 	switch channel {
 	case ChannelHomebrew:
 		return "brew update && brew upgrade daryaft"
+	case ChannelSource:
+		return "Pull the repository and rebuild: git pull && go build ."
+	case ChannelGoreleaser:
+		if releaseURL != "" {
+			return "Download the latest release archive from: " + releaseURL
+		}
+		return "Download the latest release archive from: https://github.com/he8um/daryaft/releases/latest"
 	default:
 		if releaseURL != "" {
 			return "Download the latest release from: " + releaseURL

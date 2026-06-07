@@ -3,7 +3,7 @@
 Daryaft's self-update story is being built incrementally to avoid unsafe
 in-place binary replacement before the release infrastructure is trusted.
 
-## Current State (v1.1.0)
+## Current State (v1.2.0)
 
 `daryaft update --check` is implemented and live.
 
@@ -26,12 +26,17 @@ daryaft update --check --include-prerelease
 | Channel | Update command suggested |
 |---------|--------------------------|
 | `homebrew` | `brew update && brew upgrade daryaft` |
-| `goreleaser` | GitHub Releases URL |
-| `source` | GitHub Releases URL |
-| `unknown` | GitHub Releases URL |
+| `goreleaser` | Download the latest release archive from the GitHub release URL |
+| `source` | Pull the repository and rebuild: `git pull && go build .` |
+| `unknown` | Download the latest release from the GitHub release URL |
 
 Homebrew users should always upgrade through Homebrew rather than replacing
 the binary manually, as Homebrew manages symlinks, cellar cleanup, and rollback.
+
+Source builds report `built_by: source` and receive source-appropriate guidance
+(pull and rebuild), not a download link. GoReleaser binary installs receive a
+link to the release archive. Unknown installs fall back to the GitHub Releases
+page.
 
 ## Planned: Auto-Update
 
@@ -76,6 +81,8 @@ Before auto-update can be implemented safely, the following must be in place:
 
 ## References
 
+- [v1.2.0 Scope](v1.2.0-update-ux.md)
+- [Update Check QA](../operations/update-check-qa.md)
 - [Homebrew Tap](../operations/homebrew-tap.md)
 - [v1.0.0 Release Assets](../operations/release-assets.md)
 - [Post-1.0 Feature Packs](post-1-feature-packs.md)

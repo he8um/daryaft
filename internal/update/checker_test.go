@@ -7,8 +7,6 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
-
-	"github.com/he8um/daryaft/pkg/version"
 )
 
 // latestHandler returns a /releases/latest handler that responds with the given release.
@@ -276,58 +274,5 @@ func TestCheck_InvalidJSON(t *testing.T) {
 	_, err := mustCheck(t, srv, CheckOptions{CurrentVersion: "1.0.0"})
 	if err == nil {
 		t.Fatal("expected error on invalid JSON, got nil")
-	}
-}
-
-func TestResultFormatJSON(t *testing.T) {
-	r := Result{
-		CurrentVersion:   "1.0.0",
-		LatestVersion:    "1.0.0",
-		UpdateAvailable:  false,
-		DevelopmentBuild: false,
-		InstallChannel:   ChannelSource,
-		ReleaseURL:       "https://github.com/he8um/daryaft/releases/tag/v1.0.0",
-		UpdateCommand:    "Download the latest release from: https://github.com/he8um/daryaft/releases/tag/v1.0.0",
-		Message:          "Daryaft is up to date.",
-	}
-	data, err := r.FormatJSON()
-	if err != nil {
-		t.Fatalf("FormatJSON: %v", err)
-	}
-	var out map[string]interface{}
-	if err := json.Unmarshal(data, &out); err != nil {
-		t.Fatalf("unmarshal JSON: %v", err)
-	}
-	for _, field := range []string{"current_version", "latest_version", "update_available",
-		"development_build", "install_channel", "release_url", "update_command", "message"} {
-		if _, ok := out[field]; !ok {
-			t.Errorf("JSON missing field %q", field)
-		}
-	}
-}
-
-func TestDetectInstallChannel_Source(t *testing.T) {
-	from := version.Details{BuiltBy: "source"}
-	ch := detectInstallChannel(from, nil, func() string { return "" })
-	if ch != ChannelSource {
-		t.Errorf("expected source, got %q", ch)
-	}
-}
-
-func TestDetectInstallChannel_Goreleaser(t *testing.T) {
-	from := version.Details{BuiltBy: "goreleaser"}
-	execFn := func() (string, error) { return "/tmp/daryaft", nil }
-	ch := detectInstallChannel(from, execFn, func() string { return "" })
-	if ch != ChannelGoreleaser {
-		t.Errorf("expected goreleaser, got %q", ch)
-	}
-}
-
-func TestDetectInstallChannel_Homebrew(t *testing.T) {
-	from := version.Details{BuiltBy: "goreleaser"}
-	execFn := func() (string, error) { return "/opt/homebrew/Cellar/daryaft/1.0.0/bin/daryaft", nil }
-	ch := detectInstallChannel(from, execFn, func() string { return "" })
-	if ch != ChannelHomebrew {
-		t.Errorf("expected homebrew, got %q", ch)
 	}
 }
