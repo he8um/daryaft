@@ -226,6 +226,34 @@ Expected:
 
 ---
 
+## Error Classification (v1.4.0+)
+
+Each failure category produces a distinct, actionable message. These are
+verified deterministically using `httptest.Server` in `cmd/update_test.go`.
+
+| Condition | Expected message contains |
+|-----------|--------------------------|
+| 403 Forbidden (rate limit) | "403 Forbidden" and "rate limiting" and "Try again later" |
+| 404 Not Found | "404 Not Found" |
+| 5xx server error | "unavailable" and the HTTP status |
+| Request timeout | "timed out" |
+| Network unreachable | "could not reach GitHub Releases API" |
+| Invalid JSON response | "invalid response" |
+
+To run the deterministic error classification tests:
+
+```bash
+go test ./cmd -run 'TestUpdateCommand_403|TestUpdateCommand_404|TestUpdateCommand_500|TestUpdateCommand_InvalidJSON' -v
+```
+
+To run real-network opt-in tests (requires GitHub API access, no rate limit):
+
+```bash
+DARYAFT_RUN_NETWORK_TESTS=1 go test ./cmd -run TestUpdateCommand_RealNetwork -v
+```
+
+---
+
 ## Known Limitations
 
 - **Auto-update is not implemented.** `daryaft update` without `--check` exits

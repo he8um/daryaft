@@ -6,6 +6,10 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 
 ## [Unreleased]
 
+- Post-1.4.0 development begins. Source default version advanced to `1.5.0-dev`.
+
+## [1.4.0] - 2026-06-07
+
 ### Added
 
 - `daryaft update --check` error messages improved: 403 Forbidden now reports a
@@ -22,7 +26,6 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 - Error-classification tests for 403, 404, 500, and invalid-JSON responses in
   `cmd/update_test.go`.
 - `TestUpdateCommand_HiddenAPIBaseURLFlag` verifying the new hidden test flag.
-
 - Post-1.3.0 development begins. Source default version advanced to `1.4.0-dev`.
 
 ## [1.3.0] - 2026-06-07
