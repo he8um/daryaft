@@ -593,11 +593,11 @@ Human output (development build):
 ```text
 Daryaft update check
 
-Current version:  1.3.0-dev
-Latest stable:    1.2.0
+Current version:  1.4.0-dev
+Latest stable:    1.3.0
 Status:           development build
 
-Release: https://github.com/he8um/daryaft/releases/tag/v1.2.0
+Release: https://github.com/he8um/daryaft/releases/tag/v1.3.0
 
 Install channel:  source
 Update command:   Pull the repository and rebuild: git pull && go build .

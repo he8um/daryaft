@@ -76,7 +76,7 @@ For future releases, `scripts/update-homebrew-formula.sh` updates a local tap
 clone from the published GitHub release checksums — the maintainer reviews the
 diff and pushes manually. GoReleaser Homebrew publishing remains disabled.
 Other package manager channels (deb, rpm, Arch) are later post-1.0 work.
-Source builds on `main` report `1.3.0-dev` (current development default);
+Source builds on `main` report `1.4.0-dev` (current development default);
 release builds inject the exact tag version via GoReleaser ldflags.
 
 For local development:
@@ -116,7 +116,7 @@ make run
 `make release-check` requires GoReleaser v2 and runs a local snapshot release
 check without publishing, creating tags, or enabling package-manager publishing.
 Install GoReleaser with `brew install goreleaser` if the command is missing.
-Snapshot versions are named like `1.3.0-dev-SNAPSHOT-<short-commit>`, and any
+Snapshot versions are named like `1.4.0-dev-SNAPSHOT-<short-commit>`, and any
 snapshot artifacts are written under ignored local build directories such as
 `dist/`.
 
