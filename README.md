@@ -8,12 +8,14 @@ packaging, and future self-update support.
 
 ## Status
 
-**v1.2.0 is the current stable release.** Download binary archives from the
-[GitHub releases page](https://github.com/he8um/daryaft/releases/tag/v1.2.0).
+**v1.3.0 is the current stable release.** Download binary archives from the
+[GitHub releases page](https://github.com/he8um/daryaft/releases/tag/v1.3.0).
 
-Daryaft v1.2.0 polishes the `daryaft update --check` UX and hardens
-install-channel detection on top of the v1.1.0 baseline. It ships CLI and TUI
-HTTP/HTTPS downloading with dry-run planning, single URL and sequential batch
+Daryaft v1.3.0 adds HTTP request customization — `--proxy`, `--header`,
+`--user-agent`, and Basic Auth via `--username`/`--password` — to the CLI
+download and inspect flows. It builds on top of the v1.2.0 baseline which
+polished the `daryaft update --check` UX. The full feature set includes CLI and
+TUI HTTP/HTTPS downloading with dry-run planning, single URL and sequential batch
 downloads, resume from `.part` files, retry with exponential backoff, CLI
 checksum verification for single URL downloads, an interactive Bubble Tea TUI,
 YAML configuration with environment overrides, `inspect` metadata preflight,
@@ -34,10 +36,10 @@ Upgrade guidance depends on how Daryaft was installed:
 
 Auto-update (`daryaft update` without `--check`) is not yet implemented.
 
-v1.2.0 is a stable incremental release. Known limitations (Windows, concurrent
-downloads, proxy/auth, auto-update, package managers, batch checksum) are
+v1.3.0 is a stable incremental release. Known limitations (Windows, concurrent
+downloads, TUI HTTP options, auto-update, package managers, batch checksum) are
 documented in the
-[v1.2.0 release notes](docs/operations/release-notes-v1.2.0.md). Post-1.0
+[v1.3.0 release notes](docs/operations/release-notes-v1.3.0.md). Post-1.0
 features are tracked in [post-1-feature-packs.md](docs/roadmap/post-1-feature-packs.md).
 
 - Repository: https://github.com/he8um/daryaft
@@ -60,8 +62,8 @@ daryaft version
 
 ```bash
 # Example: macOS Apple Silicon
-curl -L -O https://github.com/he8um/daryaft/releases/download/v1.1.0/daryaft_darwin_arm64.tar.gz
-curl -L -O https://github.com/he8um/daryaft/releases/download/v1.1.0/checksums.txt
+curl -L -O https://github.com/he8um/daryaft/releases/download/v1.3.0/daryaft_darwin_arm64.tar.gz
+curl -L -O https://github.com/he8um/daryaft/releases/download/v1.3.0/checksums.txt
 shasum -a 256 --check checksums.txt
 tar -xzf daryaft_darwin_arm64.tar.gz
 ./daryaft version
@@ -310,6 +312,8 @@ Start here:
 - [Release-Candidate Validation](docs/operations/rc-validation.md)
 - [RC Release Notes: v0.6.0-rc.2](docs/operations/release-notes-v0.6.0-rc.2.md)
 - [v0.6.0-rc.2 Release Status](docs/operations/release-status-v0.6.0-rc.2.md)
+- [v1.3.0 Release Notes](docs/operations/release-notes-v1.3.0.md)
+- [v1.2.0 Release Notes](docs/operations/release-notes-v1.2.0.md)
 - [v1.1.0 Release Notes](docs/operations/release-notes-v1.1.0.md)
 - [v1.0.0 Release Notes](docs/operations/release-notes-v1.0.0.md)
 - [v1.0.0 Release Assets](docs/operations/release-assets.md)

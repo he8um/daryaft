@@ -6,15 +6,27 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-06-07
+
+### Added
+
 - Post-1.2.0 development begins. Source default version advanced to `1.3.0-dev`.
 - Added HTTP request customization for CLI download and inspect flows: `--proxy`,
   repeatable `--header "Name: Value"`, `--user-agent`, and `--username`/`--password`
-  Basic Auth. Apply to root URL download mode, `download`, and `inspect`.
+  Basic Auth. Apply to root URL download mode, `download`, `inspect`, and batch
+  downloads.
 - Added redacted dry-run and verbose display for sensitive HTTP options (`[REDACTED]`
   for passwords and headers matching authorization, cookie, token, key, and related patterns).
 - Added `internal/httpopts` package for shared HTTP options parsing, validation,
   redaction, request application, and proxy transport.
-- Added QA documentation for HTTP customization.
+- Added `docs/features/http-request-customization.md`: feature guide with examples,
+  validation rules, and security warnings.
+- Added `docs/operations/http-customization-qa.md`: manual QA checklist for
+  HTTP request customization.
+- Added `docs/roadmap/v1.3.0-http-customization.md`: scope, quality gates, and
+  future track.
+- Updated `docs/command-reference.md`, `docs/usage.md`, `docs/index.md`,
+  `docs/operations/manual-qa.md`, `README.md`, and `CHANGELOG.md`.
 
 ## [1.2.0] - 2026-06-07
 
