@@ -36,19 +36,19 @@ type RedactedOptions struct {
 func ParseHeader(input string) (Header, error) {
 	idx := strings.Index(input, ":")
 	if idx < 0 {
-		return Header{}, fmt.Errorf("header %q must contain a colon", input)
+		return Header{}, fmt.Errorf("invalid header %q: expected \"Name: Value\" format", input)
 	}
 	name := strings.TrimSpace(input[:idx])
 	value := strings.TrimSpace(input[idx+1:])
 
 	if name == "" {
-		return Header{}, fmt.Errorf("header name is empty in %q", input)
+		return Header{}, fmt.Errorf("invalid header %q: header name is empty", input)
 	}
 	if err := validateHeaderName(name); err != nil {
-		return Header{}, err
+		return Header{}, fmt.Errorf("invalid header %q: %w", name, err)
 	}
 	if err := validateHeaderValue(value); err != nil {
-		return Header{}, err
+		return Header{}, fmt.Errorf("invalid value for header %q: %w", name, err)
 	}
 	return Header{Name: name, Value: value}, nil
 }
@@ -201,14 +201,14 @@ func validateProxy(proxyURL string) error {
 	}
 	parsed, err := url.Parse(proxyURL)
 	if err != nil {
-		return fmt.Errorf("invalid proxy URL: %w", err)
+		return fmt.Errorf("invalid proxy %q: %w", proxyURL, err)
 	}
 	scheme := strings.ToLower(parsed.Scheme)
 	if scheme != "http" && scheme != "https" {
-		return fmt.Errorf("proxy scheme must be http or https (got %q)", parsed.Scheme)
+		return fmt.Errorf("invalid proxy %q: unsupported scheme %q; supported schemes are http and https", proxyURL, parsed.Scheme)
 	}
 	if parsed.Host == "" {
-		return fmt.Errorf("proxy URL must include a host")
+		return fmt.Errorf("invalid proxy %q: URL must include a host", proxyURL)
 	}
 	return nil
 }

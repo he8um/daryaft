@@ -210,3 +210,51 @@ func TestInspectCLIRejectsAuthHeaderPlusBasicAuth(t *testing.T) {
 		t.Fatal("expected error: basic auth + Authorization header")
 	}
 }
+
+func TestInspectCLIEnvCredentials(t *testing.T) {
+	var gotUser, gotPass string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotUser, gotPass, _ = r.BasicAuth()
+		w.Header().Set("Content-Length", "100")
+	}))
+	defer server.Close()
+
+	t.Setenv("DARYAFT_USERNAME", "envuser")
+	t.Setenv("DARYAFT_PASSWORD", "envpass")
+
+	_, err := executeInspectCommand(t, server.URL+"/file.zip")
+	if err != nil {
+		t.Fatalf("inspect returned error: %v", err)
+	}
+	if gotUser != "envuser" || gotPass != "envpass" {
+		t.Errorf("BasicAuth = %q/%q, want envuser/envpass", gotUser, gotPass)
+	}
+}
+
+func TestInspectCLIFlagCredentialOverridesEnv(t *testing.T) {
+	var gotUser, gotPass string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotUser, gotPass, _ = r.BasicAuth()
+		w.Header().Set("Content-Length", "100")
+	}))
+	defer server.Close()
+
+	t.Setenv("DARYAFT_USERNAME", "envuser")
+	t.Setenv("DARYAFT_PASSWORD", "envpass")
+
+	_, err := executeInspectCommand(t, server.URL+"/file.zip", "--username", "flaguser", "--password", "flagpass")
+	if err != nil {
+		t.Fatalf("inspect returned error: %v", err)
+	}
+	if gotUser != "flaguser" || gotPass != "flagpass" {
+		t.Errorf("BasicAuth = %q/%q, want flaguser/flagpass (flag should override env)", gotUser, gotPass)
+	}
+}
+
+func TestInspectCLIEnvPasswordWithoutUsernameIsRejected(t *testing.T) {
+	t.Setenv("DARYAFT_PASSWORD", "envpass")
+	_, err := executeInspectCommand(t, "https://example.com/file.txt")
+	if err == nil {
+		t.Fatal("expected error: DARYAFT_PASSWORD without username")
+	}
+}

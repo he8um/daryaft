@@ -371,7 +371,7 @@ func TestInspectRejectsInvalidHTTPOptions(t *testing.T) {
 		{
 			name: "invalid proxy",
 			opts: httpopts.Options{ProxyURL: "socks5://proxy:1080"},
-			want: "proxy scheme",
+			want: "unsupported scheme",
 		},
 		{
 			name: "password without username",

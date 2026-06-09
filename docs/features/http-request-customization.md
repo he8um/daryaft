@@ -1,6 +1,6 @@
 # HTTP Request Customization
 
-Daryaft v1.3.0 adds HTTP request customization to the CLI download and inspect flows.
+Daryaft supports HTTP request customization in the CLI download and inspect flows.
 
 ## Flags
 
@@ -22,6 +22,25 @@ These flags apply to:
 These flags do **not** apply to:
 - TUI download flows
 - `daryaft config`, `daryaft update`, `daryaft doctor`, `daryaft version`
+
+## Environment Variables
+
+As an alternative to CLI flags, credentials can be provided via environment variables:
+
+| Variable | Description |
+|----------|-------------|
+| `DARYAFT_USERNAME` | HTTP Basic Auth username fallback |
+| `DARYAFT_PASSWORD` | HTTP Basic Auth password fallback |
+
+CLI flag values always take priority over environment variables. The same validation rules apply: `DARYAFT_PASSWORD` without a username (from flags or `DARYAFT_USERNAME`) produces an error.
+
+```bash
+export DARYAFT_USERNAME=alice
+export DARYAFT_PASSWORD=secret
+daryaft download https://example.com/private.zip
+```
+
+Env credentials are redacted in all output, dry-run, and verbose modes exactly like flag credentials.
 
 ## Examples
 
@@ -75,7 +94,7 @@ daryaft download https://example.com/private.zip \
   --dry-run
 ```
 
-The dry-run output shows `[REDACTED]` for the password and sensitive header values:
+The dry-run output shows `username:[REDACTED]` for auth and `[REDACTED]` for sensitive header values:
 
 ```
 Daryaft download plan
@@ -86,7 +105,7 @@ Filename: auto-detect
 Retries: 3
 Resume: true
 HTTP
-  Auth: [REDACTED]
+  Auth: alice:[REDACTED]
 Mode: dry-run only, no network request performed
 ```
 

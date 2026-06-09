@@ -11,6 +11,26 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
   to validate a target version before tagging. Detects version skips, missing
   release notes, missing CHANGELOG entries, and pre-existing tags/releases.
 
+### HTTP Customization Polish (v1.5.0 sprint)
+
+- `DARYAFT_USERNAME` and `DARYAFT_PASSWORD` environment variables now provide
+  credential fallbacks for CLI download and inspect flows. CLI flag values
+  always take priority. Same validation applies: `DARYAFT_PASSWORD` without a
+  username fails with a clear error. Credentials are redacted in all output.
+- Dry-run `Auth:` line now shows `username:[REDACTED]` instead of only
+  `[REDACTED]`, making it clear which account will be used.
+- Improved error messages for invalid HTTP options:
+  - Invalid header: `invalid header "BadHeader": expected "Name: Value" format`
+  - Invalid proxy scheme: `invalid proxy "socks5://...": unsupported scheme "socks5"; supported schemes are http and https`
+  - Invalid proxy host: `invalid proxy "http://": URL must include a host`
+- Expanded redaction tests: `Set-Cookie`, `X-Token`, header names containing
+  `secret` or `password`, case-insensitive `Authorization` match, username
+  preservation, and proxy-authorization now all have explicit coverage.
+- Updated `docs/features/http-request-customization.md` with env variable docs,
+  corrected dry-run auth format, and security guidance.
+- Updated `docs/operations/http-customization-qa.md` with env credential QA
+  sections (15, 16) and corrected error message examples.
+
 ## [1.4.0] - 2026-06-07
 
 ### Added

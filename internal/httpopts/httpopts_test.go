@@ -263,6 +263,56 @@ func TestRedact_XAPIKeyRedacted(t *testing.T) {
 	}
 }
 
+func TestRedact_SetCookieHeaderRedacted(t *testing.T) {
+	headers, _ := httpopts.ParseHeaders([]string{"Set-Cookie: id=abc"})
+	r := httpopts.Redact(httpopts.Options{Headers: headers})
+	if r.Headers[0].Value != "[REDACTED]" {
+		t.Errorf("expected [REDACTED], got %q", r.Headers[0].Value)
+	}
+}
+
+func TestRedact_XTokenHeaderRedacted(t *testing.T) {
+	headers, _ := httpopts.ParseHeaders([]string{"X-Token: mytoken"})
+	r := httpopts.Redact(httpopts.Options{Headers: headers})
+	if r.Headers[0].Value != "[REDACTED]" {
+		t.Errorf("expected [REDACTED], got %q", r.Headers[0].Value)
+	}
+}
+
+func TestRedact_HeaderNameContainingSecretRedacted(t *testing.T) {
+	headers, _ := httpopts.ParseHeaders([]string{"X-My-Secret-Key: supersecret"})
+	r := httpopts.Redact(httpopts.Options{Headers: headers})
+	if r.Headers[0].Value != "[REDACTED]" {
+		t.Errorf("expected [REDACTED], got %q", r.Headers[0].Value)
+	}
+}
+
+func TestRedact_HeaderNameContainingPasswordRedacted(t *testing.T) {
+	headers, _ := httpopts.ParseHeaders([]string{"X-Api-Password: hunter2"})
+	r := httpopts.Redact(httpopts.Options{Headers: headers})
+	if r.Headers[0].Value != "[REDACTED]" {
+		t.Errorf("expected [REDACTED], got %q", r.Headers[0].Value)
+	}
+}
+
+func TestRedact_MixedCaseAuthorizationHeaderRedacted(t *testing.T) {
+	headers := []httpopts.Header{{Name: "Authorization", Value: "Bearer abc"}}
+	r := httpopts.Redact(httpopts.Options{Headers: headers})
+	if r.Headers[0].Value != "[REDACTED]" {
+		t.Errorf("expected [REDACTED], got %q", r.Headers[0].Value)
+	}
+}
+
+func TestRedact_UsernamePreserved(t *testing.T) {
+	r := httpopts.Redact(httpopts.Options{Username: "alice", Password: "secret"})
+	if r.Username != "alice" {
+		t.Errorf("username should not be redacted, got %q", r.Username)
+	}
+	if r.Password != "[REDACTED]" {
+		t.Errorf("password should be redacted, got %q", r.Password)
+	}
+}
+
 func TestRedact_CustomHeaderNotRedacted(t *testing.T) {
 	headers, _ := httpopts.ParseHeaders([]string{"X-Custom: myvalue"})
 	r := httpopts.Redact(httpopts.Options{Headers: headers})

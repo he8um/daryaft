@@ -1116,6 +1116,80 @@ func TestDownloadCLIBatchSendsHeaderToAllURLs(t *testing.T) {
 	}
 }
 
+func TestDownloadCLIEnvCredentials(t *testing.T) {
+	var gotUser, gotPass string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotUser, gotPass, _ = r.BasicAuth()
+		_, _ = w.Write([]byte("ok"))
+	}))
+	defer server.Close()
+
+	t.Setenv("DARYAFT_USERNAME", "envuser")
+	t.Setenv("DARYAFT_PASSWORD", "envpass")
+
+	var out bytes.Buffer
+	root := newDownloadCmdForTest(&out)
+	root.SetArgs([]string{"download", server.URL + "/file.txt", "--output", t.TempDir()})
+	if err := root.Execute(); err != nil {
+		t.Fatalf("Execute returned error: %v\n%s", err, out.String())
+	}
+	if gotUser != "envuser" || gotPass != "envpass" {
+		t.Errorf("BasicAuth = %q/%q, want envuser/envpass", gotUser, gotPass)
+	}
+}
+
+func TestDownloadCLIFlagCredentialOverridesEnv(t *testing.T) {
+	var gotUser, gotPass string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotUser, gotPass, _ = r.BasicAuth()
+		_, _ = w.Write([]byte("ok"))
+	}))
+	defer server.Close()
+
+	t.Setenv("DARYAFT_USERNAME", "envuser")
+	t.Setenv("DARYAFT_PASSWORD", "envpass")
+
+	var out bytes.Buffer
+	root := newDownloadCmdForTest(&out)
+	root.SetArgs([]string{"download", server.URL + "/file.txt", "--username", "flaguser", "--password", "flagpass", "--output", t.TempDir()})
+	if err := root.Execute(); err != nil {
+		t.Fatalf("Execute returned error: %v\n%s", err, out.String())
+	}
+	if gotUser != "flaguser" || gotPass != "flagpass" {
+		t.Errorf("BasicAuth = %q/%q, want flaguser/flagpass (flag should override env)", gotUser, gotPass)
+	}
+}
+
+func TestDownloadCLIEnvPasswordWithoutUsernameIsRejected(t *testing.T) {
+	t.Setenv("DARYAFT_PASSWORD", "envpass")
+
+	var out bytes.Buffer
+	root := newDownloadCmdForTest(&out)
+	root.SetArgs([]string{"download", "https://example.com/file.zip", "--dry-run"})
+	if err := root.Execute(); err == nil {
+		t.Fatal("expected error: DARYAFT_PASSWORD without username")
+	}
+}
+
+func TestDownloadCLIEnvCredentialsDryRunRedacted(t *testing.T) {
+	t.Setenv("DARYAFT_USERNAME", "envuser")
+	t.Setenv("DARYAFT_PASSWORD", "envpass")
+
+	var out bytes.Buffer
+	root := newDownloadCmdForTest(&out)
+	root.SetArgs([]string{"download", "https://example.com/file.zip", "--dry-run"})
+	if err := root.Execute(); err != nil {
+		t.Fatalf("Execute returned error: %v\n%s", err, out.String())
+	}
+	output := out.String()
+	if strings.Contains(output, "envpass") {
+		t.Errorf("dry-run output must not contain raw DARYAFT_PASSWORD value:\n%s", output)
+	}
+	if !strings.Contains(output, "[REDACTED]") {
+		t.Errorf("dry-run output must contain [REDACTED]:\n%s", output)
+	}
+}
+
 // newDownloadCmdForTest builds a fresh root+download command pair for CLI flag tests.
 // Returns the root command; callers should prepend "download" to args when needed,
 // or use the download subcommand args directly via root.SetArgs([]string{"download", ...}).

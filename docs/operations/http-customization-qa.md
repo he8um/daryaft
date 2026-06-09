@@ -78,7 +78,7 @@ Invalid proxy:
 dq download https://example.com/file.zip --proxy socks5://127.0.0.1:1080 --dry-run
 ```
 
-Expected: error `proxy scheme must be http or https`.
+Expected: error containing `unsupported scheme "socks5"`.
 
 ---
 
@@ -201,6 +201,66 @@ dq
 ```
 
 Expected: TUI opens normally. HTTP customization flags are CLI-only; TUI launches without any HTTP options passed.
+
+---
+
+## 15. Environment credential fallback — download
+
+```bash
+export DARYAFT_USERNAME=alice
+export DARYAFT_PASSWORD=pass
+dq download https://httpbin.org/basic-auth/alice/pass --output /tmp/qa-env-auth/
+unset DARYAFT_USERNAME DARYAFT_PASSWORD
+```
+
+Expected: download succeeds. Credentials come from env, not flags.
+
+CLI flag overrides env:
+
+```bash
+export DARYAFT_USERNAME=wrong
+export DARYAFT_PASSWORD=wrong
+dq download https://httpbin.org/basic-auth/alice/pass \
+  --username alice --password pass \
+  --output /tmp/qa-env-override/
+unset DARYAFT_USERNAME DARYAFT_PASSWORD
+```
+
+Expected: download succeeds using the flag values, not env values.
+
+Password env without username:
+
+```bash
+export DARYAFT_PASSWORD=secret
+dq download https://example.com/file.zip --dry-run
+unset DARYAFT_PASSWORD
+```
+
+Expected: error `--password requires --username`.
+
+Dry-run redaction with env credentials:
+
+```bash
+export DARYAFT_USERNAME=alice
+export DARYAFT_PASSWORD=topsecret
+dq download https://example.com/file.zip --dry-run
+unset DARYAFT_USERNAME DARYAFT_PASSWORD
+```
+
+Expected: output contains `[REDACTED]`, not `topsecret`.
+
+---
+
+## 16. Environment credential fallback — inspect
+
+```bash
+export DARYAFT_USERNAME=alice
+export DARYAFT_PASSWORD=pass
+dq inspect https://httpbin.org/basic-auth/alice/pass
+unset DARYAFT_USERNAME DARYAFT_PASSWORD
+```
+
+Expected: inspect succeeds.
 
 ---
 

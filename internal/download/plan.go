@@ -49,7 +49,11 @@ func (p Plan) DryRunString() string {
 			fmt.Fprintf(&builder, "  User-Agent: %s\n", redacted.UserAgent)
 		}
 		if redacted.Username != "" || redacted.Password != "" {
-			fmt.Fprintf(&builder, "  Auth: %s\n", redacted.Password)
+			authDisplay := redacted.Username
+			if redacted.Password != "" {
+				authDisplay += ":[REDACTED]"
+			}
+			fmt.Fprintf(&builder, "  Auth: %s\n", authDisplay)
 		}
 	}
 	fmt.Fprintln(&builder, "Mode: dry-run only, no network request performed")

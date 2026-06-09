@@ -35,13 +35,13 @@ servers do not support HEAD or omit useful metadata.`,
 			if err != nil {
 				return err
 			}
-			httpOpts := httpopts.Options{
+			httpOpts := applyHTTPCredentialEnv(httpopts.Options{
 				ProxyURL:  proxy,
 				Headers:   parsedHeaders,
 				UserAgent: userAgent,
 				Username:  username,
 				Password:  password,
-			}
+			})
 
 			result, err := inspect.URL(context.Background(), inspect.Options{
 				URL:         args[0],

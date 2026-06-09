@@ -117,7 +117,7 @@ func TestBuildPlanRejectsInvalidHTTPOptions(t *testing.T) {
 		{
 			name: "invalid proxy",
 			opts: httpopts.Options{ProxyURL: "socks5://proxy:1080"},
-			want: "proxy scheme",
+			want: "unsupported scheme",
 		},
 		{
 			name: "password without username",
@@ -179,6 +179,40 @@ func TestDryRunStringShowsHTTPOptions(t *testing.T) {
 	}
 	if strings.Contains(got, "Bearer secret") {
 		t.Errorf("DryRunString() must not contain raw Authorization value:\n%s", got)
+	}
+}
+
+func TestDryRunStringAuthFormat(t *testing.T) {
+	plan := Plan{
+		URLs:    []string{"https://example.com/file.zip"},
+		Retries: 3,
+		Resume:  true,
+		HTTPOptions: httpopts.Options{
+			Username: "alice",
+			Password: "secret",
+		},
+	}
+	got := plan.DryRunString()
+	if !strings.Contains(got, "Auth: alice:[REDACTED]") {
+		t.Errorf("DryRunString() auth line should show username:[REDACTED], got:\n%s", got)
+	}
+	if strings.Contains(got, "secret") {
+		t.Errorf("DryRunString() must not contain raw password:\n%s", got)
+	}
+}
+
+func TestDryRunStringAuthUsernameOnlyFormat(t *testing.T) {
+	plan := Plan{
+		URLs:    []string{"https://example.com/file.zip"},
+		Retries: 3,
+		Resume:  true,
+		HTTPOptions: httpopts.Options{
+			Username: "alice",
+		},
+	}
+	got := plan.DryRunString()
+	if !strings.Contains(got, "Auth: alice") {
+		t.Errorf("DryRunString() auth line should show username when no password, got:\n%s", got)
 	}
 }
 

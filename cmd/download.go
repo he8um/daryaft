@@ -105,13 +105,13 @@ func runDownloadWithContext(cmd *cobra.Command, args []string, flags downloadFla
 	if err != nil {
 		return err
 	}
-	httpOpts := httpopts.Options{
+	httpOpts := applyHTTPCredentialEnv(httpopts.Options{
 		ProxyURL:  flags.proxy,
 		Headers:   parsedHeaders,
 		UserAgent: flags.userAgent,
 		Username:  flags.username,
 		Password:  flags.password,
-	}
+	})
 
 	options := download.Options{
 		URLs:        args,
@@ -407,4 +407,23 @@ func hasDownloadFlagChanges(cmd *cobra.Command) bool {
 func localFlagChanged(cmd *cobra.Command, name string) bool {
 	flag := cmd.Flags().Lookup(name)
 	return flag != nil && flag.Changed
+}
+
+// applyHTTPCredentialEnv applies DARYAFT_USERNAME and DARYAFT_PASSWORD env vars
+// as fallbacks when the CLI flags were not explicitly set (empty string).
+// CLI flag values always take priority over env vars.
+// The env values are subject to the same validation (via httpopts.Validate) as
+// flag values — DARYAFT_PASSWORD without a username still produces an error.
+func applyHTTPCredentialEnv(opts httpopts.Options) httpopts.Options {
+	if opts.Username == "" {
+		if v := os.Getenv("DARYAFT_USERNAME"); v != "" {
+			opts.Username = v
+		}
+	}
+	if opts.Password == "" {
+		if v := os.Getenv("DARYAFT_PASSWORD"); v != "" {
+			opts.Password = v
+		}
+	}
+	return opts
 }
