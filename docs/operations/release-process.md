@@ -1,7 +1,7 @@
 # Release Process
 
-**`v1.10.0` is the current stable release.** `main` is now on `1.11.0-dev`
-post-v1.10.0 development.
+**`v1.11.0` is the current stable release.** `main` is now on `1.12.0-dev`
+post-v1.11.0 development.
 
 > **Version skip note:** `v1.3.0` was tagged in source history but no GitHub
 > Release was published for it. The tag exists locally and on the remote as
@@ -10,8 +10,9 @@ post-v1.10.0 development.
 > published as a stable GitHub release with binary assets. Do **not** backfill
 > or recreate a `v1.3.0` release.
 
-See [Daryaft v1.10.0 Release Notes](release-notes-v1.10.0.md) for the latest
+See [Daryaft v1.11.0 Release Notes](release-notes-v1.11.0.md) for the latest
 stable release notes and known limitations. Earlier releases:
+- [v1.10.0 Release Notes](release-notes-v1.10.0.md): user_agent/timeout config keys and --config/--timeout flags.
 - [v1.8.0 Release Notes](release-notes-v1.8.0.md): batch checksum verification and TUI checksum status.
 - [v1.7.0 Release Notes](release-notes-v1.7.0.md): single-target checksum verification.
 - [v1.6.0 Release Notes](release-notes-v1.6.0.md): download and TUI queue UX polish.

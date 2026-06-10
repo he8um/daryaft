@@ -8,21 +8,21 @@ packaging, and future self-update support.
 
 ## Status
 
-**v1.10.0 is the current stable release.** Download binary archives from the
-[GitHub releases page](https://github.com/he8um/daryaft/releases/tag/v1.10.0).
+**v1.11.0 is the current stable release.** Download binary archives from the
+[GitHub releases page](https://github.com/he8um/daryaft/releases/tag/v1.11.0).
 
-Daryaft v1.10.0 adds safe configuration persistence improvements: `user_agent`
-and `timeout` config keys with matching `DARYAFT_USER_AGENT` and `DARYAFT_TIMEOUT`
-environment overrides, a `--timeout` download flag, and a global `--config <path>`
-flag for explicit configuration file selection. The full feature set includes CLI
-and TUI HTTP/HTTPS downloading with dry-run planning, single URL and sequential
-batch downloads, resume from `.part` files, retry with exponential backoff, CLI
-checksum verification for single URL downloads (`--checksum`) and batch downloads
-via `--checksum-file`, an interactive Bubble Tea TUI, YAML configuration with
-environment overrides, `inspect` metadata preflight, `doctor` diagnostics, shell
-completions, HTTP request customization (`--proxy`, `--header`, `--user-agent`,
-Basic Auth), and a polished update check command. Running `daryaft` with no
-arguments opens the interactive TUI home screen.
+Daryaft v1.11.0 adds a read-only TUI Settings screen for safe configuration
+awareness. Open it with `c` from the TUI home screen or by selecting Settings.
+It displays the active config path, loaded/default state, and safe effective
+settings. Credentials and secrets are intentionally excluded. The full feature
+set includes CLI and TUI HTTP/HTTPS downloading with dry-run planning, single URL
+and sequential batch downloads, resume from `.part` files, retry with exponential
+backoff, CLI checksum verification for single URL downloads (`--checksum`) and
+batch downloads via `--checksum-file`, an interactive Bubble Tea TUI, YAML
+configuration with environment overrides, `inspect` metadata preflight, `doctor`
+diagnostics, shell completions, HTTP request customization (`--proxy`, `--header`,
+`--user-agent`, Basic Auth), and a polished update check command. Running
+`daryaft` with no arguments opens the interactive TUI home screen.
 
 `daryaft update --check` is read-only: it queries the GitHub Releases API and
 reports the current version, the latest stable release, and install-channel-aware
@@ -41,7 +41,7 @@ Auto-update (`daryaft update` without `--check`) is not yet implemented.
 Known limitations (Windows, concurrent downloads, TUI HTTP options, auto-update,
 package managers, checksum auto-discovery, PGP/attestation verification,
 `Retry-After` not honored) are documented in the
-[v1.10.0 release notes](docs/operations/release-notes-v1.10.0.md). Post-1.0
+[v1.11.0 release notes](docs/operations/release-notes-v1.11.0.md). Post-1.0
 features are tracked in [post-1-feature-packs.md](docs/roadmap/post-1-feature-packs.md).
 
 - Repository: https://github.com/he8um/daryaft
@@ -64,8 +64,8 @@ daryaft version
 
 ```bash
 # Example: macOS Apple Silicon
-curl -L -O https://github.com/he8um/daryaft/releases/download/v1.10.0/daryaft_darwin_arm64.tar.gz
-curl -L -O https://github.com/he8um/daryaft/releases/download/v1.10.0/checksums.txt
+curl -L -O https://github.com/he8um/daryaft/releases/download/v1.11.0/daryaft_darwin_arm64.tar.gz
+curl -L -O https://github.com/he8um/daryaft/releases/download/v1.11.0/checksums.txt
 shasum -a 256 --check checksums.txt
 tar -xzf daryaft_darwin_arm64.tar.gz
 ./daryaft version
@@ -346,6 +346,8 @@ Start here:
 - [Release-Candidate Validation](docs/operations/rc-validation.md)
 - [RC Release Notes: v0.6.0-rc.2](docs/operations/release-notes-v0.6.0-rc.2.md)
 - [v0.6.0-rc.2 Release Status](docs/operations/release-status-v0.6.0-rc.2.md)
+- [v1.11.0 Release Notes](docs/operations/release-notes-v1.11.0.md)
+- [v1.10.0 Release Notes](docs/operations/release-notes-v1.10.0.md)
 - [v1.9.0 Release Notes](docs/operations/release-notes-v1.9.0.md)
 - [v1.8.0 Release Notes](docs/operations/release-notes-v1.8.0.md)
 - [v1.7.0 Release Notes](docs/operations/release-notes-v1.7.0.md)

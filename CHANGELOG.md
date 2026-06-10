@@ -6,16 +6,25 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 
 ## [Unreleased]
 
+## [1.11.0] - 2026-06-11
+
 ### Added
 
 - Added a read-only TUI Settings screen for safe configuration awareness.
 - Added TUI display of active config path and loaded/default config state.
-- Added TUI display of safe effective config values: download directory, retries, resume, no-color, no-tui, theme, animations, hyperlinks, user-agent, and timeout.
+- Added TUI display of safe effective config values such as download directory, retries, resume, user-agent, timeout, theme, animations, and hyperlinks.
 - Added `c` shortcut from the TUI home screen to open Settings.
 
 ### Security
 
-- Kept TUI Settings read-only and excluded credentials, tokens, cookies, auth headers, proxy values, and credential environment variables from display.
+- Kept TUI Settings read-only and excluded credentials, tokens, cookies, auth headers, proxy values, and credential environment variables.
+
+### Tests
+
+- Added tests for Settings screen rendering.
+- Added tests for Settings navigation and the `c` shortcut.
+- Added tests for no-color Settings rendering.
+- Added tests to ensure secret-like values are not rendered in Settings.
 
 ## [1.10.0] - 2026-06-11
 
