@@ -21,6 +21,15 @@ Use the command below to print the exact path for the current machine:
 daryaft config path
 ```
 
+To use a different config file, pass `--config <path>` as a global flag before any subcommand:
+
+```bash
+daryaft --config ~/my-daryaft.yaml config show
+daryaft --config ~/my-daryaft.yaml download https://example.com/file.zip
+```
+
+If `--config` is omitted, Daryaft uses the default path above. A missing default config is not an error — Daryaft continues with built-in defaults. A missing explicit `--config` path is an error. `daryaft config init` with `--config` creates the file at the specified path.
+
 ## Commands
 
 ```bash
@@ -66,6 +75,8 @@ daryaft config reset
 download_dir: ""
 retries: 3
 resume: true
+user_agent: ""
+timeout: ""
 no_color: false
 no_tui: false
 theme: default
@@ -97,6 +108,8 @@ Supported environment variables:
 - `DARYAFT_DOWNLOAD_DIR`
 - `DARYAFT_RETRIES`
 - `DARYAFT_RESUME`
+- `DARYAFT_USER_AGENT`
+- `DARYAFT_TIMEOUT`
 - `DARYAFT_NO_COLOR`
 - `DARYAFT_NO_TUI`
 - `DARYAFT_THEME`
@@ -104,7 +117,8 @@ Supported environment variables:
 - `DARYAFT_HYPERLINKS`
 
 String values are trimmed. Empty string values are accepted for
-`DARYAFT_DOWNLOAD_DIR` and `DARYAFT_THEME`.
+`DARYAFT_DOWNLOAD_DIR`, `DARYAFT_THEME`, `DARYAFT_USER_AGENT`, and
+`DARYAFT_TIMEOUT`.
 
 `DARYAFT_RETRIES` must be an integer from `0` through `20`. Empty, negative,
 too-large, or otherwise invalid integer values return an error.
@@ -133,6 +147,12 @@ DARYAFT_NO_TUI=true daryaft
 - `retries`: default retry attempts after the initial attempt. Valid range:
   `0` through `20`.
 - `resume`: default resume behavior for interrupted `.part` files.
+- `user_agent`: default User-Agent header for downloads. Empty means Daryaft uses
+  its built-in default (`Daryaft/<version>`). `--user-agent` and `DARYAFT_USER_AGENT`
+  override this value. Must not contain control characters.
+- `timeout`: overall HTTP request timeout as a Go duration string (for example
+  `30s`, `2m`, `1m30s`). Empty means no overall timeout is set. `--timeout` and
+  `DARYAFT_TIMEOUT` override this value. Must be a positive duration when set.
 - `no_color`: default no-color preference for the TUI.
 - `no_tui`: when true, plain `daryaft` uses the non-TUI fallback unless command
   arguments or download flags are present.
@@ -154,6 +174,8 @@ no_tui bool
 theme string
 animations bool
 hyperlinks bool
+user_agent string
+timeout string
 ```
 
 `retries` must be an integer from `0` through `20`. Boolean config set values
@@ -162,6 +184,22 @@ case-insensitively.
 
 `theme` must be `default` or `mono`. Invalid `theme` values passed through
 `config set` or `DARYAFT_THEME` return a clear error.
+
+`user_agent` accepts any string without control characters. Empty clears the
+override and restores the built-in default.
+
+`timeout` must be a positive Go duration string such as `30s`, `2m`, or
+`1m30s`. Zero, negative, or unparseable values return a clear error. Empty
+clears the timeout override (no overall client timeout).
+
+## Security
+
+Credentials, tokens, cookies, authorization headers, proxy URLs, and arbitrary
+headers are intentionally not supported in persistent configuration. The strict
+YAML decoder (`KnownFields: true`) rejects unknown keys, so attempting to write
+`username`, `password`, or `authorization` to the config file produces a parse
+error. Use `DARYAFT_USERNAME` and `DARYAFT_PASSWORD` environment variables for
+credentials — they are never persisted.
 
 Config saves are written through a temporary file in the same directory and
 renamed into place with `0600` permissions. This keeps normal config updates

@@ -684,6 +684,8 @@ func TestSupportedKeysListsAllKeys(t *testing.T) {
 		{Key: keyTheme, Type: "string"},
 		{Key: keyAnimations, Type: "bool"},
 		{Key: keyHyperlinks, Type: "bool"},
+		{Key: keyUserAgent, Type: "string"},
+		{Key: keyTimeout, Type: "string"},
 	}
 
 	if len(keys) != len(want) {
@@ -700,5 +702,266 @@ func mapLookup(values map[string]string) LookupEnvFunc {
 	return func(key string) (string, bool) {
 		value, ok := values[key]
 		return value, ok
+	}
+}
+
+func TestDefaultUserAgentIsEmpty(t *testing.T) {
+	if got := Default().UserAgent; got != "" {
+		t.Fatalf("UserAgent = %q, want empty", got)
+	}
+}
+
+func TestDefaultTimeoutIsEmpty(t *testing.T) {
+	if got := Default().Timeout; got != "" {
+		t.Fatalf("Timeout = %q, want empty", got)
+	}
+}
+
+func TestLoadReadsUserAgent(t *testing.T) {
+	dir := t.TempDir()
+	t.Cleanup(SetUserConfigDirForTest(dir))
+
+	path, _ := Path()
+	_ = os.MkdirAll(filepath.Dir(path), 0o755)
+	_ = os.WriteFile(path, []byte("user_agent: MyBot/1.0\n"), 0o644)
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load returned error: %v", err)
+	}
+	if cfg.UserAgent != "MyBot/1.0" {
+		t.Fatalf("UserAgent = %q, want MyBot/1.0", cfg.UserAgent)
+	}
+}
+
+func TestLoadReadsTimeout(t *testing.T) {
+	dir := t.TempDir()
+	t.Cleanup(SetUserConfigDirForTest(dir))
+
+	path, _ := Path()
+	_ = os.MkdirAll(filepath.Dir(path), 0o755)
+	_ = os.WriteFile(path, []byte("timeout: 30s\n"), 0o644)
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load returned error: %v", err)
+	}
+	if cfg.Timeout != "30s" {
+		t.Fatalf("Timeout = %q, want 30s", cfg.Timeout)
+	}
+}
+
+func TestApplyEnvOverridesUserAgent(t *testing.T) {
+	cfg := Default()
+	cfg.UserAgent = "FileAgent/1"
+
+	got, err := ApplyEnv(cfg, mapLookup(map[string]string{
+		envUserAgent: "EnvAgent/2",
+	}))
+	if err != nil {
+		t.Fatalf("ApplyEnv returned error: %v", err)
+	}
+	if got.UserAgent != "EnvAgent/2" {
+		t.Fatalf("UserAgent = %q, want EnvAgent/2", got.UserAgent)
+	}
+}
+
+func TestApplyEnvInvalidUserAgentReturnsError(t *testing.T) {
+	_, err := ApplyEnv(Default(), mapLookup(map[string]string{
+		envUserAgent: "Bad\x01Agent",
+	}))
+	if err == nil {
+		t.Fatal("ApplyEnv returned nil error for invalid user-agent")
+	}
+	if !strings.Contains(err.Error(), envUserAgent) {
+		t.Fatalf("error = %q, want env var name in message", err)
+	}
+}
+
+func TestApplyEnvOverridesTimeout(t *testing.T) {
+	cfg := Default()
+	cfg.Timeout = "10s"
+
+	got, err := ApplyEnv(cfg, mapLookup(map[string]string{
+		envTimeout: "2m",
+	}))
+	if err != nil {
+		t.Fatalf("ApplyEnv returned error: %v", err)
+	}
+	if got.Timeout != "2m" {
+		t.Fatalf("Timeout = %q, want 2m", got.Timeout)
+	}
+}
+
+func TestApplyEnvInvalidTimeoutReturnsError(t *testing.T) {
+	for _, value := range []string{"abc", "0s", "-1s", "0"} {
+		t.Run(value, func(t *testing.T) {
+			_, err := ApplyEnv(Default(), mapLookup(map[string]string{
+				envTimeout: value,
+			}))
+			if err == nil {
+				t.Fatalf("ApplyEnv returned nil error for timeout %q", value)
+			}
+			if !strings.Contains(err.Error(), envTimeout) {
+				t.Fatalf("error = %q, want env var name in message", err)
+			}
+		})
+	}
+}
+
+func TestSetUserAgentValue(t *testing.T) {
+	cfg, err := Set(Default(), keyUserAgent, "  MyBot/1.0  ")
+	if err != nil {
+		t.Fatalf("Set user_agent returned error: %v", err)
+	}
+	if cfg.UserAgent != "MyBot/1.0" {
+		t.Fatalf("UserAgent = %q, want MyBot/1.0", cfg.UserAgent)
+	}
+}
+
+func TestSetUserAgentEmpty(t *testing.T) {
+	cfg := Default()
+	cfg.UserAgent = "OldAgent"
+	got, err := Set(cfg, keyUserAgent, "")
+	if err != nil {
+		t.Fatalf("Set user_agent empty returned error: %v", err)
+	}
+	if got.UserAgent != "" {
+		t.Fatalf("UserAgent = %q, want empty", got.UserAgent)
+	}
+}
+
+func TestSetUserAgentInvalidReturnsError(t *testing.T) {
+	_, err := Set(Default(), keyUserAgent, "Bad\x01Agent")
+	if err == nil {
+		t.Fatal("Set returned nil error for invalid user-agent")
+	}
+	if !strings.Contains(err.Error(), keyUserAgent) {
+		t.Fatalf("error = %q", err)
+	}
+}
+
+func TestGetUserAgent(t *testing.T) {
+	cfg := Default()
+	cfg.UserAgent = "MyBot/1.0"
+	got, err := Get(cfg, keyUserAgent)
+	if err != nil {
+		t.Fatalf("Get user_agent returned error: %v", err)
+	}
+	if got != "MyBot/1.0" {
+		t.Fatalf("Get(user_agent) = %q, want MyBot/1.0", got)
+	}
+}
+
+func TestSetTimeoutValid(t *testing.T) {
+	for _, v := range []string{"30s", "2m", "1m30s"} {
+		t.Run(v, func(t *testing.T) {
+			cfg, err := Set(Default(), keyTimeout, v)
+			if err != nil {
+				t.Fatalf("Set timeout %q returned error: %v", v, err)
+			}
+			if cfg.Timeout != v {
+				t.Fatalf("Timeout = %q, want %q", cfg.Timeout, v)
+			}
+		})
+	}
+}
+
+func TestSetTimeoutEmpty(t *testing.T) {
+	cfg := Default()
+	cfg.Timeout = "30s"
+	got, err := Set(cfg, keyTimeout, "")
+	if err != nil {
+		t.Fatalf("Set timeout empty returned error: %v", err)
+	}
+	if got.Timeout != "" {
+		t.Fatalf("Timeout = %q, want empty", got.Timeout)
+	}
+}
+
+func TestSetTimeoutInvalid(t *testing.T) {
+	for _, v := range []string{"abc", "0s", "-1s", "0"} {
+		t.Run(v, func(t *testing.T) {
+			_, err := Set(Default(), keyTimeout, v)
+			if err == nil {
+				t.Fatalf("Set timeout %q returned nil error", v)
+			}
+			if !strings.Contains(err.Error(), keyTimeout) {
+				t.Fatalf("error = %q, want key name in message", err)
+			}
+		})
+	}
+}
+
+func TestGetTimeout(t *testing.T) {
+	cfg := Default()
+	cfg.Timeout = "45s"
+	got, err := Get(cfg, keyTimeout)
+	if err != nil {
+		t.Fatalf("Get timeout returned error: %v", err)
+	}
+	if got != "45s" {
+		t.Fatalf("Get(timeout) = %q, want 45s", got)
+	}
+}
+
+func TestSupportedKeysIncludesUserAgentAndTimeout(t *testing.T) {
+	keys := SupportedKeys()
+	found := map[string]bool{}
+	for _, k := range keys {
+		found[k.Key] = true
+	}
+	for _, want := range []string{keyUserAgent, keyTimeout} {
+		if !found[want] {
+			t.Fatalf("SupportedKeys missing %q", want)
+		}
+	}
+}
+
+func TestSetConfigPathOverride(t *testing.T) {
+	dir := t.TempDir()
+	customPath := filepath.Join(dir, "custom.yaml")
+	t.Cleanup(SetConfigPathForTest(""))
+
+	SetConfigPath(customPath)
+	got, err := Path()
+	if err != nil {
+		t.Fatalf("Path returned error: %v", err)
+	}
+	if got != customPath {
+		t.Fatalf("Path = %q, want %q", got, customPath)
+	}
+}
+
+func TestSetConfigPathForTestRestores(t *testing.T) {
+	dir := t.TempDir()
+	restore := SetConfigPathForTest(filepath.Join(dir, "test.yaml"))
+
+	got, _ := Path()
+	if got != filepath.Join(dir, "test.yaml") {
+		t.Fatalf("Path = %q during override", got)
+	}
+
+	restore()
+	got2, _ := Path()
+	if got2 == filepath.Join(dir, "test.yaml") {
+		t.Fatalf("Path = %q after restore, expected default", got2)
+	}
+}
+
+func TestUnknownYAMLFieldRejected(t *testing.T) {
+	dir := t.TempDir()
+	t.Cleanup(SetUserConfigDirForTest(dir))
+
+	path, _ := Path()
+	_ = os.MkdirAll(filepath.Dir(path), 0o755)
+	_ = os.WriteFile(path, []byte("username: secret\n"), 0o644)
+
+	_, err := Load()
+	if err == nil {
+		t.Fatal("Load returned nil error for unknown field 'username'")
+	}
+	if !strings.Contains(err.Error(), "parse config") {
+		t.Fatalf("error = %q", err)
 	}
 }

@@ -325,6 +325,8 @@ no_tui bool
 theme string
 animations bool
 hyperlinks bool
+user_agent string
+timeout string
 ```
 
 ## `daryaft [url...] --dry-run`
@@ -459,6 +461,7 @@ The download commands accept HTTP customization flags:
 | `--user-agent <value>` | Override the default `User-Agent` |
 | `--username <value>` | HTTP Basic Auth username |
 | `--password <value>` | HTTP Basic Auth password |
+| `--timeout <duration>` | Overall HTTP request timeout (for example `30s`, `2m`; empty = no overall timeout) |
 
 See [HTTP Request Customization](../features/http-request-customization.md) for full details, validation rules, and security warnings.
 
@@ -508,6 +511,9 @@ Implemented. Explicit form of sequential batch download.
   valid range `0` through `20`.
 - `--resume`: resume interrupted `.part` files with HTTP Range, default `true`.
 - `--no-resume`: disable resume and restart partial files from byte `0`.
+- `--timeout string`: overall HTTP request timeout as a Go duration string (for
+  example `30s`, `2m`). Empty means no overall timeout. Config `timeout` and
+  `DARYAFT_TIMEOUT` provide defaults. `--timeout` overrides both.
 
 Validation rules:
 
@@ -528,6 +534,9 @@ Validation rules:
 
 Implemented:
 
+- `--config <path>`: path to a configuration file. When provided, Daryaft uses
+  that file instead of the default config path. A missing explicit path is an
+  error. Applies to all subcommands.
 - `--no-color`: avoid color styling in the TUI.
 - `--no-tui`: skip the no-argument TUI and print the non-interactive placeholder.
 - `-v`, `--verbose`: enable extra CLI download diagnostics.
@@ -544,13 +553,16 @@ Environment variables:
 - `DARYAFT_DOWNLOAD_DIR`
 - `DARYAFT_RETRIES`
 - `DARYAFT_RESUME`
+- `DARYAFT_USER_AGENT`
+- `DARYAFT_TIMEOUT`
 - `DARYAFT_NO_COLOR`
 - `DARYAFT_NO_TUI`
 - `DARYAFT_THEME`
 - `DARYAFT_ANIMATIONS`
 - `DARYAFT_HYPERLINKS`
 
-`DARYAFT_RETRIES` must be from `0` through `20`. `DARYAFT_THEME` must be
+`DARYAFT_RETRIES` must be from `0` through `20`. `DARYAFT_TIMEOUT` must be a
+positive duration string (for example `30s`, `2m`). `DARYAFT_THEME` must be
 `default` or `mono`. Boolean environment values accept `true`, `1`, `yes`, `y`,
 `on`, `false`, `0`, `no`, `n`, and `off`, case-insensitively. Empty boolean and
 integer values are invalid.

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
+	"unicode"
 )
 
 type LookupEnvFunc func(string) (string, bool)
@@ -17,6 +19,8 @@ const (
 	envTheme       = "DARYAFT_THEME"
 	envAnimations  = "DARYAFT_ANIMATIONS"
 	envHyperlinks  = "DARYAFT_HYPERLINKS"
+	envUserAgent   = "DARYAFT_USER_AGENT"
+	envTimeout     = "DARYAFT_TIMEOUT"
 )
 
 func LoadEffective() (Config, error) {
@@ -63,7 +67,45 @@ func ApplyEnv(cfg Config, lookup LookupEnvFunc) (Config, error) {
 		return Config{}, err
 	}
 
+	if value, ok := lookup(envUserAgent); ok {
+		trimmed := strings.TrimSpace(value)
+		if err := validateUserAgent(trimmed); err != nil {
+			return Config{}, fmt.Errorf("invalid %s %q: %w", envUserAgent, value, err)
+		}
+		cfg.UserAgent = trimmed
+	}
+	if value, ok := lookup(envTimeout); ok {
+		if err := validateTimeout(value); err != nil {
+			return Config{}, fmt.Errorf("invalid %s %q: %w", envTimeout, value, err)
+		}
+		cfg.Timeout = strings.TrimSpace(value)
+	}
+
 	return cfg, nil
+}
+
+func validateUserAgent(ua string) error {
+	for _, r := range ua {
+		if unicode.IsControl(r) {
+			return fmt.Errorf("user-agent contains control character")
+		}
+	}
+	return nil
+}
+
+func validateTimeout(value string) error {
+	trimmed := strings.TrimSpace(value)
+	if trimmed == "" {
+		return nil
+	}
+	d, err := time.ParseDuration(trimmed)
+	if err != nil {
+		return fmt.Errorf("timeout must be a positive duration (for example 30s, 2m)")
+	}
+	if d <= 0 {
+		return fmt.Errorf("timeout must be a positive duration (for example 30s, 2m)")
+	}
+	return nil
 }
 
 func envInt(lookup LookupEnvFunc, name string, fallback int) (int, error) {

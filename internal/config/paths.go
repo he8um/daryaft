@@ -11,8 +11,24 @@ const configFileName = "config.yaml"
 
 var userConfigDir = os.UserConfigDir
 var userHomeDir = os.UserHomeDir
+var configPathOverride string
+
+func SetConfigPath(path string) {
+	configPathOverride = path
+}
+
+func SetConfigPathForTest(path string) func() {
+	previous := configPathOverride
+	configPathOverride = path
+	return func() {
+		configPathOverride = previous
+	}
+}
 
 func Path() (string, error) {
+	if configPathOverride != "" {
+		return configPathOverride, nil
+	}
 	dir, err := userConfigDir()
 	if err != nil {
 		return "", err

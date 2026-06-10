@@ -11,9 +11,10 @@ import (
 )
 
 var (
-	noColor bool
-	noTUI   bool
-	verbose bool
+	noColor    bool
+	noTUI      bool
+	verbose    bool
+	configPath string
 )
 
 var rootCmd = &cobra.Command{
@@ -21,6 +22,22 @@ var rootCmd = &cobra.Command{
 	Short:         "Daryaft is a modern terminal downloader.",
 	SilenceUsage:  true,
 	SilenceErrors: true,
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		if configPath == "" {
+			return nil
+		}
+		// config init is allowed to create a new file; skip existence check.
+		if cmd.Name() != "init" {
+			if _, err := os.Stat(configPath); err != nil {
+				if os.IsNotExist(err) {
+					return fmt.Errorf("config file not found: %s", configPath)
+				}
+				return fmt.Errorf("config file error %s: %w", configPath, err)
+			}
+		}
+		appconfig.SetConfigPath(configPath)
+		return nil
+	},
 	Long: `Daryaft is a modern terminal downloader written in Go.
 
 It is similar in spirit to wget, with a clean CLI foundation, an interactive
@@ -86,6 +103,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&noColor, "no-color", false, "disable colored output")
 	rootCmd.PersistentFlags().BoolVar(&noTUI, "no-tui", false, "disable terminal UI when available")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose output")
+	rootCmd.PersistentFlags().StringVar(&configPath, "config", "", "path to configuration file")
 
 	rootCmd.SetUsageTemplate(`Usage:
   {{.UseLine}}{{if .HasAvailableSubCommands}}

@@ -208,11 +208,29 @@ defaults. For example:
 DARYAFT_DOWNLOAD_DIR=~/Downloads daryaft https://example.com/file.zip
 DARYAFT_RETRIES=5 daryaft https://example.com/file.zip
 DARYAFT_NO_TUI=true daryaft
+DARYAFT_USER_AGENT="MyBot/1.0" daryaft https://example.com/file.zip
+DARYAFT_TIMEOUT=30s daryaft https://example.com/file.zip
 ```
 
-`theme` supports `default` and `mono`; `mono` uses monochrome TUI styling like
-`no_color`. `animations` and `hyperlinks` are reserved config fields stored for
-future behavior and do not currently change runtime output.
+`user_agent` sets the default User-Agent for downloads; empty means the
+built-in `Daryaft/<version>` default. `timeout` sets the overall HTTP request
+timeout as a Go duration string (for example `30s`, `2m`); empty means no
+overall timeout. `theme` supports `default` and `mono`; `mono` uses monochrome
+TUI styling like `no_color`. `animations` and `hyperlinks` are reserved config
+fields stored for future behavior and do not currently change runtime output.
+
+Use `--config <path>` as a global flag to select an explicit configuration file:
+
+```bash
+daryaft --config ~/my-daryaft.yaml download https://example.com/file.zip
+daryaft --config ~/my-daryaft.yaml config show
+```
+
+Use `--timeout <duration>` to set a per-invocation request timeout:
+
+```bash
+daryaft download https://example.com/file.zip --timeout 2m
+```
 
 `daryaft doctor` prints a local diagnostic report for runtime details, version
 metadata, config path and loading, default download directory writability,

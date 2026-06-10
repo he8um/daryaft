@@ -111,6 +111,8 @@ Default config:
 download_dir: ""
 retries: 3
 resume: true
+user_agent: ""
+timeout: ""
 no_color: false
 no_tui: false
 theme: default
@@ -118,13 +120,28 @@ animations: true
 hyperlinks: true
 ```
 
-Supported set/get keys are `download_dir`, `retries`, `resume`, `no_color`,
-`no_tui`, `theme`, `animations`, and `hyperlinks`. Shell completion suggests
-these keys for `config get` and `config set`; boolean `config set` values also
-suggest `true` and `false`.
+Supported set/get keys are `download_dir`, `retries`, `resume`, `user_agent`,
+`timeout`, `no_color`, `no_tui`, `theme`, `animations`, and `hyperlinks`. Shell
+completion suggests these keys for `config get` and `config set`; boolean
+`config set` values also suggest `true` and `false`.
+`user_agent` sets the default User-Agent for downloads; empty means Daryaft
+uses its built-in default. `timeout` sets the overall HTTP request timeout as a
+Go duration string (for example `30s`, `2m`); empty means no overall timeout.
 `theme` supports `default` and `mono`; `mono` uses monochrome TUI styling.
 `animations` and `hyperlinks` are reserved fields stored for future behavior
 and do not currently change runtime output.
+
+```bash
+daryaft config set user_agent "MyBot/1.0"
+daryaft config set timeout 30s
+daryaft config get user_agent
+daryaft config get timeout
+daryaft download https://example.com/file.zip --timeout 2m
+daryaft --config ~/my-config.yaml download https://example.com/file.zip
+```
+
+`--config <path>` is a global flag that selects an explicit config file for any
+command. A missing explicit path is an error; a missing default config is not.
 
 ```bash
 daryaft

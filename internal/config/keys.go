@@ -25,6 +25,8 @@ const (
 	keyTheme       = "theme"
 	keyAnimations  = "animations"
 	keyHyperlinks  = "hyperlinks"
+	keyUserAgent   = "user_agent"
+	keyTimeout     = "timeout"
 )
 
 func SupportedKeys() []KeyInfo {
@@ -37,6 +39,8 @@ func SupportedKeys() []KeyInfo {
 		{Key: keyTheme, Type: "string"},
 		{Key: keyAnimations, Type: "bool"},
 		{Key: keyHyperlinks, Type: "bool"},
+		{Key: keyUserAgent, Type: "string"},
+		{Key: keyTimeout, Type: "string"},
 	}
 }
 
@@ -58,6 +62,10 @@ func Get(cfg Config, key string) (string, error) {
 		return strconv.FormatBool(cfg.Animations), nil
 	case keyHyperlinks:
 		return strconv.FormatBool(cfg.Hyperlinks), nil
+	case keyUserAgent:
+		return cfg.UserAgent, nil
+	case keyTimeout:
+		return cfg.Timeout, nil
 	default:
 		return "", unknownKeyError(key)
 	}
@@ -109,11 +117,24 @@ func Set(cfg Config, key string, value string) (Config, error) {
 			return Config{}, err
 		}
 		cfg.Hyperlinks = hyperlinks
+	case keyUserAgent:
+		trimmed := strings.TrimSpace(value)
+		if err := validateUserAgent(trimmed); err != nil {
+			return Config{}, fmt.Errorf("invalid %s %q: %w", key, value, err)
+		}
+		cfg.UserAgent = trimmed
+	case keyTimeout:
+		trimmed := strings.TrimSpace(value)
+		if err := validateTimeout(trimmed); err != nil {
+			return Config{}, fmt.Errorf("invalid %s %q: %w", key, value, err)
+		}
+		cfg.Timeout = trimmed
 	default:
 		return Config{}, unknownKeyError(key)
 	}
 	return cfg, nil
 }
+
 
 func NormalizeTheme(value string) (string, error) {
 	theme := strings.ToLower(strings.TrimSpace(value))

@@ -457,6 +457,8 @@ func clearDaryaftEnv() {
 		"DARYAFT_THEME",
 		"DARYAFT_ANIMATIONS",
 		"DARYAFT_HYPERLINKS",
+		"DARYAFT_USER_AGENT",
+		"DARYAFT_TIMEOUT",
 	} {
 		_ = os.Unsetenv(name)
 	}
@@ -1626,5 +1628,191 @@ func TestRunDownloadChecksumFileWithHTTPCustomization(t *testing.T) {
 	}
 	if !strings.Contains(output.String(), "Checksum verified: 1") {
 		t.Fatalf("output missing checksum verified count:\n%s", output.String())
+	}
+}
+
+func TestDownloadUsesConfigUserAgent(t *testing.T) {
+	restore := appconfig.SetUserConfigDirForTest(t.TempDir())
+	t.Cleanup(restore)
+
+	cfg := appconfig.Default()
+	cfg.UserAgent = "ConfigBot/1.0"
+	if err := appconfig.Save(cfg); err != nil {
+		t.Fatalf("Save returned error: %v", err)
+	}
+
+	var gotUA string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotUA = r.Header.Get("User-Agent")
+		_, _ = w.Write([]byte("ok"))
+	}))
+	defer server.Close()
+
+	err := runDownloadWithContext(downloadCmd, []string{server.URL + "/file.txt"}, downloadFlagValues{
+		output:  t.TempDir(),
+		retries: 0,
+		resume:  true,
+	}, context.Background())
+	if err != nil {
+		t.Fatalf("runDownload returned error: %v", err)
+	}
+	if gotUA != "ConfigBot/1.0" {
+		t.Fatalf("User-Agent = %q, want ConfigBot/1.0", gotUA)
+	}
+}
+
+func TestDownloadCLIUserAgentOverridesConfig(t *testing.T) {
+	restore := appconfig.SetUserConfigDirForTest(t.TempDir())
+	t.Cleanup(restore)
+
+	cfg := appconfig.Default()
+	cfg.UserAgent = "ConfigBot/1.0"
+	if err := appconfig.Save(cfg); err != nil {
+		t.Fatalf("Save returned error: %v", err)
+	}
+
+	var gotUA string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotUA = r.Header.Get("User-Agent")
+		_, _ = w.Write([]byte("ok"))
+	}))
+	defer server.Close()
+
+	var output bytes.Buffer
+	root := newDownloadCmdForTest(&output)
+	root.SetArgs([]string{"download", server.URL + "/file.txt", "--user-agent", "CLIBot/2.0", "--output", t.TempDir()})
+	if err := root.Execute(); err != nil {
+		t.Fatalf("Execute returned error: %v", err)
+	}
+	if gotUA != "CLIBot/2.0" {
+		t.Fatalf("User-Agent = %q, want CLIBot/2.0", gotUA)
+	}
+}
+
+func TestDownloadEnvUserAgentOverridesConfig(t *testing.T) {
+	restore := appconfig.SetUserConfigDirForTest(t.TempDir())
+	t.Cleanup(restore)
+	t.Setenv("DARYAFT_USER_AGENT", "EnvBot/3.0")
+
+	cfg := appconfig.Default()
+	cfg.UserAgent = "ConfigBot/1.0"
+	if err := appconfig.Save(cfg); err != nil {
+		t.Fatalf("Save returned error: %v", err)
+	}
+
+	var gotUA string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotUA = r.Header.Get("User-Agent")
+		_, _ = w.Write([]byte("ok"))
+	}))
+	defer server.Close()
+
+	err := runDownloadWithContext(downloadCmd, []string{server.URL + "/file.txt"}, downloadFlagValues{
+		output:  t.TempDir(),
+		retries: 0,
+		resume:  true,
+	}, context.Background())
+	if err != nil {
+		t.Fatalf("runDownload returned error: %v", err)
+	}
+	if gotUA != "EnvBot/3.0" {
+		t.Fatalf("User-Agent = %q, want EnvBot/3.0", gotUA)
+	}
+}
+
+func TestDownloadConfigTimeoutApplied(t *testing.T) {
+	restore := appconfig.SetUserConfigDirForTest(t.TempDir())
+	t.Cleanup(restore)
+
+	cfg := appconfig.Default()
+	cfg.Timeout = "5s"
+	if err := appconfig.Save(cfg); err != nil {
+		t.Fatalf("Save returned error: %v", err)
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte("ok"))
+	}))
+	defer server.Close()
+
+	err := runDownloadWithContext(downloadCmd, []string{server.URL + "/file.txt"}, downloadFlagValues{
+		output:  t.TempDir(),
+		retries: 0,
+		resume:  true,
+	}, context.Background())
+	if err != nil {
+		t.Fatalf("runDownload returned error with timeout config: %v", err)
+	}
+}
+
+func TestDownloadCLITimeoutOverridesConfig(t *testing.T) {
+	restore := appconfig.SetUserConfigDirForTest(t.TempDir())
+	t.Cleanup(restore)
+
+	cfg := appconfig.Default()
+	cfg.Timeout = "1m"
+	if err := appconfig.Save(cfg); err != nil {
+		t.Fatalf("Save returned error: %v", err)
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte("ok"))
+	}))
+	defer server.Close()
+
+	err := runDownloadWithContext(downloadCmd, []string{server.URL + "/file.txt"}, downloadFlagValues{
+		output:  t.TempDir(),
+		retries: 0,
+		resume:  true,
+		timeout: "30s",
+	}, context.Background())
+	if err != nil {
+		t.Fatalf("runDownload returned error: %v", err)
+	}
+}
+
+func TestDownloadInvalidTimeoutReturnsError(t *testing.T) {
+	restore := appconfig.SetUserConfigDirForTest(t.TempDir())
+	t.Cleanup(restore)
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte("ok"))
+	}))
+	defer server.Close()
+
+	err := runDownloadWithContext(downloadCmd, []string{server.URL + "/file.txt"}, downloadFlagValues{
+		output:  t.TempDir(),
+		retries: 0,
+		resume:  true,
+		timeout: "not-a-duration",
+	}, context.Background())
+	if err == nil {
+		t.Fatal("runDownload returned nil error for invalid timeout")
+	}
+	if !strings.Contains(err.Error(), "--timeout") {
+		t.Fatalf("error = %q, want --timeout in message", err)
+	}
+}
+
+func TestDownloadZeroTimeoutReturnsError(t *testing.T) {
+	restore := appconfig.SetUserConfigDirForTest(t.TempDir())
+	t.Cleanup(restore)
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte("ok"))
+	}))
+	defer server.Close()
+
+	err := runDownloadWithContext(downloadCmd, []string{server.URL + "/file.txt"}, downloadFlagValues{
+		output:  t.TempDir(),
+		retries: 0,
+		resume:  true,
+		timeout: "0s",
+	}, context.Background())
+	if err == nil {
+		t.Fatal("runDownload returned nil error for zero timeout")
+	}
+	if !strings.Contains(err.Error(), "--timeout") {
+		t.Fatalf("error = %q, want --timeout in message", err)
 	}
 }

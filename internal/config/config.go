@@ -9,4 +9,6 @@ type Config struct {
 	Theme       string `yaml:"theme"`
 	Animations  bool   `yaml:"animations"`
 	Hyperlinks  bool   `yaml:"hyperlinks"`
+	UserAgent   string `yaml:"user_agent"`
+	Timeout     string `yaml:"timeout"`
 }

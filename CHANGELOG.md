@@ -6,6 +6,19 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 
 ## [Unreleased]
 
+### Added
+
+- Added `user_agent` configuration key for default download user-agent.
+- Added `DARYAFT_USER_AGENT` environment variable override for user-agent.
+- Added `timeout` configuration key for overall HTTP request timeout (Go duration string, for example `30s`, `2m`).
+- Added `DARYAFT_TIMEOUT` environment variable override for request timeout.
+- Added `--timeout` download flag for per-invocation request timeout override.
+- Added global `--config <path>` persistent flag for explicit configuration file selection.
+
+### Security
+
+- Credentials, tokens, cookies, auth headers, proxy URLs, and arbitrary headers remain intentionally unsupported in persistent configuration.
+
 ## [1.9.0] - 2026-06-10
 
 ### Changed

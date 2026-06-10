@@ -59,6 +59,7 @@ Other package manager channels are post-1.0 work.
 - [v1.7.0 Checksum Verification Scope](roadmap/v1.7.0-checksum-verification.md): scope, quality gates, and limitations for single-target checksum verification.
 - [v1.8.0 Batch Checksum + TUI Checksum Status Scope](roadmap/v1.8.0-batch-checksum-tui-checksum-ux.md): scope, data model, quality gates, and limitations for batch checksum support.
 - [v1.9.0 Download Reliability Hardening Scope](roadmap/v1.9.0-download-reliability-hardening.md): scope, quality gates, and limitations for retry/resume reliability hardening.
+- [v1.10.0 Config Persistence Safe Core Scope](roadmap/v1.10.0-config-persistence-safe-core.md): scope, quality gates, and limitations for user_agent/timeout config keys and --config/--timeout flags.
 
 ## Related Existing Docs
 

@@ -291,10 +291,125 @@ func TestConfigKeysCommandListsSupportedKeys(t *testing.T) {
 		"theme string",
 		"animations bool",
 		"hyperlinks bool",
+		"user_agent string",
+		"timeout string",
 		"",
 	}, "\n")
 	if output != want {
 		t.Fatalf("output = %q, want %q", output, want)
+	}
+}
+
+func TestConfigShowIncludesNewFields(t *testing.T) {
+	restore := appconfig.SetUserConfigDirForTest(t.TempDir())
+	t.Cleanup(restore)
+
+	output, err := executeConfigCommand(t, "show")
+	if err != nil {
+		t.Fatalf("config show returned error: %v", err)
+	}
+
+	for _, want := range []string{"user_agent: \"\"", "timeout: \"\""} {
+		if !strings.Contains(output, want) {
+			t.Fatalf("config show missing %q in:\n%s", want, output)
+		}
+	}
+}
+
+func TestConfigGetUserAgentKey(t *testing.T) {
+	restore := appconfig.SetUserConfigDirForTest(t.TempDir())
+	t.Cleanup(restore)
+
+	cfg := appconfig.Default()
+	cfg.UserAgent = "TestBot/1.0"
+	if err := appconfig.Save(cfg); err != nil {
+		t.Fatalf("Save returned error: %v", err)
+	}
+
+	output, err := executeConfigCommand(t, "get", "user_agent")
+	if err != nil {
+		t.Fatalf("config get user_agent returned error: %v", err)
+	}
+	if strings.TrimSpace(output) != "TestBot/1.0" {
+		t.Fatalf("output = %q, want TestBot/1.0", output)
+	}
+}
+
+func TestConfigSetUserAgentKey(t *testing.T) {
+	restore := appconfig.SetUserConfigDirForTest(t.TempDir())
+	t.Cleanup(restore)
+
+	output, err := executeConfigCommand(t, "set", "user_agent", "MyBot/2.0")
+	if err != nil {
+		t.Fatalf("config set user_agent returned error: %v", err)
+	}
+	if !strings.Contains(output, "user_agent=MyBot/2.0") {
+		t.Fatalf("output = %q, want user_agent=MyBot/2.0", output)
+	}
+
+	cfg, err := appconfig.Load()
+	if err != nil {
+		t.Fatalf("Load returned error: %v", err)
+	}
+	if cfg.UserAgent != "MyBot/2.0" {
+		t.Fatalf("UserAgent = %q, want MyBot/2.0", cfg.UserAgent)
+	}
+}
+
+func TestConfigGetTimeoutKey(t *testing.T) {
+	restore := appconfig.SetUserConfigDirForTest(t.TempDir())
+	t.Cleanup(restore)
+
+	cfg := appconfig.Default()
+	cfg.Timeout = "45s"
+	if err := appconfig.Save(cfg); err != nil {
+		t.Fatalf("Save returned error: %v", err)
+	}
+
+	output, err := executeConfigCommand(t, "get", "timeout")
+	if err != nil {
+		t.Fatalf("config get timeout returned error: %v", err)
+	}
+	if strings.TrimSpace(output) != "45s" {
+		t.Fatalf("output = %q, want 45s", output)
+	}
+}
+
+func TestConfigSetTimeoutKey(t *testing.T) {
+	restore := appconfig.SetUserConfigDirForTest(t.TempDir())
+	t.Cleanup(restore)
+
+	output, err := executeConfigCommand(t, "set", "timeout", "2m")
+	if err != nil {
+		t.Fatalf("config set timeout returned error: %v", err)
+	}
+	if !strings.Contains(output, "timeout=2m") {
+		t.Fatalf("output = %q, want timeout=2m", output)
+	}
+
+	cfg, err := appconfig.Load()
+	if err != nil {
+		t.Fatalf("Load returned error: %v", err)
+	}
+	if cfg.Timeout != "2m" {
+		t.Fatalf("Timeout = %q, want 2m", cfg.Timeout)
+	}
+}
+
+func TestConfigSetTimeoutInvalidReturnsError(t *testing.T) {
+	restore := appconfig.SetUserConfigDirForTest(t.TempDir())
+	t.Cleanup(restore)
+
+	for _, v := range []string{"abc", "0s", "-1s"} {
+		t.Run(v, func(t *testing.T) {
+			_, err := executeConfigCommand(t, "set", "timeout", v)
+			if err == nil {
+				t.Fatalf("config set timeout %q returned nil error", v)
+			}
+			if !strings.Contains(err.Error(), "timeout") {
+				t.Fatalf("error = %q", err)
+			}
+		})
 	}
 }
 

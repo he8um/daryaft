@@ -35,6 +35,7 @@ type downloadFlagValues struct {
 	userAgent    string
 	username     string
 	password     string
+	timeout      string
 }
 
 var (
@@ -86,6 +87,7 @@ func addDownloadFlags(command *cobra.Command, flags *downloadFlagValues) {
 	command.Flags().StringVar(&flags.userAgent, "user-agent", "", "override the default User-Agent header")
 	command.Flags().StringVar(&flags.username, "username", "", "HTTP Basic Auth username")
 	command.Flags().StringVar(&flags.password, "password", "", "HTTP Basic Auth password")
+	command.Flags().StringVar(&flags.timeout, "timeout", "", "overall HTTP request timeout (for example 30s, 2m; empty = no overall timeout)")
 }
 
 func checksumFlagCompletions(cmd *cobra.Command, args []string, argToComplete string) ([]string, cobra.ShellCompDirective) {
@@ -148,6 +150,16 @@ func runDownloadWithContext(cmd *cobra.Command, args []string, flags downloadFla
 	httpClient, err := httpopts.NewClient(downloader.DefaultHTTPClient(), plan.HTTPOptions)
 	if err != nil {
 		return err
+	}
+	if flags.timeout != "" {
+		duration, parseErr := time.ParseDuration(flags.timeout)
+		if parseErr != nil {
+			return fmt.Errorf("invalid --timeout %q: %w", flags.timeout, parseErr)
+		}
+		if duration <= 0 {
+			return fmt.Errorf("--timeout must be positive")
+		}
+		httpClient.Timeout = duration
 	}
 	d := downloader.NewWithOptions(httpClient, plan.HTTPOptions)
 
@@ -287,6 +299,12 @@ func applyConfigDefaultsToDownloadFlags(cmd *cobra.Command, flags downloadFlagVa
 	}
 	if !localFlagChanged(cmd, "resume") && !localFlagChanged(cmd, "no-resume") {
 		flags.resume = cfg.Resume
+	}
+	if !localFlagChanged(cmd, "user-agent") && cfg.UserAgent != "" {
+		flags.userAgent = cfg.UserAgent
+	}
+	if !localFlagChanged(cmd, "timeout") && cfg.Timeout != "" {
+		flags.timeout = cfg.Timeout
 	}
 	return flags
 }
@@ -428,7 +446,7 @@ func redactURL(rawURL string) string {
 }
 
 func hasDownloadFlagChanges(cmd *cobra.Command) bool {
-	for _, name := range []string{"file", "output", "name", "dry-run", "checksum", "checksum-file", "retries", "resume", "no-resume", "proxy", "header", "user-agent", "username", "password"} {
+	for _, name := range []string{"file", "output", "name", "dry-run", "checksum", "checksum-file", "retries", "resume", "no-resume", "proxy", "header", "user-agent", "username", "password", "timeout"} {
 		if localFlagChanged(cmd, name) {
 			return true
 		}

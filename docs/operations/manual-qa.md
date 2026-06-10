@@ -524,3 +524,46 @@ sanity pass.
 4. Cancellation exits non-zero: cancel an active CLI download with Ctrl+C and
    verify the process exits with code `1`, keeps the `.part` file, and does not
    rename to the final target.
+
+## v1.10.0 Config Safe Core Gap-Closing QA
+
+These checks exercise the new `user_agent`, `timeout`, and `--config` additions.
+
+1. **`--config` explicit path loads correctly**: run
+   `daryaft --config /tmp/test.yaml config init` then
+   `daryaft --config /tmp/test.yaml config set retries 9` then
+   `daryaft --config /tmp/test.yaml config get retries`. Verify output is `9`.
+   Run `daryaft config get retries` (without `--config`). Verify output is `3`
+   (default), confirming the files are independent.
+
+2. **`--config` missing file errors**: run
+   `daryaft --config /tmp/does-not-exist.yaml config show`.
+   Verify output is `config file not found: /tmp/does-not-exist.yaml` and exit
+   code is non-zero.
+
+3. **`user_agent` config default**: run
+   `daryaft --config /tmp/test.yaml config set user_agent "QABot/1.0"`.
+   Verify `daryaft --config /tmp/test.yaml config get user_agent` returns
+   `QABot/1.0`. Run `daryaft --config /tmp/test.yaml config show` and verify
+   `user_agent: QABot/1.0` appears in the YAML output.
+
+4. **`DARYAFT_USER_AGENT` overrides config**: with `user_agent: QABot/1.0` in
+   config, run `DARYAFT_USER_AGENT=EnvBot/2.0 daryaft --config /tmp/test.yaml config get user_agent`.
+   Verify output is `EnvBot/2.0`.
+
+5. **`timeout` config and `--timeout` flag**: run
+   `daryaft --config /tmp/test.yaml config set timeout 45s`.
+   Verify `daryaft --config /tmp/test.yaml config get timeout` returns `45s`.
+   Run a real download with `--timeout 5s` and verify it completes without
+   error on a fast server.
+
+6. **Invalid timeout rejected**: run `daryaft config set timeout abc` and
+   `daryaft config set timeout 0s`. Verify both return a clear error with
+   `timeout` in the message.
+
+7. **Secret fields rejected by strict YAML**: write a config file containing
+   `username: test`. Run `daryaft --config /path/to/that.yaml config show`.
+   Verify Daryaft returns a `parse config` error (strict `KnownFields` enforcement).
+
+8. **Cleanup**: run `daryaft --config /tmp/test.yaml config reset` to restore
+   defaults at the test path, then delete `/tmp/test.yaml`.
