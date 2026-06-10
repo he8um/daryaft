@@ -1,7 +1,7 @@
 # Release Process
 
-**`v1.4.0` is the current stable release.** `main` is now on `1.5.0-dev`
-post-release development.
+**`v1.5.0` is the current stable release.** `main` is now on `1.6.0-dev`
+post-v1.5.0 development.
 
 > **Version skip note:** `v1.3.0` was tagged in source history but no GitHub
 > Release was published for it. The tag exists locally and on the remote as
@@ -10,8 +10,9 @@ post-release development.
 > published as a stable GitHub release with binary assets. Do **not** backfill
 > or recreate a `v1.3.0` release.
 
-See [Daryaft v1.4.0 Release Notes](release-notes-v1.4.0.md) for the latest
+See [Daryaft v1.5.0 Release Notes](release-notes-v1.5.0.md) for the latest
 stable release notes and known limitations. Earlier releases:
+- [v1.4.0 Release Notes](release-notes-v1.4.0.md): HTTP customization polish.
 - [v1.3.0 Release Notes](release-notes-v1.3.0.md): HTTP request customization
   (tag exists; no GitHub release published — intentionally skipped).
 - [v1.2.0 Release Notes](release-notes-v1.2.0.md): update check UX polish.
