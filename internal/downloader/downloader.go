@@ -294,7 +294,7 @@ func (d *Downloader) prepareDownloadResponse(ctx context.Context, plan download.
 				return preparedDownload{}, fmt.Errorf("server returned unexpected content range %q", response.Header.Get("Content-Range"))
 			}
 			if candidate.HasMetadata && remoteChanged(candidate.Metadata, response.Header) {
-				return d.restartWithNewRequest(ctx, plan, rawURL, response, candidate, handler, remoteChangedMessage)
+				return d.restartWithNewRequest(ctx, rawURL, response, candidate, handler, remoteChangedMessage)
 			}
 
 			totalBytes := responseTotalBytes(response, resumeOffset)
@@ -317,9 +317,9 @@ func (d *Downloader) prepareDownloadResponse(ctx context.Context, plan download.
 			}, nil
 
 		case http.StatusOK:
-			return d.restartWithResponse(plan, rawURL, response, candidate, handler, resumeNotSupportedMessage)
+			return d.restartWithResponse(rawURL, response, candidate, handler, resumeNotSupportedMessage)
 		case http.StatusRequestedRangeNotSatisfiable:
-			return d.restartWithNewRequest(ctx, plan, rawURL, response, candidate, handler, resumeNotSupportedMessage)
+			return d.restartWithNewRequest(ctx, rawURL, response, candidate, handler, resumeNotSupportedMessage)
 		}
 	}
 
@@ -356,7 +356,7 @@ func (d *Downloader) prepareDownloadResponse(ctx context.Context, plan download.
 	}, nil
 }
 
-func (d *Downloader) restartWithResponse(plan download.Plan, rawURL string, response *http.Response, candidate resumeCandidate, handler EventHandler, message string) (preparedDownload, error) {
+func (d *Downloader) restartWithResponse(rawURL string, response *http.Response, candidate resumeCandidate, handler EventHandler, message string) (preparedDownload, error) {
 	emitEvent(handler, Event{
 		Type:            EventRestarting,
 		URL:             rawURL,
@@ -383,7 +383,7 @@ func (d *Downloader) restartWithResponse(plan download.Plan, rawURL string, resp
 	}, nil
 }
 
-func (d *Downloader) restartWithNewRequest(ctx context.Context, plan download.Plan, rawURL string, oldResponse *http.Response, candidate resumeCandidate, handler EventHandler, message string) (preparedDownload, error) {
+func (d *Downloader) restartWithNewRequest(ctx context.Context, rawURL string, oldResponse *http.Response, candidate resumeCandidate, handler EventHandler, message string) (preparedDownload, error) {
 	_ = oldResponse.Body.Close()
 
 	emitEvent(handler, Event{
