@@ -29,6 +29,7 @@ Other package manager channels are post-1.0 work.
 - [Clean Install Validation: v0.6.0-rc.2](operations/clean-install-validation-v0.6.0-rc.2.md): clean-clone/build/artifact validation pass — PASS WITH NOTES.
 - [v1.0.0 Release Notes](operations/release-notes-v1.0.0.md): stable release notes with highlights, known limitations, install, and upgrade notes.
 - [v1.0.0 Release Assets](operations/release-assets.md): binary asset strategy, GoReleaser build process, and upload/validation commands.
+- [v1.10.0 Release Notes](operations/release-notes-v1.10.0.md): stable release notes for `v1.10.0` — user_agent/timeout config keys and --config/--timeout flags.
 - [v1.9.0 Release Notes](operations/release-notes-v1.9.0.md): stable release notes for `v1.9.0` — download retry/resume reliability hardening.
 - [v1.8.0 Release Notes](operations/release-notes-v1.8.0.md): stable release notes for `v1.8.0` — batch checksum verification and TUI checksum status.
 - [v1.7.0 Release Notes](operations/release-notes-v1.7.0.md): stable release notes for `v1.7.0` — single-target checksum verification.

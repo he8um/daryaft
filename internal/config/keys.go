@@ -135,7 +135,6 @@ func Set(cfg Config, key string, value string) (Config, error) {
 	return cfg, nil
 }
 
-
 func NormalizeTheme(value string) (string, error) {
 	theme := strings.ToLower(strings.TrimSpace(value))
 	switch theme {

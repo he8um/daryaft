@@ -6,18 +6,27 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 
 ## [Unreleased]
 
+## [1.10.0] - 2026-06-11
+
 ### Added
 
-- Added `user_agent` configuration key for default download user-agent.
-- Added `DARYAFT_USER_AGENT` environment variable override for user-agent.
-- Added `timeout` configuration key for overall HTTP request timeout (Go duration string, for example `30s`, `2m`).
-- Added `DARYAFT_TIMEOUT` environment variable override for request timeout.
-- Added `--timeout` download flag for per-invocation request timeout override.
-- Added global `--config <path>` persistent flag for explicit configuration file selection.
+- Added `user_agent` configuration support for default download user-agent.
+- Added `DARYAFT_USER_AGENT` environment override.
+- Added `timeout` configuration support for overall download request timeout.
+- Added `DARYAFT_TIMEOUT` environment override.
+- Added `--timeout` download flag.
+- Added global `--config <path>` flag for explicit configuration file selection.
 
 ### Security
 
-- Credentials, tokens, cookies, auth headers, proxy URLs, and arbitrary headers remain intentionally unsupported in persistent configuration.
+- Kept credentials, tokens, cookies, auth headers, proxy URLs, and arbitrary headers out of persistent configuration.
+
+### Tests
+
+- Added tests for `user_agent` and `timeout` config keys.
+- Added tests for `DARYAFT_USER_AGENT` and `DARYAFT_TIMEOUT`.
+- Added tests for CLI/env/config precedence.
+- Added tests for explicit `--config` path behavior.
 
 ## [1.9.0] - 2026-06-10
 
