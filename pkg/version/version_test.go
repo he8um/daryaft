@@ -8,8 +8,8 @@ import (
 func TestInfoDefaults(t *testing.T) {
 	info := Info()
 
-	if info.Version != "1.5.0-dev" {
-		t.Fatalf("Version = %q, want 1.5.0-dev", info.Version)
+	if info.Version != "1.6.0-dev" {
+		t.Fatalf("Version = %q, want 1.6.0-dev", info.Version)
 	}
 	if info.Commit != "local" {
 		t.Fatalf("Commit = %q, want local", info.Commit)
