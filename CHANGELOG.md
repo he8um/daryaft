@@ -6,7 +6,7 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 
 ## [Unreleased]
 
-Post-v1.8.0 development begins. Source default version advanced to `1.9.0-dev`.
+## [1.9.0] - 2026-06-10
 
 ### Changed
 
@@ -17,12 +17,13 @@ Post-v1.8.0 development begins. Source default version advanced to `1.9.0-dev`.
 - Documented safe restart behavior for missing/corrupt resume sidecar metadata
   and the exact non-zero cancellation exit code.
 
-### Added
+### Tests
 
-- Retry classification coverage for retryable and non-retryable HTTP statuses.
-- Deterministic retry test coverage for HTTP 408 followed by success.
-- Resume safety tests for oversized partial files and missing/corrupt sidecar
-  metadata.
+- Added retry classification coverage for retryable and non-retryable HTTP
+  statuses.
+- Added deterministic retry test coverage for HTTP 408 followed by success.
+- Added resume safety tests for oversized partial files and missing/corrupt
+  sidecar metadata.
 
 ## [1.8.0] - 2026-06-10
 
