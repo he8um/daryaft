@@ -8,7 +8,21 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 
 Post-v1.8.0 development begins. Source default version advanced to `1.9.0-dev`.
 
+### Changed
 
+- Added HTTP 408 Request Timeout to retryable download responses.
+- Hardened resume behavior for partial files that are larger than the known
+  remote file size; these now restart from byte 0 instead of appending past the
+  end of the remote file.
+- Documented safe restart behavior for missing/corrupt resume sidecar metadata
+  and the exact non-zero cancellation exit code.
+
+### Added
+
+- Retry classification coverage for retryable and non-retryable HTTP statuses.
+- Deterministic retry test coverage for HTTP 408 followed by success.
+- Resume safety tests for oversized partial files and missing/corrupt sidecar
+  metadata.
 
 ## [1.8.0] - 2026-06-10
 

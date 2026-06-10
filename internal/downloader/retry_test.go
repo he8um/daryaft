@@ -334,6 +334,75 @@ func TestCancellationErrorsAreNotRetryable(t *testing.T) {
 	}
 }
 
+func TestIsRetryableStatusIncludes408(t *testing.T) {
+	tests := []struct {
+		statusCode int
+		want       bool
+	}{
+		{statusCode: http.StatusRequestTimeout, want: true},      // 408
+		{statusCode: http.StatusTooManyRequests, want: true},     // 429
+		{statusCode: http.StatusInternalServerError, want: true}, // 500
+		{statusCode: http.StatusBadGateway, want: true},          // 502
+		{statusCode: http.StatusServiceUnavailable, want: true},  // 503
+		{statusCode: http.StatusGatewayTimeout, want: true},      // 504
+		{statusCode: http.StatusBadRequest, want: false},         // 400
+		{statusCode: http.StatusUnauthorized, want: false},       // 401
+		{statusCode: http.StatusForbidden, want: false},          // 403
+		{statusCode: http.StatusNotFound, want: false},           // 404
+		{statusCode: http.StatusGone, want: false},               // 410
+	}
+
+	for _, test := range tests {
+		if got := isRetryableStatus(test.statusCode); got != test.want {
+			t.Fatalf("isRetryableStatus(%d) = %t, want %t", test.statusCode, got, test.want)
+		}
+		// The exported error-classification path must agree with status classification.
+		statusErr := httpStatusError{StatusCode: test.statusCode, Status: http.StatusText(test.statusCode)}
+		if got := IsRetryableError(statusErr); got != test.want {
+			t.Fatalf("IsRetryableError(status %d) = %t, want %t", test.statusCode, got, test.want)
+		}
+	}
+}
+
+func TestDownloadRetries408AndSucceeds(t *testing.T) {
+	requests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests++
+		if requests == 1 {
+			http.Error(w, "request timeout", http.StatusRequestTimeout)
+			return
+		}
+		_, _ = w.Write([]byte("ok"))
+	}))
+	defer server.Close()
+
+	var retryEvents []Event
+	d := newTestDownloader(server)
+	result, err := d.DownloadWithEvents(download.Plan{
+		URLs:    []string{server.URL + "/file.txt"},
+		Output:  t.TempDir(),
+		Retries: 3,
+	}, func(event Event) {
+		if event.Type == EventRetrying {
+			retryEvents = append(retryEvents, event)
+		}
+	})
+	if err != nil {
+		t.Fatalf("DownloadWithEvents returned error: %v", err)
+	}
+	if requests != 2 {
+		t.Fatalf("requests = %d, want 2", requests)
+	}
+	assertFileContent(t, result.Path, "ok")
+
+	if len(retryEvents) != 1 {
+		t.Fatalf("retry events = %d, want 1", len(retryEvents))
+	}
+	if retryEvents[0].Error == nil || !strings.Contains(retryEvents[0].Error.Error(), "temporary server error: 408") {
+		t.Fatalf("retry event error = %v, want temporary 408", retryEvents[0].Error)
+	}
+}
+
 func newTestDownloader(server *httptest.Server) *Downloader {
 	var client *http.Client
 	if server != nil {

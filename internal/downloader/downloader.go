@@ -298,6 +298,10 @@ func (d *Downloader) prepareDownloadResponse(ctx context.Context, plan download.
 			}
 
 			totalBytes := responseTotalBytes(response, resumeOffset)
+			if totalBytes > 0 && resumeOffset >= totalBytes {
+				return d.restartWithNewRequest(ctx, rawURL, response, candidate, handler, partialLargerThanRemoteMessage)
+			}
+
 			emitEvent(handler, Event{
 				Type:            EventResuming,
 				URL:             rawURL,

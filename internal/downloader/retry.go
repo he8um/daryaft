@@ -126,7 +126,8 @@ func IsRetryableError(err error) bool {
 
 func isRetryableStatus(statusCode int) bool {
 	switch statusCode {
-	case http.StatusTooManyRequests,
+	case http.StatusRequestTimeout,
+		http.StatusTooManyRequests,
 		http.StatusInternalServerError,
 		http.StatusBadGateway,
 		http.StatusServiceUnavailable,

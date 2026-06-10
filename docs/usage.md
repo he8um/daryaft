@@ -256,6 +256,13 @@ response, Daryaft does not append stale bytes:
 Restarting: Remote file changed; restarting download
 ```
 
+If the local partial file is larger than the known remote file size, Daryaft
+does not append past the end of the remote file and restarts from byte `0`:
+
+```text
+Restarting: Partial file is larger than remote file; restarting download
+```
+
 `--no-resume` ignores existing `.part` data for resume, truncates the partial
 file, overwrites the sidecar metadata, and downloads from byte `0`. Existing
 final target files are still rejected before Daryaft writes to the partial file.
@@ -327,13 +334,13 @@ Progress: 524288 / 1048576 bytes (50.0%) | 1.2 MB/s
 Completed: downloads/file.zip
 ```
 
-Daryaft retries network errors, timeouts, HTTP `429`, `500`, `502`, `503`, and
-`504`, plus interrupted response bodies such as unexpected EOF. When resume is
-enabled, a retry after a partial body failure can continue from the current
-`.part` size. With `--no-resume`, each retry restarts and truncates the `.part`
-file. It does not retry client errors such as `404`, existing final files,
-invalid output paths, filename safety failures, or local filesystem permission
-errors.
+Daryaft retries network errors, timeouts, HTTP `408`, `429`, `500`, `502`,
+`503`, and `504`, plus interrupted response bodies such as unexpected EOF. When
+resume is enabled, a retry after a partial body failure can continue from the
+current `.part` size. With `--no-resume`, each retry restarts and truncates the
+`.part` file. It does not retry client errors such as `404`, existing final
+files, invalid output paths, filename safety failures, or local filesystem
+permission errors.
 
 When the server does not provide a known `Content-Length`, progress omits the
 total and percent:

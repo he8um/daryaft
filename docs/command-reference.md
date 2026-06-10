@@ -389,13 +389,15 @@ preserves the same partial state for resume.
 retry attempts after the first try, so `--retries 0` means one total attempt and
 `--retries 3` means up to four total attempts. Values must be from `0` through
 `20`. Daryaft retries network errors, timeouts, interrupted response bodies,
-HTTP `429`, `500`, `502`, `503`, and `504`.
+HTTP `408`, `429`, `500`, `502`, `503`, and `504`.
 
 `--resume` is enabled by default. If a partial file exists, Daryaft sends
 `Range: bytes=<partial_size>-` and appends only after `206 Partial Content`.
 If the server returns a full response instead, Daryaft truncates the `.part`
 file and restarts safely. If saved `ETag` or `Last-Modified` metadata shows the
-remote file changed, Daryaft also restarts from byte `0`. `--no-resume` ignores
+remote file changed, Daryaft also restarts from byte `0`. If the local partial
+file is larger than the known remote file size, Daryaft restarts from byte `0`
+rather than appending past the end of the remote file. `--no-resume` ignores
 existing partial data and overwrites the partial file from byte `0`.
 
 Config precedence is CLI flags, then environment variables, then config file

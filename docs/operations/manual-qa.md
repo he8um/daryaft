@@ -504,3 +504,23 @@ Expected:
 6. TUI batch: run a multi-URL batch, verify queue list with ✓/✗/→ markers.
 7. TUI no-color (`--no-color`): verify ASCII markers `[ok]`, `[!]`, `[>]`.
 8. TUI post-run hint: verify hint says `new download` after batch completes.
+
+## v1.9.0 Download Reliability QA
+
+These checks exercise the retry/resume reliability hardening. The deterministic
+behavior is covered by `internal/downloader` tests; this is a quick manual
+sanity pass.
+
+1. 408 retry then success: point Daryaft at a test endpoint that returns
+   `408 Request Timeout` once and then `200 OK`. Verify a `Retrying` line
+   appears and the download then completes.
+2. Partial larger than remote restarts safely: create a `.part` file larger
+   than the remote file, then download with resume enabled. Verify Daryaft
+   prints `Restarting: Partial file is larger than remote file; restarting
+   download` and the final file matches the remote content exactly.
+3. Missing/corrupt sidecar restarts safely: create a `.part` file with no
+   `.part.daryaft.json` (or a corrupt one), then download with resume enabled.
+   Verify no panic and the final file is correct.
+4. Cancellation exits non-zero: cancel an active CLI download with Ctrl+C and
+   verify the process exits with code `1`, keeps the `.part` file, and does not
+   rename to the final target.

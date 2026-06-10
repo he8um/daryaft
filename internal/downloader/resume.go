@@ -10,8 +10,9 @@ import (
 )
 
 const (
-	resumeNotSupportedMessage = "Resume not supported by server; restarting download"
-	remoteChangedMessage      = "Remote file changed; restarting download"
+	resumeNotSupportedMessage      = "Resume not supported by server; restarting download"
+	remoteChangedMessage           = "Remote file changed; restarting download"
+	partialLargerThanRemoteMessage = "Partial file is larger than remote file; restarting download"
 )
 
 type resumeCandidate struct {

@@ -561,6 +561,146 @@ func TestChangedLastModifiedRestartsSafely(t *testing.T) {
 	}
 }
 
+func TestPartialLargerThanRemoteRestartsSafely(t *testing.T) {
+	// Server returns a 206 whose Content-Range total is smaller than the local
+	// partial offset on the first request, then a full body on restart. This
+	// exercises the proactive partial-overflow guard: appending would write past
+	// the real end of the remote file, so Daryaft must restart from byte 0.
+	remote := "fresh"
+	requests := 0
+	var ranges []string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests++
+		ranges = append(ranges, r.Header.Get("Range"))
+		if requests == 1 {
+			// Misbehaving partial response: total (5) <= requested offset (10).
+			w.Header().Set("Content-Range", "bytes 10-10/5")
+			w.WriteHeader(http.StatusPartialContent)
+			return
+		}
+		_, _ = w.Write([]byte(remote))
+	}))
+	defer server.Close()
+
+	dir := t.TempDir()
+	partial := filepath.Join(dir, "file.txt.part")
+	// Local partial (10 bytes) is larger than the remote file (5 bytes).
+	if err := os.WriteFile(partial, []byte("0123456789"), 0o600); err != nil {
+		t.Fatalf("write partial: %v", err)
+	}
+
+	var events []Event
+	result, err := New().DownloadWithEvents(download.Plan{
+		URLs:   []string{server.URL + "/file.txt"},
+		Output: dir,
+		Resume: true,
+	}, func(event Event) {
+		events = append(events, event)
+	})
+	if err != nil {
+		t.Fatalf("DownloadWithEvents returned error: %v", err)
+	}
+
+	if requests != 2 {
+		t.Fatalf("requests = %d, want 2", requests)
+	}
+	if strings.Join(ranges, ",") != "bytes=10-," {
+		t.Fatalf("ranges = %#v, want first range then full", ranges)
+	}
+	assertFileContent(t, result.Path, remote)
+	restarting := findEvent(events, EventRestarting)
+	if restarting.Message != partialLargerThanRemoteMessage {
+		t.Fatalf("restart message = %q, want %q", restarting.Message, partialLargerThanRemoteMessage)
+	}
+}
+
+func TestMissingSidecarMetadataRestartsSafely(t *testing.T) {
+	// A .part file exists with no sidecar metadata. Daryaft should still produce
+	// the correct final file without panicking or unsafely appending.
+	body := "hello resumed world"
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if rangeHeader := r.Header.Get("Range"); rangeHeader != "" {
+			var start int
+			if _, err := fmt.Sscanf(rangeHeader, "bytes=%d-", &start); err != nil {
+				t.Fatalf("parse range %q: %v", rangeHeader, err)
+			}
+			if start < 0 || start > len(body) {
+				w.Header().Set("Content-Range", fmt.Sprintf("bytes */%d", len(body)))
+				w.WriteHeader(http.StatusRequestedRangeNotSatisfiable)
+				return
+			}
+			w.Header().Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", start, len(body)-1, len(body)))
+			w.WriteHeader(http.StatusPartialContent)
+			_, _ = w.Write([]byte(body[start:]))
+			return
+		}
+		_, _ = w.Write([]byte(body))
+	}))
+	defer server.Close()
+
+	dir := t.TempDir()
+	partial := filepath.Join(dir, "file.txt.part")
+	if err := os.WriteFile(partial, []byte(body[:6]), 0o600); err != nil {
+		t.Fatalf("write partial: %v", err)
+	}
+	// Deliberately no sidecar metadata file written.
+	assertMissing(t, metadataPathForPartial(partial))
+
+	result, err := New().Download(download.Plan{
+		URLs:   []string{server.URL + "/file.txt"},
+		Output: dir,
+		Resume: true,
+	})
+	if err != nil {
+		t.Fatalf("Download returned error: %v", err)
+	}
+	assertFileContent(t, result.Path, body)
+}
+
+func TestCorruptSidecarMetadataRestartsSafely(t *testing.T) {
+	// A .part file exists alongside a corrupt sidecar metadata file. Daryaft must
+	// not panic and must produce the correct final file.
+	body := "hello resumed world"
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if rangeHeader := r.Header.Get("Range"); rangeHeader != "" {
+			var start int
+			if _, err := fmt.Sscanf(rangeHeader, "bytes=%d-", &start); err != nil {
+				t.Fatalf("parse range %q: %v", rangeHeader, err)
+			}
+			if start < 0 || start > len(body) {
+				w.Header().Set("Content-Range", fmt.Sprintf("bytes */%d", len(body)))
+				w.WriteHeader(http.StatusRequestedRangeNotSatisfiable)
+				return
+			}
+			w.Header().Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", start, len(body)-1, len(body)))
+			w.WriteHeader(http.StatusPartialContent)
+			_, _ = w.Write([]byte(body[start:]))
+			return
+		}
+		_, _ = w.Write([]byte(body))
+	}))
+	defer server.Close()
+
+	dir := t.TempDir()
+	partial := filepath.Join(dir, "file.txt.part")
+	if err := os.WriteFile(partial, []byte(body[:6]), 0o600); err != nil {
+		t.Fatalf("write partial: %v", err)
+	}
+	if err := os.WriteFile(metadataPathForPartial(partial), []byte("{ not valid json"), 0o600); err != nil {
+		t.Fatalf("write corrupt metadata: %v", err)
+	}
+
+	result, err := New().Download(download.Plan{
+		URLs:   []string{server.URL + "/file.txt"},
+		Output: dir,
+		Resume: true,
+	})
+	if err != nil {
+		t.Fatalf("Download returned error: %v", err)
+	}
+	assertFileContent(t, result.Path, body)
+}
+
 func findEvent(events []Event, eventType EventType) Event {
 	for _, event := range events {
 		if event.Type == eventType {

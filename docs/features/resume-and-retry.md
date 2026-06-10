@@ -18,6 +18,7 @@ Daryaft retries:
 - network errors from the HTTP request
 - timeouts
 - interrupted response bodies, including unexpected EOF
+- HTTP `408`
 - HTTP `429`
 - HTTP `500`
 - HTTP `502`
@@ -30,6 +31,7 @@ Daryaft does not retry:
 - HTTP `401`
 - HTTP `403`
 - HTTP `404`
+- HTTP `410`
 - existing final target files
 - invalid output paths
 - invalid URLs
@@ -42,6 +44,10 @@ Retry backoff is exponential and capped:
 - second failed attempt: wait `2s`
 - third failed attempt: wait `4s`
 - later failures: wait up to `8s`
+
+HTTP `429 Too Many Requests` uses the same exponential backoff as the retryable
+5xx responses. Daryaft does not yet honor a `Retry-After` response header; the
+backoff schedule above always applies.
 
 The CLI prints retry events:
 
@@ -61,9 +67,15 @@ starting another attempt.
 
 In CLI mode, Ctrl+C or SIGTERM cancels through that context path. Daryaft keeps
 the `.part` file and `.part.daryaft.json` metadata sidecar, does not rename the
-partial file to the final target, prints a cancellation message, and exits
-non-zero. For batch downloads, the current item is cancelled and remaining URLs
+partial file to the final target, prints a cancellation message, and exits with
+code `1`. For batch downloads, the current item is cancelled and remaining URLs
 are not started. TUI cancellation remains `q` from the progress screen.
+
+Checksum verification (`--checksum` and `--checksum-file`) runs only after a
+download completes successfully and reads the completed local file
+synchronously. A cancelled download never reaches checksum verification, so a
+cancelled item is always reported as cancelled rather than as a checksum or
+generic failure.
 
 ## Batch Downloads
 
@@ -106,6 +118,25 @@ Resume not supported by server; restarting download
 ```
 
 and downloads from byte `0`.
+
+If the server rejects the range request with `416 Requested Range Not
+Satisfiable`, Daryaft always restarts the download from byte `0` as a safe
+default. It does not treat `416` as proof that the partial file is already
+complete.
+
+If the local partial file is larger than the known remote total size, Daryaft
+does not append past the end of the remote file. It restarts from byte `0` and
+emits:
+
+```text
+Partial file is larger than remote file; restarting download
+```
+
+If the `.part` file exists but its `.part.daryaft.json` sidecar is missing or
+corrupt, Daryaft does not fail. It treats the download as a fresh resume
+candidate based on the partial file size when the server supports range
+requests, and otherwise restarts safely. The final downloaded file is correct
+in all of these cases.
 
 The TUI execution screen renders resume and restart events as `Resuming` and
 `Restarting` statuses with the same messages.
