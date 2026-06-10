@@ -169,11 +169,11 @@ are written under ignored local build directories such as `dist/`.
 Snapshot versions are intentionally named:
 
 ```text
-1.7.0-dev-SNAPSHOT-<short-commit>
+1.8.0-dev-SNAPSHOT-<short-commit>
 ```
 
 GoReleaser normally derives versions from Git tags. The snapshot template keeps
-local dry-run metadata aligned with the current `1.7.0-dev` development version
+local dry-run metadata aligned with the current `1.8.0-dev` development version
 without creating or deleting tags.
 
 ## Release Metadata
@@ -189,7 +189,7 @@ with linker flags:
 Source builds keep the default development metadata:
 
 ```text
-version: 1.7.0-dev
+version: 1.8.0-dev
 commit: local
 date: unknown
 built_by: source

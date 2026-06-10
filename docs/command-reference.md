@@ -593,7 +593,7 @@ Human output (development build):
 ```text
 Daryaft update check
 
-Current version:  1.7.0-dev
+Current version:  1.8.0-dev
 Latest stable:    1.4.0
 Status:           development build
 

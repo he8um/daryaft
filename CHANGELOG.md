@@ -6,6 +6,8 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 
 ## [Unreleased]
 
+Post-v1.7.0 development begins. Source default version advanced to `1.8.0-dev`.
+
 ## [1.7.0] - 2026-06-10
 
 ### Added
