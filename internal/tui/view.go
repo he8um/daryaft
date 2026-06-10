@@ -342,6 +342,9 @@ func summaryView(summary executionSummary) string {
 	if summary.Skipped > 0 {
 		fmt.Fprintf(&builder, "\nNot started: %d", summary.Skipped)
 	}
+	if summary.ChecksumVerified > 0 {
+		fmt.Fprintf(&builder, "\nChecksum verified: %d", summary.ChecksumVerified)
+	}
 	if len(summary.Failures) == 0 {
 		return builder.String()
 	}
@@ -373,17 +376,17 @@ func (m Model) footerView() string {
 
 func statusMarker(status string, noColor bool) string {
 	switch status {
-	case "Completed":
+	case "Completed", "Checksum OK":
 		if noColor {
 			return "[ok]"
 		}
 		return "✓"
-	case "Failed", "Cancelled":
+	case "Failed", "Cancelled", "Checksum Failed":
 		if noColor {
 			return "[!]"
 		}
 		return "✗"
-	case "Downloading", "Starting", "Resuming", "Restarting":
+	case "Downloading", "Starting", "Resuming", "Restarting", "Verifying":
 		if noColor {
 			return "[>]"
 		}

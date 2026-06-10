@@ -244,6 +244,32 @@ Expected:
   `--checksum is currently supported only for single URL downloads`.
 - TUI checksum behavior is covered separately in the TUI flow section.
 
+For batch/per-target checksums, use `--checksum-file`:
+
+```bash
+a_sum="$(shasum -a 256 /tmp/daryaft-qa-server/file.txt | awk '{print $1}')"
+b_sum="$(shasum -a 256 /tmp/daryaft-qa-server/big.bin | awk '{print $1}')"
+cat > /tmp/daryaft-qa-checksums.txt <<EOF
+sha256:$a_sum http://localhost:<port>/file.txt
+sha256:$b_sum http://localhost:<port>/big.bin
+EOF
+go run . http://localhost:<port>/file.txt http://localhost:<port>/big.bin \
+  -o /tmp/daryaft-qa-out --checksum-file /tmp/daryaft-qa-checksums.txt
+```
+
+Expected:
+
+- Exit 0 with a `Checksum verified: 2` line in the batch summary.
+- A manifest with a wrong digest fails that item and exits non-zero, leaving the
+  file in place.
+- A manifest missing a target, with an extra URL, or with a duplicate/malformed
+  line exits non-zero before the network download starts, with a
+  `checksum file:` error (line-numbered for malformed lines).
+- `--checksum` together with `--checksum-file` exits non-zero with
+  `--checksum and --checksum-file cannot be used together`.
+- See [Checksum Verification QA](checksum-verification-qa.md) for the full
+  batch checksum checklist.
+
 ## CLI Resume
 
 Use the larger file so there is time to interrupt:

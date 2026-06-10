@@ -1273,3 +1273,358 @@ func newDownloadCmdForTest(out *bytes.Buffer) *cobra.Command {
 	root.SetErr(out)
 	return root
 }
+
+func writeCmdChecksumFile(t *testing.T, content string) string {
+	t.Helper()
+	path := filepath.Join(t.TempDir(), "checksums.txt")
+	if err := os.WriteFile(path, []byte(content), 0o600); err != nil {
+		t.Fatalf("write checksum file: %v", err)
+	}
+	return path
+}
+
+func TestRunDownloadChecksumFileHelp(t *testing.T) {
+	var flags downloadFlagValues
+	cmd := &cobra.Command{Use: "download"}
+	addDownloadFlags(cmd, &flags)
+	if cmd.Flags().Lookup("checksum-file") == nil {
+		t.Fatal("--checksum-file flag not registered")
+	}
+	usage := cmd.Flags().FlagUsages()
+	if !strings.Contains(usage, "checksum-file") {
+		t.Fatalf("flag usage missing checksum-file:\n%s", usage)
+	}
+}
+
+func TestRunDownloadChecksumFileMatch(t *testing.T) {
+	contentA := []byte("alpha")
+	contentB := []byte("beta")
+	sumA := sha256.Sum256(contentA)
+	sumB := sha256.Sum256(contentB)
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/a.txt":
+			_, _ = w.Write(contentA)
+		case "/b.txt":
+			_, _ = w.Write(contentB)
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer server.Close()
+
+	urlA := server.URL + "/a.txt"
+	urlB := server.URL + "/b.txt"
+	manifest := writeCmdChecksumFile(t,
+		"sha256:"+fmt.Sprintf("%x", sumA)+" "+urlA+"\n"+
+			"sha256:"+fmt.Sprintf("%x", sumB)+" "+urlB+"\n")
+
+	var output bytes.Buffer
+	cmd := &cobra.Command{Use: "download"}
+	cmd.SetOut(&output)
+	dir := t.TempDir()
+
+	err := runDownload(cmd, []string{urlA, urlB}, downloadFlagValues{
+		output:       dir,
+		checksumFile: manifest,
+		retries:      3,
+		resume:       true,
+	})
+	if err != nil {
+		t.Fatalf("runDownload returned error: %v", err)
+	}
+	if !strings.Contains(output.String(), "Checksum verified: 2") {
+		t.Fatalf("output missing checksum verified count:\n%s", output.String())
+	}
+}
+
+func TestRunDownloadChecksumFileMismatch(t *testing.T) {
+	contentA := []byte("alpha")
+	contentB := []byte("beta")
+	sumB := sha256.Sum256(contentB)
+	wrongA := sha256.Sum256([]byte("WRONG"))
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/a.txt":
+			_, _ = w.Write(contentA)
+		case "/b.txt":
+			_, _ = w.Write(contentB)
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer server.Close()
+
+	urlA := server.URL + "/a.txt"
+	urlB := server.URL + "/b.txt"
+	manifest := writeCmdChecksumFile(t,
+		"sha256:"+fmt.Sprintf("%x", wrongA)+" "+urlA+"\n"+
+			"sha256:"+fmt.Sprintf("%x", sumB)+" "+urlB+"\n")
+
+	var output bytes.Buffer
+	cmd := &cobra.Command{Use: "download"}
+	cmd.SetOut(&output)
+	dir := t.TempDir()
+
+	err := runDownload(cmd, []string{urlA, urlB}, downloadFlagValues{
+		output:       dir,
+		checksumFile: manifest,
+		retries:      3,
+		resume:       true,
+	})
+	if err == nil {
+		t.Fatal("runDownload returned nil error on mismatch")
+	}
+	out := output.String()
+	if !strings.Contains(out, "checksum mismatch: expected") {
+		t.Fatalf("summary missing checksum mismatch detail:\n%s", out)
+	}
+	if !strings.Contains(out, "got") {
+		t.Fatalf("summary missing actual digest:\n%s", out)
+	}
+	// Downloaded file is left in place.
+	if got, err := os.ReadFile(filepath.Join(dir, "a.txt")); err != nil || string(got) != string(contentA) {
+		t.Fatalf("a.txt after mismatch = %q, err = %v", got, err)
+	}
+}
+
+func TestRunDownloadChecksumFileDryRun(t *testing.T) {
+	requests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests++
+		_, _ = w.Write([]byte("unexpected"))
+	}))
+	defer server.Close()
+
+	urlA := server.URL + "/a.txt"
+	manifest := writeCmdChecksumFile(t, "sha256:"+strings.Repeat("a", 64)+" "+urlA+"\n")
+
+	var output bytes.Buffer
+	cmd := &cobra.Command{Use: "download"}
+	cmd.SetOut(&output)
+
+	err := runDownload(cmd, []string{urlA}, downloadFlagValues{
+		output:       filepath.Join(t.TempDir(), "downloads"),
+		dryRun:       true,
+		checksumFile: manifest,
+		retries:      3,
+		resume:       true,
+	})
+	if err != nil {
+		t.Fatalf("runDownload returned error: %v", err)
+	}
+	if requests != 0 {
+		t.Fatalf("requests = %d, want 0", requests)
+	}
+	if !strings.Contains(output.String(), "Checksums: from file (1 entries)") {
+		t.Fatalf("dry-run output missing checksum file line:\n%s", output.String())
+	}
+}
+
+func TestRunDownloadChecksumFileMissingURL(t *testing.T) {
+	requests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests++
+		_, _ = w.Write([]byte("unexpected"))
+	}))
+	defer server.Close()
+
+	urlA := server.URL + "/a.txt"
+	urlB := server.URL + "/b.txt"
+	manifest := writeCmdChecksumFile(t, "sha256:"+strings.Repeat("a", 64)+" "+urlA+"\n")
+
+	cmd := &cobra.Command{Use: "download"}
+	err := runDownload(cmd, []string{urlA, urlB}, downloadFlagValues{
+		output:       t.TempDir(),
+		checksumFile: manifest,
+		retries:      3,
+		resume:       true,
+	})
+	if err == nil {
+		t.Fatal("runDownload returned nil error")
+	}
+	if requests != 0 {
+		t.Fatalf("requests = %d, want 0 (validation before network)", requests)
+	}
+	if !strings.Contains(err.Error(), "no checksum provided for URL") {
+		t.Fatalf("error = %q", err)
+	}
+}
+
+func TestRunDownloadChecksumFileExtraURL(t *testing.T) {
+	requests := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requests++
+		_, _ = w.Write([]byte("unexpected"))
+	}))
+	defer server.Close()
+
+	urlA := server.URL + "/a.txt"
+	manifest := writeCmdChecksumFile(t,
+		"sha256:"+strings.Repeat("a", 64)+" "+urlA+"\n"+
+			"sha256:"+strings.Repeat("b", 64)+" "+server.URL+"/extra.txt\n")
+
+	cmd := &cobra.Command{Use: "download"}
+	err := runDownload(cmd, []string{urlA}, downloadFlagValues{
+		output:       t.TempDir(),
+		checksumFile: manifest,
+		retries:      3,
+		resume:       true,
+	})
+	if err == nil {
+		t.Fatal("runDownload returned nil error")
+	}
+	if requests != 0 {
+		t.Fatalf("requests = %d, want 0 (validation before network)", requests)
+	}
+	if !strings.Contains(err.Error(), "manifest URL not in download targets") {
+		t.Fatalf("error = %q", err)
+	}
+}
+
+func TestRunDownloadChecksumAndChecksumFileTogether(t *testing.T) {
+	manifest := writeCmdChecksumFile(t, "sha256:"+strings.Repeat("a", 64)+" https://example.com/a.txt\n")
+	cmd := &cobra.Command{Use: "download"}
+
+	err := runDownload(cmd, []string{"https://example.com/a.txt"}, downloadFlagValues{
+		output:       t.TempDir(),
+		checksum:     "sha256:" + strings.Repeat("a", 64),
+		checksumFile: manifest,
+		retries:      3,
+		resume:       true,
+	})
+	if err == nil {
+		t.Fatal("runDownload returned nil error")
+	}
+	if !strings.Contains(err.Error(), "cannot be used together") {
+		t.Fatalf("error = %q", err)
+	}
+}
+
+func TestRunDownloadChecksumFileSingleURL(t *testing.T) {
+	content := []byte("alpha")
+	sum := sha256.Sum256(content)
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write(content)
+	}))
+	defer server.Close()
+
+	urlA := server.URL + "/a.txt"
+	manifest := writeCmdChecksumFile(t, "sha256:"+fmt.Sprintf("%x", sum)+" "+urlA+"\n")
+
+	var output bytes.Buffer
+	cmd := &cobra.Command{Use: "download"}
+	cmd.SetOut(&output)
+	dir := t.TempDir()
+
+	err := runDownload(cmd, []string{urlA}, downloadFlagValues{
+		output:       dir,
+		checksumFile: manifest,
+		retries:      3,
+		resume:       true,
+	})
+	if err != nil {
+		t.Fatalf("runDownload returned error: %v", err)
+	}
+	if !strings.Contains(output.String(), "Checksum verified: 1") {
+		t.Fatalf("output missing checksum verified count:\n%s", output.String())
+	}
+}
+
+func TestRunDownloadChecksumFileWithURLFile(t *testing.T) {
+	contentA := []byte("alpha")
+	contentB := []byte("beta")
+	sumA := sha256.Sum256(contentA)
+	sumB := sha256.Sum256(contentB)
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/a.txt":
+			_, _ = w.Write(contentA)
+		case "/b.txt":
+			_, _ = w.Write(contentB)
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer server.Close()
+
+	urlA := server.URL + "/a.txt"
+	urlB := server.URL + "/b.txt"
+	urlFile := filepath.Join(t.TempDir(), "urls.txt")
+	if err := os.WriteFile(urlFile, []byte(urlA+"\n"+urlB+"\n"), 0o600); err != nil {
+		t.Fatalf("write URL file: %v", err)
+	}
+	manifest := writeCmdChecksumFile(t,
+		"sha256:"+fmt.Sprintf("%x", sumA)+" "+urlA+"\n"+
+			"sha256:"+fmt.Sprintf("%x", sumB)+" "+urlB+"\n")
+
+	var output bytes.Buffer
+	cmd := &cobra.Command{Use: "download"}
+	cmd.SetOut(&output)
+
+	err := runDownload(cmd, nil, downloadFlagValues{
+		file:         urlFile,
+		output:       t.TempDir(),
+		checksumFile: manifest,
+		retries:      3,
+		resume:       true,
+	})
+	if err != nil {
+		t.Fatalf("runDownload returned error: %v", err)
+	}
+	if !strings.Contains(output.String(), "Checksum verified: 2") {
+		t.Fatalf("output missing checksum verified count:\n%s", output.String())
+	}
+}
+
+func TestRunDownloadRootURLChecksumFileRoutesToDownload(t *testing.T) {
+	var flags downloadFlagValues
+	cmd := &cobra.Command{Use: "daryaft"}
+	addDownloadFlags(cmd, &flags)
+	if err := cmd.Flags().Set("checksum-file", "checksums.txt"); err != nil {
+		t.Fatalf("set checksum-file: %v", err)
+	}
+	if !hasDownloadFlagChanges(cmd) {
+		t.Fatal("hasDownloadFlagChanges = false for --checksum-file, want true")
+	}
+}
+
+func TestRunDownloadChecksumFileWithHTTPCustomization(t *testing.T) {
+	content := []byte("alpha")
+	sum := sha256.Sum256(content)
+	gotHeader := ""
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotHeader = r.Header.Get("X-Custom")
+		_, _ = w.Write(content)
+	}))
+	defer server.Close()
+
+	urlA := server.URL + "/a.txt"
+	manifest := writeCmdChecksumFile(t, "sha256:"+fmt.Sprintf("%x", sum)+" "+urlA+"\n")
+
+	var output bytes.Buffer
+	cmd := &cobra.Command{Use: "download"}
+	cmd.SetOut(&output)
+
+	err := runDownload(cmd, []string{urlA}, downloadFlagValues{
+		output:       t.TempDir(),
+		checksumFile: manifest,
+		headers:      []string{"X-Custom: value"},
+		retries:      3,
+		resume:       true,
+	})
+	if err != nil {
+		t.Fatalf("runDownload returned error: %v", err)
+	}
+	if gotHeader != "value" {
+		t.Fatalf("X-Custom header = %q, want value", gotHeader)
+	}
+	if !strings.Contains(output.String(), "Checksum verified: 1") {
+		t.Fatalf("output missing checksum verified count:\n%s", output.String())
+	}
+}

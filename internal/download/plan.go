@@ -9,13 +9,15 @@ import (
 )
 
 type Plan struct {
-	URLs        []string
-	Output      string
-	Name        string
-	Checksum    *checksum.Spec
-	Retries     int
-	Resume      bool
-	HTTPOptions httpopts.Options
+	URLs            []string
+	Output          string
+	Name            string
+	Checksum        *checksum.Spec
+	TargetChecksums map[string]checksum.Spec
+	HasChecksumFile bool
+	Retries         int
+	Resume          bool
+	HTTPOptions     httpopts.Options
 }
 
 func (p Plan) DryRunString() string {
@@ -30,6 +32,9 @@ func (p Plan) DryRunString() string {
 	fmt.Fprintf(&builder, "Filename: %s\n", valueOrDefault(p.Name, "auto-detect"))
 	if p.Checksum != nil {
 		fmt.Fprintf(&builder, "Checksum: %s\n", p.Checksum.String())
+	}
+	if p.HasChecksumFile {
+		fmt.Fprintf(&builder, "Checksums: from file (%d entries)\n", len(p.TargetChecksums))
 	}
 	fmt.Fprintf(&builder, "Retries: %d\n", p.Retries)
 	fmt.Fprintf(&builder, "Resume: %t\n", p.Resume)

@@ -211,3 +211,255 @@ func TestBuildPlanNoResumeOverridesResume(t *testing.T) {
 		t.Fatal("plan.Resume = true, want false")
 	}
 }
+
+func writeChecksumFileForTest(t *testing.T, content string) string {
+	t.Helper()
+	path := filepath.Join(t.TempDir(), "checksums.txt")
+	if err := os.WriteFile(path, []byte(content), 0o600); err != nil {
+		t.Fatalf("write checksum file: %v", err)
+	}
+	return path
+}
+
+func TestBuildPlan_ChecksumAndChecksumFileTogether(t *testing.T) {
+	sum := sha256.Sum256([]byte("hello"))
+	manifest := writeChecksumFileForTest(t, "sha256:"+fmt.Sprintf("%x", sum)+" https://example.com/file.zip\n")
+
+	_, err := BuildPlan(Options{
+		URLs:         []string{"https://example.com/file.zip"},
+		Checksum:     "sha256:" + fmt.Sprintf("%x", sum),
+		ChecksumFile: manifest,
+		Retries:      3,
+		Resume:       true,
+	})
+	if err == nil {
+		t.Fatal("BuildPlan returned nil error")
+	}
+	if !strings.Contains(err.Error(), "cannot be used together") {
+		t.Fatalf("error = %q", err)
+	}
+}
+
+func TestBuildPlan_ChecksumFile_Valid(t *testing.T) {
+	sumA := sha256.Sum256([]byte("alpha"))
+	sumB := sha256.Sum256([]byte("beta"))
+	manifest := writeChecksumFileForTest(t,
+		"sha256:"+fmt.Sprintf("%x", sumA)+" https://example.com/a.zip\n"+
+			"sha256:"+fmt.Sprintf("%x", sumB)+" https://example.com/b.zip\n")
+
+	plan, err := BuildPlan(Options{
+		URLs: []string{
+			"https://example.com/a.zip",
+			"https://example.com/b.zip",
+		},
+		ChecksumFile: manifest,
+		Retries:      3,
+		Resume:       true,
+	})
+	if err != nil {
+		t.Fatalf("BuildPlan returned error: %v", err)
+	}
+	if !plan.HasChecksumFile {
+		t.Fatal("plan.HasChecksumFile = false")
+	}
+	if len(plan.TargetChecksums) != 2 {
+		t.Fatalf("len(plan.TargetChecksums) = %d, want 2", len(plan.TargetChecksums))
+	}
+	if spec, ok := plan.TargetChecksums["https://example.com/a.zip"]; !ok {
+		t.Fatal("missing checksum for a.zip")
+	} else if spec.Expected != fmt.Sprintf("%x", sumA) {
+		t.Fatalf("a.zip checksum = %q", spec.Expected)
+	}
+}
+
+func TestBuildPlan_ChecksumFile_MissingTargetURL(t *testing.T) {
+	sumA := sha256.Sum256([]byte("alpha"))
+	manifest := writeChecksumFileForTest(t, "sha256:"+fmt.Sprintf("%x", sumA)+" https://example.com/a.zip\n")
+
+	_, err := BuildPlan(Options{
+		URLs: []string{
+			"https://example.com/a.zip",
+			"https://example.com/b.zip",
+		},
+		ChecksumFile: manifest,
+		Retries:      3,
+		Resume:       true,
+	})
+	if err == nil {
+		t.Fatal("BuildPlan returned nil error")
+	}
+	if !strings.Contains(err.Error(), "no checksum provided for URL") {
+		t.Fatalf("error = %q", err)
+	}
+	if !strings.Contains(err.Error(), "https://example.com/b.zip") {
+		t.Fatalf("error = %q, missing URL", err)
+	}
+}
+
+func TestBuildPlan_ChecksumFile_ExtraManifestURL(t *testing.T) {
+	sumA := sha256.Sum256([]byte("alpha"))
+	sumB := sha256.Sum256([]byte("beta"))
+	manifest := writeChecksumFileForTest(t,
+		"sha256:"+fmt.Sprintf("%x", sumA)+" https://example.com/a.zip\n"+
+			"sha256:"+fmt.Sprintf("%x", sumB)+" https://example.com/extra.zip\n")
+
+	_, err := BuildPlan(Options{
+		URLs:         []string{"https://example.com/a.zip"},
+		ChecksumFile: manifest,
+		Retries:      3,
+		Resume:       true,
+	})
+	if err == nil {
+		t.Fatal("BuildPlan returned nil error")
+	}
+	if !strings.Contains(err.Error(), "manifest URL not in download targets") {
+		t.Fatalf("error = %q", err)
+	}
+	if !strings.Contains(err.Error(), "https://example.com/extra.zip") {
+		t.Fatalf("error = %q, missing URL", err)
+	}
+}
+
+func TestBuildPlan_ChecksumFile_DuplicateManifestURL(t *testing.T) {
+	sumA := sha256.Sum256([]byte("alpha"))
+	sumB := sha256.Sum256([]byte("beta"))
+	manifest := writeChecksumFileForTest(t,
+		"sha256:"+fmt.Sprintf("%x", sumA)+" https://example.com/a.zip\n"+
+			"sha256:"+fmt.Sprintf("%x", sumB)+" https://example.com/a.zip\n")
+
+	_, err := BuildPlan(Options{
+		URLs:         []string{"https://example.com/a.zip"},
+		ChecksumFile: manifest,
+		Retries:      3,
+		Resume:       true,
+	})
+	if err == nil {
+		t.Fatal("BuildPlan returned nil error")
+	}
+	if !strings.Contains(err.Error(), "duplicate URL") {
+		t.Fatalf("error = %q", err)
+	}
+	if !strings.Contains(err.Error(), "checksum file") {
+		t.Fatalf("error = %q, missing checksum file context", err)
+	}
+}
+
+func TestBuildPlan_ChecksumFile_SingleURL(t *testing.T) {
+	sumA := sha256.Sum256([]byte("alpha"))
+	manifest := writeChecksumFileForTest(t, "sha256:"+fmt.Sprintf("%x", sumA)+" https://example.com/a.zip\n")
+
+	plan, err := BuildPlan(Options{
+		URLs:         []string{"https://example.com/a.zip"},
+		ChecksumFile: manifest,
+		Retries:      3,
+		Resume:       true,
+	})
+	if err != nil {
+		t.Fatalf("BuildPlan returned error: %v", err)
+	}
+	if !plan.HasChecksumFile {
+		t.Fatal("plan.HasChecksumFile = false")
+	}
+	if len(plan.TargetChecksums) != 1 {
+		t.Fatalf("len(plan.TargetChecksums) = %d, want 1", len(plan.TargetChecksums))
+	}
+}
+
+func TestBuildPlan_ChecksumFile_WithURLFile(t *testing.T) {
+	urlFile := filepath.Join(t.TempDir(), "urls.txt")
+	if err := os.WriteFile(urlFile, []byte("https://example.com/a.zip\nhttps://example.com/b.zip\n"), 0o600); err != nil {
+		t.Fatalf("write URL file: %v", err)
+	}
+	sumA := sha256.Sum256([]byte("alpha"))
+	sumB := sha256.Sum256([]byte("beta"))
+	manifest := writeChecksumFileForTest(t,
+		"sha256:"+fmt.Sprintf("%x", sumA)+" https://example.com/a.zip\n"+
+			"sha256:"+fmt.Sprintf("%x", sumB)+" https://example.com/b.zip\n")
+
+	plan, err := BuildPlan(Options{
+		File:         urlFile,
+		ChecksumFile: manifest,
+		Retries:      3,
+		Resume:       true,
+	})
+	if err != nil {
+		t.Fatalf("BuildPlan returned error: %v", err)
+	}
+	if len(plan.TargetChecksums) != 2 {
+		t.Fatalf("len(plan.TargetChecksums) = %d, want 2", len(plan.TargetChecksums))
+	}
+}
+
+func TestBuildPlan_ChecksumFile_EmptyManifest(t *testing.T) {
+	manifest := writeChecksumFileForTest(t, "# only comments\n\n")
+
+	_, err := BuildPlan(Options{
+		URLs:         []string{"https://example.com/a.zip"},
+		ChecksumFile: manifest,
+		Retries:      3,
+		Resume:       true,
+	})
+	if err == nil {
+		t.Fatal("BuildPlan returned nil error")
+	}
+	if !strings.Contains(err.Error(), "no checksum entries found") {
+		t.Fatalf("error = %q", err)
+	}
+}
+
+func TestBuildPlan_ChecksumFile_NotFound(t *testing.T) {
+	_, err := BuildPlan(Options{
+		URLs:         []string{"https://example.com/a.zip"},
+		ChecksumFile: filepath.Join(t.TempDir(), "missing.txt"),
+		Retries:      3,
+		Resume:       true,
+	})
+	if err == nil {
+		t.Fatal("BuildPlan returned nil error")
+	}
+	if !strings.Contains(err.Error(), "checksum file") {
+		t.Fatalf("error = %q, missing checksum file context", err)
+	}
+}
+
+func TestBuildPlan_DryRun_ChecksumFileShownInOutput(t *testing.T) {
+	sumA := sha256.Sum256([]byte("alpha"))
+	manifest := writeChecksumFileForTest(t, "sha256:"+fmt.Sprintf("%x", sumA)+" https://example.com/a.zip\n")
+
+	plan, err := BuildPlan(Options{
+		URLs:         []string{"https://example.com/a.zip"},
+		ChecksumFile: manifest,
+		DryRun:       true,
+		Retries:      3,
+		Resume:       true,
+	})
+	if err != nil {
+		t.Fatalf("BuildPlan returned error: %v", err)
+	}
+	out := plan.DryRunString()
+	if !strings.Contains(out, "Checksums: from file (1 entries)") {
+		t.Fatalf("dry-run output missing checksum file line:\n%s", out)
+	}
+}
+
+func TestBuildPlan_ExistingSingleChecksumBehaviorUnchanged(t *testing.T) {
+	sum := sha256.Sum256([]byte("hello"))
+	plan, err := BuildPlan(Options{
+		URLs:     []string{"https://example.com/file.zip"},
+		Checksum: "sha256:" + fmt.Sprintf("%x", sum),
+		Retries:  3,
+		Resume:   true,
+	})
+	if err != nil {
+		t.Fatalf("BuildPlan returned error: %v", err)
+	}
+	if plan.Checksum == nil {
+		t.Fatal("plan.Checksum = nil")
+	}
+	if plan.HasChecksumFile {
+		t.Fatal("plan.HasChecksumFile = true, want false")
+	}
+	if plan.TargetChecksums != nil {
+		t.Fatal("plan.TargetChecksums != nil")
+	}
+}

@@ -8,6 +8,35 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 
 Post-v1.7.0 development begins. Source default version advanced to `1.8.0-dev`.
 
+### Added
+
+- Added `--checksum-file <path>` for per-target batch checksum verification.
+  The manifest maps one `<algorithm>:<hex> <url>` entry to each download target.
+- Added checksum manifest parsing (`checksum.ParseManifestFile`) with
+  line-numbered validation errors, comment/blank-line handling, and
+  duplicate-URL rejection.
+- Added per-target checksum mapping to the download plan
+  (`TargetChecksums`, `HasChecksumFile`).
+- Added batch checksum verification inside the downloader for both single-target
+  and per-target checksums, with checksum mismatches counted as failed items.
+- Added TUI checksum status display for checksum-backed downloads: `Checksum OK`
+  and `Checksum Failed` in the queue and a `Checksum verified: N` summary line.
+
+### Changed
+
+- Batch download summaries now include a `Checksum verified: N` count when
+  applicable.
+- `--checksum` and `--checksum-file` are mutually exclusive.
+
+### Known limitations
+
+- Checksum file URL matching is exact; URLs are not normalized.
+- GNU `sha256sum` file compatibility and checksum auto-discovery are not
+  implemented.
+- TUI batch checksum input forms are not implemented; the TUI displays results
+  only.
+- Signature, PGP, and attestation verification remain out of scope.
+
 ## [1.7.0] - 2026-06-10
 
 ### Added

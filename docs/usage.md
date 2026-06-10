@@ -184,6 +184,8 @@ Current flags:
 - `--dry-run`: print the plan without attempting a download.
 - `--checksum`: verify a completed single URL download with
   `sha256:<hex>` or `sha512:<hex>`.
+- `--checksum-file`: verify batch downloads using a manifest file of
+  `<algorithm>:<hex> <url>` entries.
 - `--retries`: retry attempts after the initial attempt, default `3`, valid
   range `0` through `20`.
 - `--resume`: resume interrupted `.part` files, default `true`.
@@ -283,11 +285,28 @@ If the digest does not match, the command returns non-zero with an error like:
 checksum mismatch: expected <expected>, got <actual>
 ```
 
-The completed final file is not deleted on mismatch in this milestone. Dry-run
-validates and shows the checksum but does not compute it. Checksum verification
-is currently single URL only. The TUI supports optional checksum input for
-single URL downloads, while batch input and `--file` remain unsupported for
-checksums.
+The completed final file is not deleted on mismatch. Dry-run validates and shows
+the checksum but does not compute it. `--checksum` is single URL only.
+
+For batch downloads, use `--checksum-file <path>` with a manifest of
+`<algorithm>:<hex> <url>` entries (one per line; blank lines and `#` comments
+ignored):
+
+```bash
+daryaft download URL1 URL2 --checksum-file checksums.txt
+daryaft download --file urls.txt --checksum-file checksums.txt
+```
+
+Every target must have exactly one matching manifest entry, URLs must match
+exactly (no normalization), duplicate URLs are rejected, and malformed lines are
+reported with line numbers before any network request. A mismatch fails that
+item, leaves the file in place, and the command exits non-zero. The batch
+summary reports `Checksum verified: N`. `--checksum` and `--checksum-file`
+cannot be combined.
+
+The TUI supports optional checksum input for single URL downloads and displays
+`Checksum OK` / `Checksum Failed` for checksum-backed downloads; it does not
+collect checksum input for batch downloads.
 
 With `--verbose` or `-v`, CLI downloads also print lines prefixed with
 `Verbose:` for the effective URL with user info, query, and fragment redacted,

@@ -45,18 +45,25 @@ func BuildPlan(options Options) (Plan, error) {
 		return Plan{}, err
 	}
 
+	targetChecksums, hasChecksumFile, err := parsePlanChecksumFile(options, urls)
+	if err != nil {
+		return Plan{}, err
+	}
+
 	if err := httpopts.Validate(options.HTTPOptions); err != nil {
 		return Plan{}, err
 	}
 
 	return Plan{
-		URLs:        urls,
-		Output:      strings.TrimSpace(options.Output),
-		Name:        strings.TrimSpace(options.Name),
-		Checksum:    parsedChecksum,
-		Retries:     options.Retries,
-		Resume:      options.Resume,
-		HTTPOptions: options.HTTPOptions,
+		URLs:            urls,
+		Output:          strings.TrimSpace(options.Output),
+		Name:            strings.TrimSpace(options.Name),
+		Checksum:        parsedChecksum,
+		TargetChecksums: targetChecksums,
+		HasChecksumFile: hasChecksumFile,
+		Retries:         options.Retries,
+		Resume:          options.Resume,
+		HTTPOptions:     options.HTTPOptions,
 	}, nil
 }
 
@@ -64,6 +71,10 @@ func parsePlanChecksum(options Options, urls []string) (*checksum.Spec, error) {
 	rawChecksum := strings.TrimSpace(options.Checksum)
 	if rawChecksum == "" {
 		return nil, nil
+	}
+
+	if strings.TrimSpace(options.ChecksumFile) != "" {
+		return nil, fmt.Errorf("--checksum and --checksum-file cannot be used together")
 	}
 
 	spec, err := checksum.Parse(rawChecksum)
@@ -74,6 +85,46 @@ func parsePlanChecksum(options Options, urls []string) (*checksum.Spec, error) {
 		return nil, fmt.Errorf("--checksum is currently supported only for single URL downloads")
 	}
 	return &spec, nil
+}
+
+// parsePlanChecksumFile parses and cross-validates a checksum manifest file
+// against the planned download targets. It returns a map of URL to checksum
+// Spec and a flag indicating that a checksum file was supplied.
+//
+// The manifest must cover every planned target exactly once, and every manifest
+// URL must match a planned target exactly (no normalization).
+func parsePlanChecksumFile(options Options, urls []string) (map[string]checksum.Spec, bool, error) {
+	rawPath := strings.TrimSpace(options.ChecksumFile)
+	if rawPath == "" {
+		return nil, false, nil
+	}
+
+	entries, err := checksum.ParseManifestFile(rawPath)
+	if err != nil {
+		return nil, false, fmt.Errorf("checksum file: %w", err)
+	}
+	if len(entries) == 0 {
+		return nil, false, fmt.Errorf("checksum file: no checksum entries found")
+	}
+
+	targetSet := make(map[string]struct{}, len(urls))
+	for _, rawURL := range urls {
+		targetSet[rawURL] = struct{}{}
+	}
+
+	for _, rawURL := range urls {
+		if _, ok := entries[rawURL]; !ok {
+			return nil, false, fmt.Errorf("checksum file: no checksum provided for URL: %s", rawURL)
+		}
+	}
+
+	for manifestURL := range entries {
+		if _, ok := targetSet[manifestURL]; !ok {
+			return nil, false, fmt.Errorf("checksum file: manifest URL not in download targets: %s", manifestURL)
+		}
+	}
+
+	return entries, true, nil
 }
 
 func ValidateRetries(retries int) error {

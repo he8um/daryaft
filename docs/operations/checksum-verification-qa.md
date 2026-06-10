@@ -121,6 +121,101 @@ Expected:
 - Exit non-zero.
 - Error: `--checksum is currently supported only for single URL downloads`.
 
+## Batch checksum file: matching
+
+```bash
+printf 'alpha\n' > "$tmpdir/a.txt"
+printf 'beta\n' > "$tmpdir/b.txt"
+a_sum="$(shasum -a 256 "$tmpdir/a.txt" | awk '{print $1}')"
+b_sum="$(shasum -a 256 "$tmpdir/b.txt" | awk '{print $1}')"
+cat > "$tmpdir/checksums.txt" <<EOF
+sha256:$a_sum http://127.0.0.1:18171/a.txt
+sha256:$b_sum http://127.0.0.1:18171/b.txt
+EOF
+
+go run . download \
+  http://127.0.0.1:18171/a.txt \
+  http://127.0.0.1:18171/b.txt \
+  --output "$tmpdir/batch-out" \
+  --checksum-file "$tmpdir/checksums.txt"
+```
+
+Expected:
+
+- Exit 0.
+- Summary contains `Checksum verified: 2`.
+
+## Batch checksum file: mismatch
+
+```bash
+cat > "$tmpdir/checksums-bad.txt" <<EOF
+sha256:0000000000000000000000000000000000000000000000000000000000000000 http://127.0.0.1:18171/a.txt
+sha256:$b_sum http://127.0.0.1:18171/b.txt
+EOF
+
+go run . download \
+  http://127.0.0.1:18171/a.txt \
+  http://127.0.0.1:18171/b.txt \
+  --output "$tmpdir/batch-bad" \
+  --checksum-file "$tmpdir/checksums-bad.txt"
+echo "exit code: $?"
+```
+
+Expected:
+
+- Exit non-zero.
+- Summary lists the failed item with `checksum mismatch: expected ... got ...`.
+- Downloaded files left in place.
+
+## Batch checksum file: validation errors
+
+```bash
+# Missing checksum for a planned target
+cat > "$tmpdir/checksums-missing.txt" <<EOF
+sha256:$a_sum http://127.0.0.1:18171/a.txt
+EOF
+go run . download \
+  http://127.0.0.1:18171/a.txt \
+  http://127.0.0.1:18171/b.txt \
+  --checksum-file "$tmpdir/checksums-missing.txt"
+echo "exit code: $?"
+```
+
+Expected:
+
+- Exit non-zero before any network request.
+- Error: `checksum file: no checksum provided for URL: http://127.0.0.1:18171/b.txt`.
+
+## Batch checksum file: dry-run
+
+```bash
+go run . download \
+  http://127.0.0.1:18171/a.txt \
+  http://127.0.0.1:18171/b.txt \
+  --checksum-file "$tmpdir/checksums.txt" \
+  --dry-run
+```
+
+Expected:
+
+- Exit 0.
+- Output contains `Checksums: from file (2 entries)`.
+- No network request, no files created.
+
+## --checksum and --checksum-file together
+
+```bash
+go run . download http://127.0.0.1:18171/a.txt \
+  --checksum "sha256:$a_sum" \
+  --checksum-file "$tmpdir/checksums.txt"
+echo "exit code: $?"
+```
+
+Expected:
+
+- Exit non-zero.
+- Error: `--checksum and --checksum-file cannot be used together`.
+
 ## Teardown
 
 ```bash
@@ -137,4 +232,9 @@ rm -rf "$tmpdir"
 - [ ] Dry-run shows checksum, no download performed
 - [ ] Root URL mode routes to CLI with `--checksum`
 - [ ] Invalid format fails before network
-- [ ] Batch rejection with clear error
+- [ ] Single-target `--checksum` batch rejection with clear error
+- [ ] `--checksum-file` matching batch shows `Checksum verified: N`
+- [ ] `--checksum-file` mismatch fails the item and exits non-zero
+- [ ] `--checksum-file` missing/extra URL fails before network
+- [ ] `--checksum-file` dry-run shows entry count, no download
+- [ ] `--checksum` + `--checksum-file` together rejected

@@ -18,14 +18,16 @@ type BatchItem struct {
 }
 
 type BatchItemResult struct {
-	Item   BatchItem
-	Result Result
-	Err    error
+	Item           BatchItem
+	Result         Result
+	Err            error
+	ChecksumStatus string // "", "verified", "failed"
 }
 
 type BatchResult struct {
-	Planned int
-	Items   []BatchItemResult
+	Planned          int
+	ChecksumVerified int
+	Items            []BatchItemResult
 }
 
 func (r BatchResult) Total() int {
@@ -110,6 +112,9 @@ func (r BatchResult) SummaryString() string {
 	}
 	if r.Skipped() > 0 {
 		fmt.Fprintf(&builder, "\nNot started: %d", r.Skipped())
+	}
+	if r.ChecksumVerified > 0 {
+		fmt.Fprintf(&builder, "\nChecksum verified: %d", r.ChecksumVerified)
 	}
 
 	failures := r.FailedItems()

@@ -423,6 +423,18 @@ Dry-run validates and prints the checksum but does not compute it. `--checksum`
 is rejected for multiple URLs and for `--file` input. The TUI also supports
 optional checksum input for single URL downloads only.
 
+`--checksum-file <path>` verifies batch downloads against a manifest file that
+maps one checksum to each target URL. Each line is `<algorithm>:<hex> <url>`;
+blank lines and `#` comments are ignored. Every planned target URL must have
+exactly one matching manifest entry, every manifest URL must match a planned
+target exactly (no normalization), and duplicate URLs are rejected. Malformed
+lines and validation errors are reported with line numbers before any network
+request. `--checksum` and `--checksum-file` cannot be combined. After each file
+downloads successfully it is verified; a mismatch fails that item, leaves the
+file in place, and the command exits non-zero. The batch summary reports
+`Checksum verified: N`. In the TUI, checksum-backed downloads show
+`Checksum OK` or `Checksum Failed` per item.
+
 ## `daryaft download [url...] --dry-run`
 
 Implemented. Explicit form of the same download validation and dry-run planner.
@@ -488,6 +500,8 @@ Implemented. Explicit form of sequential batch download.
 - `--dry-run`: validate inputs and print the download plan.
 - `--checksum string`: verify a completed single URL download with
   `sha256:<hex>` or `sha512:<hex>`.
+- `--checksum-file string`: verify batch downloads using a manifest file of
+  `<algorithm>:<hex> <url>` entries.
 - `--retries int`: retry attempts after the initial attempt, default `3`,
   valid range `0` through `20`.
 - `--resume`: resume interrupted `.part` files with HTTP Range, default `true`.
@@ -503,6 +517,9 @@ Validation rules:
 - `--checksum` is rejected when more than one URL is provided or when `--file`
   is used.
 - `--checksum` must use `sha256:<64 hex chars>` or `sha512:<128 hex chars>`.
+- `--checksum-file` requires one manifest entry per target and one target per
+  manifest entry, with exact URL matching; it cannot be combined with
+  `--checksum`.
 - `--retries` must be from `0` through `20`.
 
 ## Common Flags

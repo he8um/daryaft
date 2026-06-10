@@ -18,7 +18,8 @@ failures, and invalid responses. It builds on v1.3.0 which added HTTP request
 customization (`--proxy`, `--header`, `--user-agent`, Basic Auth). The full
 feature set includes CLI and TUI HTTP/HTTPS downloading with dry-run planning,
 single URL and sequential batch downloads, resume from `.part` files, retry with
-exponential backoff, CLI checksum verification for single URL downloads, an
+exponential backoff, CLI checksum verification for single URL downloads and
+batch downloads via `--checksum-file`, an
 interactive Bubble Tea TUI, YAML configuration with environment overrides,
 `inspect` metadata preflight, `doctor` diagnostics, shell completions, and a
 polished update check command. Running `daryaft` with no arguments opens the
@@ -258,11 +259,25 @@ daryaft download https://example.com/file.zip --checksum sha512:<hex>
 ```
 
 Supported checksum algorithms are `sha256` and `sha512`. Dry-run validates and
-prints the checksum plan but does not compute a digest. `--checksum` is
-currently single URL only. The TUI also accepts an optional checksum in the
-single URL flow. Batch checksum remains unsupported, Daryaft does not discover
-or download checksum files, and it does not delete the completed file on
-mismatch.
+prints the checksum plan but does not compute a digest. `--checksum` is single
+URL only. The TUI also accepts an optional checksum in the single URL flow.
+Daryaft does not discover or download checksum files, and it does not delete the
+completed file on mismatch.
+
+For batch downloads, `--checksum-file <path>` verifies each target against a
+manifest file of `<algorithm>:<hex> <url>` entries (one per line; blank lines
+and `#` comments are ignored):
+
+```bash
+daryaft download URL1 URL2 --checksum-file checksums.txt
+daryaft download --file urls.txt --checksum-file checksums.txt
+```
+
+Every target must have exactly one matching manifest entry, and URLs must match
+exactly (no normalization). A mismatch fails that item, leaves the file in
+place, and the command exits non-zero. The batch summary reports
+`Checksum verified: N`, and the TUI shows `Checksum OK` / `Checksum Failed` per
+item. `--checksum` and `--checksum-file` cannot be combined.
 
 Use `--verbose` or `-v` with CLI downloads to print additional diagnostic lines
 prefixed with `Verbose:`. Verbose output includes the effective URL with user

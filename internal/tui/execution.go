@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/he8um/daryaft/internal/checksum"
 	"github.com/he8um/daryaft/internal/download"
 	"github.com/he8um/daryaft/internal/downloader"
 
@@ -13,10 +12,11 @@ import (
 )
 
 type itemRecord struct {
-	Index  int
-	URL    string
-	Status string
-	Err    string
+	Index          int
+	URL            string
+	Status         string
+	Err            string
+	ChecksumStatus string // "", "verified", "failed"
 }
 
 type executionState struct {
@@ -37,12 +37,19 @@ type executionState struct {
 }
 
 type executionSummary struct {
-	Total     int
-	Completed int
-	Failed    int
-	Cancelled int
-	Skipped   int
-	Failures  []executionFailure
+	Total                int
+	Completed            int
+	Failed               int
+	Cancelled            int
+	Skipped              int
+	ChecksumVerified     int
+	Failures             []executionFailure
+	ItemChecksumStatuses []itemChecksumStatus
+}
+
+type itemChecksumStatus struct {
+	Index  int
+	Status string // "", "verified", "failed"
 }
 
 type executionFailure struct {
@@ -53,19 +60,10 @@ type executionFailure struct {
 type ExecutionRunner func(context.Context, download.Plan, downloader.BatchHandlers) downloader.BatchResult
 
 func defaultExecutionRunner(ctx context.Context, plan download.Plan, handlers downloader.BatchHandlers) downloader.BatchResult {
-	result := downloader.New().DownloadBatchContext(ctx, plan, handlers)
-	return verifyCompletedChecksum(plan, result)
-}
-
-func verifyCompletedChecksum(plan download.Plan, result downloader.BatchResult) downloader.BatchResult {
-	if plan.Checksum == nil || len(plan.URLs) != 1 || len(result.Items) != 1 || result.Items[0].Err != nil {
-		return result
-	}
-
-	if _, err := checksum.VerifyFile(result.Items[0].Result.Path, *plan.Checksum); err != nil {
-		result.Items[0].Err = err
-	}
-	return result
+	// Checksum verification (both single-target Plan.Checksum and per-target
+	// Plan.TargetChecksums) is handled inside DownloadBatchContext, so the TUI
+	// does not perform any checksum verification itself.
+	return downloader.New().DownloadBatchContext(ctx, plan, handlers)
 }
 
 func newExecutionState(plan download.Plan) executionState {
@@ -183,6 +181,7 @@ func (m *Model) applyExecutionFinished(msg executionFinishedMsg) {
 	m.execution.Summary = msg.Summary
 	m.executionCancel = nil
 	m.executionMessages = nil
+	m.applyChecksumStatuses(msg.Summary.ItemChecksumStatuses)
 	if msg.Summary.Cancelled > 0 {
 		m.execution.Status = "Cancelled"
 		m.execution.Message = "Download cancelled. Partial file kept for resume."
@@ -213,18 +212,55 @@ func (m *Model) applyExecutionFinished(msg executionFinishedMsg) {
 	}
 }
 
+// applyChecksumStatuses updates the queue item records with the final checksum
+// verification result reported by the downloader. Items are correlated by their
+// 1-based batch index. A checksum result only overrides a successfully completed
+// download status; it never overrides a cancelled or download-failed item.
+func (m *Model) applyChecksumStatuses(statuses []itemChecksumStatus) {
+	for _, status := range statuses {
+		if status.Status != "verified" && status.Status != "failed" {
+			continue
+		}
+		for i := range m.execution.Items {
+			item := &m.execution.Items[i]
+			if item.Index != status.Index {
+				continue
+			}
+			item.ChecksumStatus = status.Status
+			switch item.Status {
+			case "", "Downloading", "Starting", "Resuming", "Restarting", "Completed":
+				if status.Status == "verified" {
+					item.Status = "Checksum OK"
+				} else {
+					item.Status = "Checksum Failed"
+				}
+			}
+		}
+	}
+}
+
 func summaryFromBatch(result downloader.BatchResult) executionSummary {
 	summary := executionSummary{
-		Total:     result.Total(),
-		Completed: result.Completed(),
-		Failed:    result.Failed(),
-		Cancelled: result.Cancelled(),
-		Skipped:   result.Skipped(),
+		Total:            result.Total(),
+		Completed:        result.Completed(),
+		Failed:           result.Failed(),
+		Cancelled:        result.Cancelled(),
+		Skipped:          result.Skipped(),
+		ChecksumVerified: result.ChecksumVerified,
 	}
 	for _, failure := range result.FailedItems() {
 		summary.Failures = append(summary.Failures, executionFailure{
 			URL:   failure.Item.URL,
 			Error: failure.Err.Error(),
+		})
+	}
+	for _, item := range result.Items {
+		if item.ChecksumStatus == "" {
+			continue
+		}
+		summary.ItemChecksumStatuses = append(summary.ItemChecksumStatuses, itemChecksumStatus{
+			Index:  item.Item.Index,
+			Status: item.ChecksumStatus,
 		})
 	}
 	return summary
