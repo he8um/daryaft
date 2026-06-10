@@ -357,11 +357,11 @@ The command does not overwrite existing final files. It uses simple text output:
 Downloading: <url>
 Saving to: <path>
 Progress: <downloaded> / <total> bytes (<percent>%) | <speed>
-Resuming from <bytes> bytes
-Resume not supported by server; restarting download
-Remote file changed; restarting download
+Resuming: <message>
+Restarting: <message>
 Retrying <attempt>/<max> in <delay>: <reason>
-Completed: <path>
+Failed: <reason>
+Completed: <path> (<size> in <elapsed>)
 Checksum verified: sha256
 ```
 

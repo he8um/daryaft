@@ -150,6 +150,7 @@ func runDownloadWithContext(cmd *cobra.Command, args []string, flags downloadFla
 
 	verboseMode := effectiveVerbose(cmd)
 	startedAt := time.Now()
+	var singleStartedAt time.Time
 	printVerbosePlan(cmd, plan, verboseMode)
 
 	if len(plan.URLs) > 1 {
@@ -193,6 +194,9 @@ func runDownloadWithContext(cmd *cobra.Command, args []string, flags downloadFla
 	result, err := d.DownloadWithEventsContext(ctx, plan, func(event downloader.Event) {
 		switch event.Type {
 		case downloader.EventStarted:
+			if singleStartedAt.IsZero() {
+				singleStartedAt = time.Now()
+			}
 			if !savingPrinted {
 				fmt.Fprintf(cmd.OutOrStdout(), "Saving to: %s\n", event.TargetPath)
 				savingPrinted = true
@@ -201,10 +205,35 @@ func runDownloadWithContext(cmd *cobra.Command, args []string, flags downloadFla
 			printProgress(cmd, event)
 		case downloader.EventRetrying:
 			printRetrying(cmd, event)
-		case downloader.EventResuming, downloader.EventRestarting, downloader.EventWarning:
+		case downloader.EventResuming:
+			fmt.Fprintf(cmd.OutOrStdout(), "Resuming: %s\n", event.Message)
+		case downloader.EventRestarting:
+			fmt.Fprintf(cmd.OutOrStdout(), "Restarting: %s\n", event.Message)
+		case downloader.EventWarning:
 			printMessage(cmd, event)
+		case downloader.EventFailed:
+			switch {
+			case event.Error != nil:
+				fmt.Fprintf(cmd.OutOrStdout(), "Failed: %v\n", event.Error)
+			case event.Message != "":
+				fmt.Fprintf(cmd.OutOrStdout(), "Failed: %s\n", event.Message)
+			default:
+				fmt.Fprintln(cmd.OutOrStdout(), "Failed")
+			}
 		case downloader.EventCompleted:
-			fmt.Fprintf(cmd.OutOrStdout(), "Completed: %s\n", event.TargetPath)
+			elapsed := time.Duration(0)
+			if !singleStartedAt.IsZero() {
+				elapsed = time.Since(singleStartedAt).Truncate(100 * time.Millisecond)
+			}
+			path := event.TargetPath
+			if path == "" {
+				path = event.Message
+			}
+			fmt.Fprintf(cmd.OutOrStdout(), "Completed: %s (%s in %s)\n",
+				path,
+				utils.FormatBytes(event.DownloadedBytes),
+				elapsed,
+			)
 		case downloader.EventCancelled:
 			printMessage(cmd, event)
 		}

@@ -200,7 +200,7 @@ func (m Model) executionView() string {
 	if m.execution.Running {
 		builder.WriteString(m.styles.muted.Render("download running • q cancel • ctrl+c quit"))
 	} else {
-		builder.WriteString(m.styles.muted.Render("enter/h home • q quit"))
+		builder.WriteString(m.styles.muted.Render("enter/h new download • q quit"))
 	}
 	builder.WriteString("\n\n")
 	builder.WriteString(m.footerView())
@@ -209,6 +209,26 @@ func (m Model) executionView() string {
 
 func (m Model) executionBody() string {
 	var builder strings.Builder
+	if len(m.execution.Items) > 0 {
+		fmt.Fprintf(&builder, "Queue\n")
+
+		displayItems := m.execution.Items
+		const maxDisplay = 20
+		if len(displayItems) > maxDisplay {
+			displayItems = displayItems[len(displayItems)-maxDisplay:]
+		}
+
+		for _, item := range displayItems {
+			marker := statusMarker(item.Status, m.noColor)
+			fmt.Fprintf(&builder, "  %s %d. %s\n", marker, item.Index, truncateURL(item.URL, 55))
+		}
+
+		if len(m.execution.Items) > maxDisplay {
+			fmt.Fprintf(&builder, "  ... and %d more\n", len(m.execution.Items)-maxDisplay)
+		}
+
+		builder.WriteString("\n")
+	}
 	fmt.Fprintf(&builder, "Item %d of %d\n", valueOrOne(m.execution.ItemIndex), valueOrOne(m.execution.ItemTotal))
 	fmt.Fprintf(&builder, "Current URL: %s\n", displayValue(m.execution.CurrentURL, "pending"))
 	fmt.Fprintf(&builder, "Target path: %s\n", displayValue(m.execution.TargetPath, "pending"))
@@ -320,7 +340,7 @@ func summaryView(summary executionSummary) string {
 	fmt.Fprintf(&builder, "Failed: %d\n", summary.Failed)
 	fmt.Fprintf(&builder, "Cancelled: %d", summary.Cancelled)
 	if summary.Skipped > 0 {
-		fmt.Fprintf(&builder, "\nSkipped: %d", summary.Skipped)
+		fmt.Fprintf(&builder, "\nNot started: %d", summary.Skipped)
 	}
 	if len(summary.Failures) == 0 {
 		return builder.String()
@@ -349,4 +369,42 @@ func valueOrOne(value int) int {
 
 func (m Model) footerView() string {
 	return m.styles.muted.Render(config.FooterText)
+}
+
+func statusMarker(status string, noColor bool) string {
+	switch status {
+	case "Completed":
+		if noColor {
+			return "[ok]"
+		}
+		return "✓"
+	case "Failed", "Cancelled":
+		if noColor {
+			return "[!]"
+		}
+		return "✗"
+	case "Downloading", "Starting", "Resuming", "Restarting":
+		if noColor {
+			return "[>]"
+		}
+		return "→"
+	default:
+		if noColor {
+			return "[-]"
+		}
+		return "·"
+	}
+}
+
+func truncateURL(u string, max int) string {
+	if max <= 0 {
+		return ""
+	}
+	if len(u) <= max {
+		return u
+	}
+	if max <= 3 {
+		return u[:max]
+	}
+	return u[:max-3] + "..."
 }

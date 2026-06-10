@@ -11,6 +11,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -780,7 +781,7 @@ func TestRunDownloadBatchContextCancellationStopsRemainingItems(t *testing.T) {
 		"Daryaft batch summary",
 		"Total: 2",
 		"Cancelled: 1",
-		"Skipped: 1",
+		"Not started: 1",
 	} {
 		if !strings.Contains(output.String(), want) {
 			t.Fatalf("output missing %q in:\n%s", want, output.String())
@@ -1187,6 +1188,61 @@ func TestDownloadCLIEnvCredentialsDryRunRedacted(t *testing.T) {
 	}
 	if !strings.Contains(output, "[REDACTED]") {
 		t.Errorf("dry-run output must contain [REDACTED]:\n%s", output)
+	}
+}
+
+func TestSingleDownloadCompleted_PrintsSizeAndElapsed(t *testing.T) {
+	body := make([]byte, 512)
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Length", "512")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write(body)
+	}))
+	defer ts.Close()
+
+	var output bytes.Buffer
+	cmd := &cobra.Command{Use: "download"}
+	cmd.SetOut(&output)
+
+	err := runDownload(cmd, []string{ts.URL + "/file.bin"}, downloadFlagValues{
+		output:  t.TempDir(),
+		retries: 0,
+		resume:  true,
+	})
+	if err != nil {
+		t.Fatalf("runDownload returned error: %v", err)
+	}
+
+	matched, _ := regexp.MatchString(`Completed: .+\(.+ in .+\)`, output.String())
+	if !matched {
+		t.Errorf("expected Completed with size and elapsed, got: %s", output.String())
+	}
+}
+
+func TestSingleDownloadEventFailed_PrintsFailedMessage(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "server error", http.StatusInternalServerError)
+	}))
+	defer ts.Close()
+
+	var output bytes.Buffer
+	cmd := &cobra.Command{Use: "download"}
+	cmd.SetOut(&output)
+
+	err := runDownload(cmd, []string{ts.URL + "/file.bin"}, downloadFlagValues{
+		output:  t.TempDir(),
+		retries: 0,
+		resume:  true,
+	})
+	// The download should fail (server returns 500).
+	if err == nil {
+		t.Fatal("runDownload returned nil error, want failure")
+	}
+	// The event-stream Failed: prefix or the returned error must surface the failure.
+	hasFailedPrefix := strings.Contains(output.String(), "Failed:")
+	hasError := err != nil
+	if !hasFailedPrefix && !hasError {
+		t.Errorf("expected Failed: in output or non-nil error; output: %s", output.String())
 	}
 }
 

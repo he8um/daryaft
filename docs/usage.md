@@ -236,7 +236,7 @@ the server returns `206 Partial Content`. Progress starts at the existing byte
 count:
 
 ```text
-Resuming from 524288 bytes
+Resuming: Resuming from 524288 bytes
 Progress: 786432 / 1048576 bytes (75.0%) | 1.2 MB/s
 ```
 
@@ -244,14 +244,14 @@ If the server ignores Range and returns a full response, Daryaft safely
 truncates the partial file and restarts:
 
 ```text
-Resume not supported by server; restarting download
+Restarting: Resume not supported by server; restarting download
 ```
 
 If saved `ETag` or `Last-Modified` metadata no longer matches the server
 response, Daryaft does not append stale bytes:
 
 ```text
-Remote file changed; restarting download
+Restarting: Remote file changed; restarting download
 ```
 
 `--no-resume` ignores existing `.part` data for resume, truncates the partial
@@ -265,7 +265,7 @@ structured downloader events:
 Downloading: https://example.com/file.zip
 Saving to: downloads/file.zip
 Progress: 524288 / 1048576 bytes (50.0%) | 1.2 MB/s
-Completed: downloads/file.zip
+Completed: downloads/file.zip (1.0 MB in 1.2s)
 ```
 
 For manual integrity checks, pass `--checksum sha256:<hex>` or

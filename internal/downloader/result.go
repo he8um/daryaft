@@ -109,7 +109,7 @@ func (r BatchResult) SummaryString() string {
 		fmt.Fprintf(&builder, "\nCancelled: %d", r.Cancelled())
 	}
 	if r.Skipped() > 0 {
-		fmt.Fprintf(&builder, "\nSkipped: %d", r.Skipped())
+		fmt.Fprintf(&builder, "\nNot started: %d", r.Skipped())
 	}
 
 	failures := r.FailedItems()

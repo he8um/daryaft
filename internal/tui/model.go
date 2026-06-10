@@ -24,6 +24,7 @@ type Model struct {
 	screen            screen
 	selected          int
 	styles            styles
+	noColor           bool
 	width             int
 	height            int
 	version           version.Details
@@ -58,7 +59,8 @@ func NewModelWithRunner(options Options, runner ExecutionRunner) Model {
 }
 
 func NewModelWithRunners(options Options, runner ExecutionRunner, inspectRunner InspectRunner) Model {
-	styles := newStyles(options.NoColor || config.IsMonoTheme(options.Theme))
+	noColorMode := options.NoColor || config.IsMonoTheme(options.Theme)
+	styles := newStyles(noColorMode)
 	if runner == nil {
 		runner = defaultExecutionRunner
 	}
@@ -75,6 +77,7 @@ func NewModelWithRunners(options Options, runner ExecutionRunner, inspectRunner 
 	model := Model{
 		screen:           screenHome,
 		styles:           styles,
+		noColor:          noColorMode,
 		version:          version.Info(),
 		sourceScreen:     screenURLInput,
 		outputDirInput:   defaultOutput,

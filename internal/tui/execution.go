@@ -12,6 +12,13 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+type itemRecord struct {
+	Index  int
+	URL    string
+	Status string
+	Err    string
+}
+
 type executionState struct {
 	Running         bool
 	Done            bool
@@ -26,6 +33,7 @@ type executionState struct {
 	Speed           float64
 	Message         string
 	Summary         executionSummary
+	Items           []itemRecord
 }
 
 type executionSummary struct {
@@ -121,6 +129,11 @@ func (m *Model) applyExecutionItemStarted(msg executionItemStartedMsg) {
 	m.execution.Percent = 0
 	m.execution.Speed = 0
 	m.execution.Message = ""
+	m.execution.Items = append(m.execution.Items, itemRecord{
+		Index:  msg.Item.Index,
+		URL:    msg.Item.URL,
+		Status: "Downloading",
+	})
 }
 
 func (m *Model) applyExecutionEvent(msg executionEventMsg) {
@@ -142,6 +155,26 @@ func (m *Model) applyExecutionEvent(msg executionEventMsg) {
 	m.execution.Speed = event.SpeedBytesPerSecond
 	m.execution.Status = statusFromEvent(event.Type)
 	m.execution.Message = messageFromEvent(event)
+	if len(m.execution.Items) > 0 {
+		last := &m.execution.Items[len(m.execution.Items)-1]
+		switch event.Type {
+		case downloader.EventCompleted:
+			last.Status = "Completed"
+		case downloader.EventFailed:
+			last.Status = "Failed"
+			if event.Error != nil {
+				last.Err = event.Error.Error()
+			} else if event.Message != "" {
+				last.Err = event.Message
+			}
+		case downloader.EventCancelled:
+			last.Status = "Cancelled"
+		case downloader.EventResuming:
+			last.Status = "Resuming"
+		case downloader.EventRestarting:
+			last.Status = "Restarting"
+		}
+	}
 }
 
 func (m *Model) applyExecutionFinished(msg executionFinishedMsg) {
@@ -153,13 +186,31 @@ func (m *Model) applyExecutionFinished(msg executionFinishedMsg) {
 	if msg.Summary.Cancelled > 0 {
 		m.execution.Status = "Cancelled"
 		m.execution.Message = "Download cancelled. Partial file kept for resume."
+		if len(m.execution.Items) > 0 {
+			last := &m.execution.Items[len(m.execution.Items)-1]
+			if last.Status == "" || last.Status == "Downloading" || last.Status == "Starting" || last.Status == "Resuming" || last.Status == "Restarting" {
+				last.Status = m.execution.Status
+			}
+		}
 		return
 	}
 	if msg.Summary.Failed > 0 {
 		m.execution.Status = "Failed"
+		if len(m.execution.Items) > 0 {
+			last := &m.execution.Items[len(m.execution.Items)-1]
+			if last.Status == "" || last.Status == "Downloading" || last.Status == "Starting" || last.Status == "Resuming" || last.Status == "Restarting" {
+				last.Status = m.execution.Status
+			}
+		}
 		return
 	}
 	m.execution.Status = "Completed"
+	if len(m.execution.Items) > 0 {
+		last := &m.execution.Items[len(m.execution.Items)-1]
+		if last.Status == "" || last.Status == "Downloading" || last.Status == "Starting" || last.Status == "Resuming" || last.Status == "Restarting" {
+			last.Status = m.execution.Status
+		}
+	}
 }
 
 func summaryFromBatch(result downloader.BatchResult) executionSummary {

@@ -467,3 +467,14 @@ Expected:
 - Temporary test directories and completion files are removed.
 - `git status` is clean except for intentional documentation or script changes
   from this checklist update.
+
+## v1.6.0 Download + TUI UX Polish QA
+
+1. Single-URL success: verify `Completed:` message shows size and elapsed time.
+2. Single-URL failure: verify `Failed:` prefix appears.
+3. Resume: verify `Resuming:` prefix appears when server returns 206.
+4. Restart: verify `Restarting:` prefix appears when server does not support Range.
+5. Batch summary: verify `Not started` (not `Skipped`) for unstarted items.
+6. TUI batch: run a multi-URL batch, verify queue list with ✓/✗/→ markers.
+7. TUI no-color (`--no-color`): verify ASCII markers `[ok]`, `[!]`, `[>]`.
+8. TUI post-run hint: verify hint says `new download` after batch completes.

@@ -197,6 +197,28 @@ func TestBatchResultSummaryString(t *testing.T) {
 	}
 }
 
+func TestBatchSummaryNotStartedLabel(t *testing.T) {
+	result := BatchResult{
+		Planned: 3,
+		Items: []BatchItemResult{
+			{Item: BatchItem{Index: 1, Total: 3, URL: "https://example.com/a.txt"}},
+			{Item: BatchItem{Index: 2, Total: 3, URL: "https://example.com/b.txt"}, Err: ErrCancelled},
+		},
+	}
+
+	if result.Skipped() == 0 {
+		t.Fatal("expected Skipped() > 0 for this result")
+	}
+
+	summary := result.SummaryString()
+	if !strings.Contains(summary, "Not started:") {
+		t.Errorf("SummaryString() missing 'Not started:' label; got:\n%s", summary)
+	}
+	if strings.Contains(summary, "Skipped:") {
+		t.Errorf("SummaryString() still contains old 'Skipped:' label; got:\n%s", summary)
+	}
+}
+
 func assertFileContent(t *testing.T, path, want string) {
 	t.Helper()
 
