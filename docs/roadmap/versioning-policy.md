@@ -2,8 +2,8 @@
 
 Daryaft uses milestone-oriented semantic versioning.
 
-The latest stable release is `v1.8.0`. The current source development metadata
-version is `1.9.0-dev`, representing active post-1.8.0 development on `main`.
+The latest stable release is `v1.9.0`. The current source development metadata
+version is `1.10.0-dev`, representing active post-1.9.0 development on `main`.
 
 ## Version History Note
 

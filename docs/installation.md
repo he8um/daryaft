@@ -1,8 +1,8 @@
 # Installation
 
-Daryaft `v1.8.0` is the current stable release. Install via Homebrew or
+Daryaft `v1.9.0` is the current stable release. Install via Homebrew or
 download binary archives directly from the
-[GitHub releases page](https://github.com/he8um/daryaft/releases/tag/v1.8.0).
+[GitHub releases page](https://github.com/he8um/daryaft/releases/tag/v1.9.0).
 Other package manager channels (deb, rpm, Arch) are post-1.0 work.
 
 ## Current Local Development
@@ -30,7 +30,7 @@ make build-local
 ./bin/daryaft version
 ```
 
-Source builds report version `1.9.0-dev`, commit `local`, build date
+Source builds report version `1.10.0-dev`, commit `local`, build date
 `unknown`, and built by `source`. Local ldflags builds can inject the current
 git commit, UTC build time, and `built by` value. Release builds use GoReleaser
 ldflags for the same metadata fields.
@@ -52,7 +52,7 @@ GoReleaser is required. Install it with: brew install goreleaser
 The target runs `goreleaser release --snapshot --clean --skip=publish`. It is
 local only: it does not publish releases, create tags, or enable package-manager
 publishing. Snapshot versions are named like
-`1.9.0-dev-SNAPSHOT-<short-commit>`, and snapshot artifacts are written under
+`1.10.0-dev-SNAPSHOT-<short-commit>`, and snapshot artifacts are written under
 ignored local build directories such as `dist/`.
 
 ## Shell Completion
