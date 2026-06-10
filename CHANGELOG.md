@@ -6,6 +6,26 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 
 ## [Unreleased]
 
+### Added
+
+- Added `--checksum algorithm:hex` flag for single-target CLI download verification.
+- Added SHA-256 and SHA-512 checksum verification after download completion.
+- Added checksum format validation before the network request starts.
+- Added checksum dry-run display in download plan output.
+- Added `docs/features/checksum-verification.md` feature guide.
+- Added `docs/operations/checksum-verification-qa.md` manual QA checklist.
+- Added `SupportedAlgorithms()` to internal checksum package.
+
+### Changed
+
+- Root URL download mode now routes `--checksum` to CLI download mode instead of TUI.
+
+### Known limitations
+
+- Per-file batch checksums are not supported yet.
+- TUI checksum entry is not implemented.
+- Signature, PGP, and attestation verification are out of scope.
+
 Post-v1.6.0 development begins. Source default version advanced to `1.7.0-dev`.
 
 ## [1.6.0] - 2026-06-10

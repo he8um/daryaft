@@ -425,7 +425,7 @@ func redactURL(rawURL string) string {
 }
 
 func hasDownloadFlagChanges(cmd *cobra.Command) bool {
-	for _, name := range []string{"file", "output", "name", "dry-run", "retries", "resume", "no-resume", "proxy", "header", "user-agent", "username", "password"} {
+	for _, name := range []string{"file", "output", "name", "dry-run", "checksum", "retries", "resume", "no-resume", "proxy", "header", "user-agent", "username", "password"} {
 		if localFlagChanged(cmd, name) {
 			return true
 		}

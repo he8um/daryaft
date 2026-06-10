@@ -95,6 +95,10 @@ func VerifyFile(path string, spec Spec) (string, error) {
 	return actual, nil
 }
 
+func SupportedAlgorithms() []string {
+	return []string{AlgorithmSHA256, AlgorithmSHA512}
+}
+
 func expectedLength(algorithm string) (int, error) {
 	switch algorithm {
 	case AlgorithmSHA256:
