@@ -1,6 +1,6 @@
 # Release Process
 
-**`v1.6.0` is the current stable release.** `main` is now on `1.6.0-dev`
+**`v1.6.0` is the current stable release.** `main` is now on `1.7.0-dev`
 post-v1.6.0 development.
 
 > **Version skip note:** `v1.3.0` was tagged in source history but no GitHub
@@ -168,11 +168,11 @@ are written under ignored local build directories such as `dist/`.
 Snapshot versions are intentionally named:
 
 ```text
-1.6.0-dev-SNAPSHOT-<short-commit>
+1.7.0-dev-SNAPSHOT-<short-commit>
 ```
 
 GoReleaser normally derives versions from Git tags. The snapshot template keeps
-local dry-run metadata aligned with the current `1.6.0-dev` development version
+local dry-run metadata aligned with the current `1.7.0-dev` development version
 without creating or deleting tags.
 
 ## Release Metadata
@@ -188,7 +188,7 @@ with linker flags:
 Source builds keep the default development metadata:
 
 ```text
-version: 1.6.0-dev
+version: 1.7.0-dev
 commit: local
 date: unknown
 built_by: source
