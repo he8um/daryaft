@@ -14,6 +14,7 @@ The home screen shows:
 - Inspect URL
 - View help
 - Version
+- Settings
 - Quit
 
 Use up/down arrows or `k`/`j` to move and enter to select. Escape navigates
@@ -34,6 +35,13 @@ with bounded minimum and maximum widths. Existing CLI download commands remain
 fully supported, and CLI `-o`/`--output` and `--name` behavior is unchanged.
 Pressing `q` while a TUI download is running cancels it and keeps partial state
 for resume.
+
+**Settings screen:** Read-only view of the active config path, whether a config file
+was loaded, and safe effective settings (download directory, retries, resume, no-color,
+no-tui, theme, animations, hyperlinks, user-agent, timeout). Select **Settings** from
+the home menu or press `c` from the home screen. Press `esc` or `backspace` to return
+home. The screen does not display credentials, tokens, cookies, auth headers, proxy
+values, or credential environment variables.
 
 When URL arguments or `--file` are provided, the root command enters the current
 download validation mode.

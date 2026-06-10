@@ -32,6 +32,8 @@ func (m Model) View() string {
 		content = m.helpView()
 	case screenVersion:
 		content = m.versionView()
+	case screenSettings:
+		content = m.settingsView()
 	default:
 		content = m.homeView()
 	}
@@ -82,6 +84,73 @@ func (m Model) versionView() string {
 		"Version",
 		fmt.Sprintf("%s version: %s\ncommit: %s\nbuilt: %s\ngo version: %s", config.AppName, info.Version, info.Commit, info.Date, info.GoVersion),
 	)
+}
+
+func (m Model) settingsView() string {
+	return m.subscreenView("Settings", m.settingsBody())
+}
+
+func (m Model) settingsBody() string {
+	var builder strings.Builder
+
+	path := m.configInfo.Path
+	if strings.TrimSpace(path) == "" {
+		path = "(unavailable)"
+	} else {
+		maxPathWidth := m.panelWidth() - 20
+		if maxPathWidth > 10 {
+			path = truncateMiddle(path, maxPathWidth)
+		}
+	}
+	fmt.Fprintf(&builder, "Config file: %s\n", path)
+	if m.configInfo.Loaded {
+		builder.WriteString("Config loaded: yes\n")
+	} else {
+		builder.WriteString("Config loaded: no (using defaults)\n")
+	}
+	builder.WriteString("---\n")
+	fmt.Fprintf(&builder, "download_dir: %s\n", settingsDownloadDir(m.defaultOutputDir))
+	fmt.Fprintf(&builder, "retries: %d\n", m.retries)
+	fmt.Fprintf(&builder, "resume: %s\n", displayBool(m.resume))
+	fmt.Fprintf(&builder, "no_color: %s\n", displayBool(m.noColor))
+	fmt.Fprintf(&builder, "no_tui: %s\n", displayBool(m.noTUI))
+	fmt.Fprintf(&builder, "theme: %s\n", displayDefault(m.theme, "default"))
+	fmt.Fprintf(&builder, "animations: %s (reserved)\n", displayBool(m.animations))
+	fmt.Fprintf(&builder, "hyperlinks: %s (reserved)\n", displayBool(m.hyperlinks))
+	fmt.Fprintf(&builder, "user_agent: %s\n", displayDefault(m.userAgent, "(default)"))
+	fmt.Fprintf(&builder, "timeout: %s", displayDefault(m.timeout, "(none)"))
+	return builder.String()
+}
+
+func settingsDownloadDir(dir string) string {
+	if strings.TrimSpace(dir) == "" || dir == "." {
+		return "(default)"
+	}
+	return dir
+}
+
+func displayDefault(value, fallback string) string {
+	if strings.TrimSpace(value) == "" {
+		return fallback
+	}
+	return value
+}
+
+func displayBool(value bool) string {
+	if value {
+		return "true"
+	}
+	return "false"
+}
+
+func truncateMiddle(value string, max int) string {
+	if max <= 0 || len(value) <= max {
+		return value
+	}
+	if max <= 3 {
+		return value[:max]
+	}
+	return "..." + value[len(value)-(max-3):]
 }
 
 func (m Model) subscreenView(title, body string) string {

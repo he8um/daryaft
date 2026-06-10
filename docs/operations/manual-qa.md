@@ -567,3 +567,40 @@ These checks exercise the new `user_agent`, `timeout`, and `--config` additions.
 
 8. **Cleanup**: run `daryaft --config /tmp/test.yaml config reset` to restore
    defaults at the test path, then delete `/tmp/test.yaml`.
+
+## v1.11.0 — TUI Settings Screen
+
+1. **Settings screen — no config file**: start `daryaft` with a temp home dir
+   where no config file exists. Open Settings from the home menu. Verify:
+   - `Config loaded: no (using defaults)` is shown.
+   - All safe config keys are present (`download_dir`, `retries`, `resume`, etc.).
+   - No password, token, authorization, cookie, or proxy field appears.
+
+2. **Settings screen — with config file**: run `daryaft config init` to create a
+   config file, then start `daryaft`. Open Settings. Verify:
+   - `Config loaded: yes` is shown.
+   - The correct config path appears.
+
+3. **Settings screen — explicit `--config`**: run `daryaft --config /tmp/qa.yaml config init`,
+   then `daryaft --config /tmp/qa.yaml`. Open Settings. Verify `/tmp/qa.yaml` is shown as the
+   config path.
+
+4. **Settings screen — user_agent and timeout**: run
+   `daryaft config set user_agent QABot/1.11` and
+   `daryaft config set timeout 30s`, then start `daryaft`. Open Settings. Verify
+   `user_agent: QABot/1.11` and `timeout: 30s` appear.
+
+5. **Settings screen — defaults markers**: with empty `user_agent` and `timeout`,
+   verify `user_agent: (default)` and `timeout: (none)`.
+
+6. **`c` shortcut**: from the TUI home screen, press `c`. Verify Settings screen opens.
+   Press `esc` and verify home screen returns.
+
+7. **`c` inside input screens**: enter the URL input screen, type `c`. Verify it appends
+   `c` to the input field and does not open the Settings screen.
+
+8. **No secrets**: verify Settings does not show any of: `password`, `token`,
+   `authorization`, `cookie`, `proxy_authorization`, or values of
+   `DARYAFT_USERNAME` / `DARYAFT_PASSWORD`.
+
+9. **Cleanup**: delete `/tmp/qa.yaml` after QA.

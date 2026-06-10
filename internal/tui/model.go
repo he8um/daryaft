@@ -11,6 +11,12 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+// ConfigInfo carries read-only configuration metadata for display in the TUI.
+type ConfigInfo struct {
+	Path   string
+	Loaded bool
+}
+
 type Options struct {
 	NoColor           bool
 	Theme             string
@@ -18,6 +24,12 @@ type Options struct {
 	Retries           int
 	Resume            bool
 	UseConfigDefaults bool
+	NoTUI             bool
+	Animations        bool
+	Hyperlinks        bool
+	UserAgent         string
+	Timeout           string
+	ConfigInfo        ConfigInfo
 }
 
 type Model struct {
@@ -33,8 +45,15 @@ type Model struct {
 	sourceScreen      screen
 	outputDirInput    string
 	defaultOutputDir  string
+	theme             string
+	noTUI             bool
 	retries           int
 	resume            bool
+	animations        bool
+	hyperlinks        bool
+	userAgent         string
+	timeout           string
+	configInfo        ConfigInfo
 	filenameInput     string
 	checksumInput     string
 	errorMessage      string
@@ -82,8 +101,15 @@ func NewModelWithRunners(options Options, runner ExecutionRunner, inspectRunner 
 		sourceScreen:     screenURLInput,
 		outputDirInput:   defaultOutput,
 		defaultOutputDir: defaultOutput,
+		theme:            options.Theme,
+		noTUI:            options.NoTUI,
 		retries:          retries,
 		resume:           resume,
+		animations:       options.Animations,
+		hyperlinks:       options.Hyperlinks,
+		userAgent:        options.UserAgent,
+		timeout:          options.Timeout,
+		configInfo:       options.ConfigInfo,
 		executionRunner:  runner,
 		inspectRunner:    inspectRunner,
 	}

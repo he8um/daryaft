@@ -70,6 +70,17 @@ func TestScreenSwitchingAndBack(t *testing.T) {
 	if model.screen != screenHome {
 		t.Fatalf("screen after backspace = %v, want home", model.screen)
 	}
+
+	model.selected = 5
+	model = updateWithKey(t, model, tea.KeyEnter)
+	if model.screen != screenSettings {
+		t.Fatalf("screen = %v, want settings", model.screen)
+	}
+
+	model = updateWithKey(t, model, tea.KeyEsc)
+	if model.screen != screenHome {
+		t.Fatalf("screen after esc from settings = %v, want home", model.screen)
+	}
 }
 
 func TestSelectURLInputScreen(t *testing.T) {
@@ -431,14 +442,21 @@ func TestHomeMenuIncludesInspectURL(t *testing.T) {
 		"Inspect URL",
 		"View help",
 		"Version",
+		"Settings",
 		"Quit",
 	} {
 		if !strings.Contains(view, want) {
 			t.Fatalf("home view missing %q:\n%s", want, view)
 		}
 	}
+	if len(homeMenu) != 7 {
+		t.Fatalf("homeMenu len = %d, want 7", len(homeMenu))
+	}
 	if homeMenu[2].title != "Inspect URL" {
 		t.Fatalf("homeMenu[2] = %q, want Inspect URL", homeMenu[2].title)
+	}
+	if homeMenu[5].title != "Settings" {
+		t.Fatalf("homeMenu[5] = %q, want Settings", homeMenu[5].title)
 	}
 }
 
@@ -1473,6 +1491,169 @@ func TestVersionScreenIncludesVersionValue(t *testing.T) {
 
 	if !strings.Contains(model.View(), version.Version) {
 		t.Fatalf("version view missing %q:\n%s", version.Version, model.View())
+	}
+}
+
+func TestOptionsConfigInfoPassedToModel(t *testing.T) {
+	model := NewModel(Options{
+		NoColor:    true,
+		ConfigInfo: ConfigInfo{Path: "/tmp/config.yaml", Loaded: true},
+	})
+	if model.configInfo.Path != "/tmp/config.yaml" {
+		t.Fatalf("configInfo.Path = %q, want /tmp/config.yaml", model.configInfo.Path)
+	}
+	if !model.configInfo.Loaded {
+		t.Fatal("configInfo.Loaded = false, want true")
+	}
+}
+
+func TestSettingsScreenRendersConfigPath(t *testing.T) {
+	model := NewModel(Options{
+		NoColor:    true,
+		ConfigInfo: ConfigInfo{Path: "/tmp/daryaft/config.yaml", Loaded: true},
+	})
+	model.screen = screenSettings
+	view := model.View()
+	if !strings.Contains(view, "Config file:") {
+		t.Fatalf("settings view missing Config file:\n%s", view)
+	}
+	if !strings.Contains(view, "/tmp/daryaft/config.yaml") {
+		t.Fatalf("settings view missing path:\n%s", view)
+	}
+}
+
+func TestSettingsScreenRendersConfigLoaded(t *testing.T) {
+	model := NewModel(Options{
+		NoColor:    true,
+		ConfigInfo: ConfigInfo{Path: "/tmp/config.yaml", Loaded: true},
+	})
+	model.screen = screenSettings
+	view := model.View()
+	if !strings.Contains(view, "Config loaded: yes") {
+		t.Fatalf("settings view missing loaded=yes:\n%s", view)
+	}
+}
+
+func TestSettingsScreenRendersConfigNotLoaded(t *testing.T) {
+	model := NewModel(Options{
+		NoColor:    true,
+		ConfigInfo: ConfigInfo{Path: "/tmp/config.yaml", Loaded: false},
+	})
+	model.screen = screenSettings
+	view := model.View()
+	if !strings.Contains(view, "Config loaded: no (using defaults)") {
+		t.Fatalf("settings view missing loaded=no:\n%s", view)
+	}
+}
+
+func TestSettingsScreenRendersAllSafeFields(t *testing.T) {
+	model := NewModel(Options{
+		NoColor:           true,
+		Theme:             "default",
+		DownloadDir:       "/tmp/downloads",
+		Retries:           5,
+		Resume:            true,
+		UseConfigDefaults: true,
+		NoTUI:             false,
+		Animations:        true,
+		Hyperlinks:        true,
+		UserAgent:         "DaryaftTest/1.11",
+		Timeout:           "30s",
+		ConfigInfo:        ConfigInfo{Path: "/tmp/config.yaml", Loaded: true},
+	})
+	model.screen = screenSettings
+	view := model.View()
+
+	for _, want := range []string{
+		"download_dir:",
+		"retries:",
+		"resume:",
+		"no_color:",
+		"no_tui:",
+		"theme:",
+		"animations:",
+		"hyperlinks:",
+		"user_agent:",
+		"timeout:",
+	} {
+		if !strings.Contains(view, want) {
+			t.Fatalf("settings view missing %q:\n%s", want, view)
+		}
+	}
+
+	for _, forbidden := range []string{
+		"password",
+		"token",
+		"authorization",
+		"cookie",
+		"proxy_authorization",
+	} {
+		if strings.Contains(strings.ToLower(view), forbidden) {
+			t.Fatalf("settings view unexpectedly contains %q:\n%s", forbidden, view)
+		}
+	}
+}
+
+func TestSettingsScreenRendersUserAgentDefault(t *testing.T) {
+	model := NewModel(Options{NoColor: true, UserAgent: ""})
+	model.screen = screenSettings
+	view := model.View()
+	if !strings.Contains(view, "user_agent: (default)") {
+		t.Fatalf("settings view missing user_agent default marker:\n%s", view)
+	}
+}
+
+func TestSettingsScreenRendersTimeoutNone(t *testing.T) {
+	model := NewModel(Options{NoColor: true, Timeout: ""})
+	model.screen = screenSettings
+	view := model.View()
+	if !strings.Contains(view, "timeout: (none)") {
+		t.Fatalf("settings view missing timeout none marker:\n%s", view)
+	}
+}
+
+func TestSettingsScreenRendersAnimationsReserved(t *testing.T) {
+	model := NewModel(Options{NoColor: true, Animations: true, Hyperlinks: true})
+	model.screen = screenSettings
+	view := model.View()
+	if !strings.Contains(view, "animations: true (reserved)") {
+		t.Fatalf("settings view missing animations reserved:\n%s", view)
+	}
+	if !strings.Contains(view, "hyperlinks: true (reserved)") {
+		t.Fatalf("settings view missing hyperlinks reserved:\n%s", view)
+	}
+}
+
+func TestSettingsScreenNavigationBack(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model.screen = screenSettings
+
+	model = updateWithKey(t, model, tea.KeyEsc)
+	if model.screen != screenHome {
+		t.Fatalf("screen after esc from settings = %v, want home", model.screen)
+	}
+
+	model.screen = screenSettings
+	model = updateWithKey(t, model, tea.KeyBackspace)
+	if model.screen != screenHome {
+		t.Fatalf("screen after backspace from settings = %v, want home", model.screen)
+	}
+}
+
+func TestCKeyJumpsToSettings(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model = updateWithRune(t, model, 'c')
+	if model.screen != screenSettings {
+		t.Fatalf("screen after c = %v, want settings", model.screen)
+	}
+}
+
+func TestSettingsScreenNoColorRendering(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model.screen = screenSettings
+	view := model.View()
+	if strings.Contains(view, "\x1b[") {
+		t.Fatalf("no-color settings view contains ANSI escapes:\n%q", view)
 	}
 }
 

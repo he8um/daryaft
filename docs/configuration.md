@@ -219,6 +219,28 @@ download directory, including the built-in `~/Downloads` default, is reported
 and checked. A download directory that does not exist is reported as a warning;
 `doctor` does not create download directories.
 
+## TUI Settings screen
+
+The TUI includes a read-only Settings screen that shows the active config path, whether
+a config file was loaded, and safe effective settings.
+
+Open it from the TUI home screen by selecting **Settings** (menu item 6) or pressing
+`c` from the home screen. Press `esc` or `backspace` to return home.
+
+The screen shows:
+
+```text
+Config file: <path>
+Config loaded: yes / no (using defaults)
+---
+download_dir, retries, resume, no_color, no_tui, theme,
+animations, hyperlinks, user_agent, timeout
+```
+
+The screen is read-only. It does not edit config files. It does not display credentials,
+tokens, cookies, auth headers, proxy values, or credential environment variables
+(`DARYAFT_USERNAME` / `DARYAFT_PASSWORD`).
+
 Related docs:
 
 - [Command Reference](command-reference.md)

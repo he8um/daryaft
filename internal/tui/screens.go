@@ -17,6 +17,7 @@ const (
 	screenInspectError
 	screenHelp
 	screenVersion
+	screenSettings
 )
 
 type menuItem struct {
@@ -30,6 +31,7 @@ var homeMenu = []menuItem{
 	{title: "Inspect URL", screen: screenInspectInput},
 	{title: "View help", screen: screenHelp},
 	{title: "Version", screen: screenVersion},
+	{title: "Settings", screen: screenSettings},
 	{title: "Quit", screen: screenHome},
 }
 
@@ -61,6 +63,8 @@ func (s screen) title() string {
 		return "Help"
 	case screenVersion:
 		return "Version"
+	case screenSettings:
+		return "Settings"
 	default:
 		return "Home"
 	}

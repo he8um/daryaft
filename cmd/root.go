@@ -74,6 +74,17 @@ downloader engine in future milestones.`,
 		}
 
 		if !effectiveNoTUI {
+			configPath, pathErr := appconfig.Path()
+			if pathErr != nil {
+				configPath = "(unavailable)"
+			}
+			configLoaded := false
+			if pathErr == nil {
+				loaded, err := appconfig.Exists()
+				if err == nil {
+					configLoaded = loaded
+				}
+			}
 			return tui.Run(tui.Options{
 				NoColor:           effectiveNoColor,
 				Theme:             cfg.Theme,
@@ -81,6 +92,15 @@ downloader engine in future milestones.`,
 				Retries:           cfg.Retries,
 				Resume:            cfg.Resume,
 				UseConfigDefaults: true,
+				NoTUI:             cfg.NoTUI,
+				Animations:        cfg.Animations,
+				Hyperlinks:        cfg.Hyperlinks,
+				UserAgent:         cfg.UserAgent,
+				Timeout:           cfg.Timeout,
+				ConfigInfo: tui.ConfigInfo{
+					Path:   configPath,
+					Loaded: configLoaded,
+				},
 			})
 		}
 

@@ -131,6 +131,11 @@ Go duration string (for example `30s`, `2m`); empty means no overall timeout.
 `animations` and `hyperlinks` are reserved fields stored for future behavior
 and do not currently change runtime output.
 
+To view effective settings inside the TUI, select **Settings** from the home
+menu or press `c` from the home screen. The Settings screen shows the active
+config path, whether a config file was loaded, and all safe effective config
+values. It is read-only.
+
 ```bash
 daryaft config set user_agent "MyBot/1.0"
 daryaft config set timeout 30s

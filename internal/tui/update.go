@@ -114,7 +114,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m.submitChecksumInput()
 		}
 		return m.updateTextInput(msg)
-	case screenHelp, screenVersion:
+	case screenHelp, screenVersion, screenSettings:
 		if isBackKey(key) {
 			return m.back()
 		}
@@ -151,6 +151,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.moveDown(), nil
 	case key.String() == "enter":
 		return m.enter()
+	case key.String() == "c" && m.screen == screenHome:
+		m.screen = screenSettings
+		return m, nil
 	default:
 		return m, nil
 	}
