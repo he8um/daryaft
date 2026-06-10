@@ -1,11 +1,11 @@
 # Daryaft Documentation
 
-Daryaft is a modern terminal downloader written in Go. **`v1.9.0` is the
+Daryaft is a modern terminal downloader written in Go. **`v1.10.0` is the
 current stable release.**
 
 Install via Homebrew (`brew tap he8um/tap && brew install daryaft`) or download
 binary archives from the
-[GitHub releases page](https://github.com/he8um/daryaft/releases/tag/v1.9.0).
+[GitHub releases page](https://github.com/he8um/daryaft/releases/tag/v1.10.0).
 Other package manager channels are post-1.0 work.
 
 ## Core Docs
