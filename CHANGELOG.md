@@ -6,6 +6,8 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-06-10
+
 ### Added
 
 - Added `--checksum algorithm:hex` flag for single-target CLI download verification.
@@ -25,8 +27,6 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 - Per-file batch checksums are not supported yet.
 - TUI checksum entry is not implemented.
 - Signature, PGP, and attestation verification are out of scope.
-
-Post-v1.6.0 development begins. Source default version advanced to `1.7.0-dev`.
 
 ## [1.6.0] - 2026-06-10
 
