@@ -6,18 +6,17 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 
 ## [Unreleased]
 
-Post-v1.5.0 development begins. Source default version advanced to `1.6.0-dev`.
+## [1.6.0] - 2026-06-10
 
 ### Changed
 
-- CLI single-URL download completion message now shows final size and elapsed time (`Completed: file.zip (512 B in 1.2s)`).
-- CLI now prints `Resuming:` prefix when resuming a partial download, and `Restarting:` prefix when resume is not supported or the remote file changed.
-- CLI now prints an in-band `Failed:` message when a single-URL download fails via the event stream.
-- Batch download summary now uses `Not started` instead of `Skipped` for items that were never attempted.
-- TUI batch execution view now shows a per-item queue history with status markers (✓/✗/→/·).
-- TUI no-color mode uses ASCII markers (`[ok]`/`[!]`/`[>]`/`[-]`) for queue item status.
-- TUI post-run hint updated to `enter/h new download • q quit`.
-- TUI batch summary uses `Not started` instead of `Skipped`.
+- Improved CLI download completion messages with final size and elapsed time (`Completed: file.zip (512 B in 1.2s)`).
+- Added clearer CLI failure, resume, and restart messages for single-download event output.
+- Renamed unfinished batch summary items from `Skipped` to `Not started`.
+- Improved TUI queue visibility with per-item status history.
+- Added clearer TUI queue status markers for color and no-color modes.
+- Improved TUI post-run hint and summary labels.
+- Expanded manual QA documentation for download and TUI queue UX.
 
 ## [1.5.0] - 2026-06-10
 
