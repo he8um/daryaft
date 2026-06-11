@@ -6,20 +6,29 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 
 ## [Unreleased]
 
+## [1.12.0] - 2026-06-11
+
 ### Added
 
-- Exported `download.ValidateURL` for use by TUI and other callers.
-- Added TUI-layer pre-validation for URL input: empty URL and invalid scheme/host are caught before building a plan, with actionable guidance messages.
-- Added TUI-layer pre-validation for file path input: empty path is caught with an example absolute path hint.
-- Added defaults preview line on the URL and file input screens showing configured save directory, retries, and resume flag.
-- Updated URL input prompt to mention `https://` and `http://` schemes explicitly.
-- Updated file input prompt to mention absolute path and one-URL-per-line format.
-- Updated Help screen to mention the `c` shortcut for Settings.
+- Added clearer TUI URL input validation for empty URLs, missing schemes, and unsupported schemes.
+- Added clearer TUI `.txt` file path validation for empty paths, missing files, and directory paths.
+- Added compact safe defaults preview on TUI URL and file input screens.
+- Added clearer `.txt` file path guidance with full-path examples.
+- Improved TUI help text for Settings and file-based downloads.
+- Improved TUI output root guidance so configured `download_dir` is visible before starting a download.
+- Exported `download.ValidateURL` for shared URL validation.
+
+### Security
+
+- Kept TUI input defaults preview limited to safe non-secret values.
 
 ### Tests
 
-- Added `TestValidateURLExported` in `internal/download/validate_test.go`.
-- Added tests for empty URL guidance, empty file path guidance, scheme validation, defaults preview rendering, updated prompts, help view Settings mention, and error-on-type clearing.
+- Added tests for TUI URL input validation.
+- Added tests for TUI file path validation.
+- Added tests for defaults preview rendering and no-secret output.
+- Added tests for no-color defaults preview rendering.
+- Added tests for exported URL validation.
 
 ## [1.11.0] - 2026-06-11
 
