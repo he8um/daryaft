@@ -74,7 +74,7 @@ func (m Model) homeView() string {
 func (m Model) helpView() string {
 	return m.subscreenView(
 		"Help",
-		"Use ↑/k and ↓/j to move through the home menu.\nPress enter to select an item.\nPress esc or backspace to return home.\nPress q or ctrl+c to quit.",
+		"Use ↑/k and ↓/j to move through the home menu.\nPress enter to select an item.\nPress c to open Settings.\nPress esc or backspace to return home.\nPress q or ctrl+c to quit.",
 	)
 }
 
@@ -175,6 +175,12 @@ func (m Model) inputView() string {
 	builder.WriteString("\n\n")
 	builder.WriteString(m.styles.body.Render(m.inputPrompt()))
 	builder.WriteString("\n")
+	if m.screen == screenURLInput || m.screen == screenFileInput {
+		if preview := m.downloadDefaultsPreview(); preview != "" {
+			builder.WriteString(m.styles.muted.Render(preview))
+			builder.WriteString("\n")
+		}
+	}
 	if m.screen == screenOutputInput {
 		builder.WriteString(m.styles.muted.Render(fmt.Sprintf("Default/current value: %s", displayValue(m.outputDirInput, "."))))
 		builder.WriteString("\n")
@@ -199,6 +205,11 @@ func (m Model) inputView() string {
 	builder.WriteString("\n\n")
 	builder.WriteString(m.footerView())
 	return strings.TrimRight(builder.String(), "\n")
+}
+
+func (m Model) downloadDefaultsPreview() string {
+	dir := settingsDownloadDir(m.defaultOutputDir)
+	return fmt.Sprintf("Defaults: save to %s • retries %d • resume %s", dir, m.retries, displayBool(m.resume))
 }
 
 func (m Model) planView() string {

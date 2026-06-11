@@ -388,6 +388,23 @@ Test these flows:
 - Use Backspace in input fields, including on an empty input.
 - Resize the terminal while screens are active, if practical.
 
+Input UX Polish (v1.12.0):
+
+- Open the URL input screen. Verify the prompt says `Enter a download URL
+  (https:// or http://)`. Verify a defaults preview line appears showing the
+  configured save directory, retries, and resume value.
+- Press Enter without typing. Verify an inline error appears mentioning
+  `https://` as a guidance example.
+- Type `ftp://example.com/file.zip` and press Enter. Verify an inline error
+  appears mentioning `scheme must be http or https`. Verify no plan screen
+  appears.
+- Type a character after the error. Verify the error clears immediately.
+- Open the file input screen. Verify the prompt mentions absolute path and
+  one-URL-per-line format. Verify a defaults preview line appears.
+- Press Enter without typing. Verify an inline error appears mentioning `.txt`
+  as guidance.
+- Open the Help screen. Verify it mentions the `c` shortcut for Settings.
+
 Expected:
 
 - No panic.
@@ -399,6 +416,9 @@ Expected:
 - The `.txt` batch flow does not ask for checksum.
 - Inspect does not write files.
 - A cancelled download keeps the partial file.
+- Empty URL or empty file path shows guidance, not a raw Go error.
+- FTP and other non-HTTP schemes are rejected with a clear inline message.
+- Defaults preview is visible on both URL and file input screens.
 
 ## Config And Environment
 

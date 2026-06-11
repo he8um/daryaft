@@ -155,13 +155,22 @@ daryaft
 Opens the first Bubble Tea interactive home screen. The home screen includes
 Download from URL, Download from .txt file, Inspect URL, View help, Version,
 and Quit.
-Download actions inside the TUI now open input forms. Entering a URL or a path
-to a `.txt` URL file validates the input with the existing download planning
-logic, then opens an output directory input before showing the dry-run plan.
-For single URL downloads, the TUI then prompts `Enter custom filename` and
-`Enter checksum`; leaving those fields empty means auto-detect filename and
-skip checksum verification. The `.txt` batch flow skips custom filename and
-checksum input because one value cannot safely apply to multiple downloads.
+Download actions inside the TUI open input forms. The URL input prompt specifies
+`https://` or `http://` schemes. The file input prompt specifies an absolute
+path format with one URL per line. Both input screens show a defaults preview
+line with the configured save directory, retry count, and resume flag so you can
+confirm the active settings before submitting. Submitting an empty URL shows a
+guidance message with an example `https://` URL. Submitting an empty file path
+shows a guidance message with an example absolute `.txt` path. Entering an
+unsupported scheme (e.g. `ftp://`) shows an inline error before any network
+request.
+After a valid URL or file path is submitted, the TUI validates the input with
+the existing download planning logic, then opens an output directory input
+before showing the dry-run plan. For single URL downloads, the TUI then prompts
+for a custom filename and checksum; leaving those fields empty means
+auto-detect filename and skip checksum verification. The `.txt` batch flow
+skips custom filename and checksum input because one value cannot safely apply
+to multiple downloads.
 Leaving the output directory empty uses the effective default output directory,
 which falls back to `~/Downloads` when no CLI flag, environment variable, or
 config value is set. Enter `.` to download to the current directory explicitly.

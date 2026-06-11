@@ -195,8 +195,16 @@ func (m Model) submitSourceInput() (Model, tea.Cmd) {
 
 	switch m.screen {
 	case screenURLInput:
+		if err = tuiURLError(m.input.Value()); err != nil {
+			m.errorMessage = err.Error()
+			return m, nil
+		}
 		plan, err = planFromURL(m.input.Value(), "", "", "", m.retries, m.resume)
 	case screenFileInput:
+		if err = tuiFilePathError(m.input.Value()); err != nil {
+			m.errorMessage = err.Error()
+			return m, nil
+		}
 		plan, err = planFromFile(m.input.Value(), "", m.retries, m.resume)
 	default:
 		return m, nil

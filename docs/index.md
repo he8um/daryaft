@@ -63,6 +63,7 @@ Other package manager channels are post-1.0 work.
 - [v1.9.0 Download Reliability Hardening Scope](roadmap/v1.9.0-download-reliability-hardening.md): scope, quality gates, and limitations for retry/resume reliability hardening.
 - [v1.10.0 Config Persistence Safe Core Scope](roadmap/v1.10.0-config-persistence-safe-core.md): scope, quality gates, and limitations for user_agent/timeout config keys and --config/--timeout flags.
 - [v1.11.0 TUI Config Awareness Scope](roadmap/v1.11.0-tui-config-awareness.md): scope, security policy, and quality gates for the read-only TUI Settings screen.
+- [v1.12.0 TUI Download Input UX Scope](roadmap/v1.12.0-tui-download-input-ux.md): scope and quality gates for TUI download input UX polish.
 
 ## Related Existing Docs
 

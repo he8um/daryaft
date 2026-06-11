@@ -32,7 +32,7 @@ are post-1.0 work.
 Source builds default to:
 
 ```text
-version: 1.1.0-dev
+version: 1.12.0-dev
 commit: local
 date: unknown
 built_by: source
@@ -71,7 +71,7 @@ goreleaser release --snapshot --clean --skip=publish
 
 This check is local validation only. It does not publish a release, create tags,
 or enable package-manager publishing. Snapshot versions are named
-`1.1.0-dev-SNAPSHOT-<short-commit>` so they align with the current development
+`1.12.0-dev-SNAPSHOT-<short-commit>` so they align with the current development
 metadata instead of deriving from release tags. Snapshot output is local and
 ignored by Git.
 

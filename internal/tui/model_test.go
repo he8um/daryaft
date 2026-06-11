@@ -91,7 +91,7 @@ func TestSelectURLInputScreen(t *testing.T) {
 	if model.screen != screenURLInput {
 		t.Fatalf("screen = %v, want URL input", model.screen)
 	}
-	if !strings.Contains(model.View(), "Enter download URL") {
+	if !strings.Contains(model.View(), "Enter a download URL") {
 		t.Fatalf("URL input view missing prompt:\n%s", model.View())
 	}
 }
@@ -427,7 +427,7 @@ func TestSelectFileInputScreen(t *testing.T) {
 	if model.screen != screenFileInput {
 		t.Fatalf("screen = %v, want file input", model.screen)
 	}
-	if !strings.Contains(model.View(), "Enter path to .txt file") {
+	if !strings.Contains(model.View(), ".txt file") {
 		t.Fatalf("file input view missing prompt:\n%s", model.View())
 	}
 }
@@ -1745,6 +1745,128 @@ func sampleInspectResult(rawURL string) inspect.Result {
 		ResumeSupportKnown: true,
 		ETag:               `"abc123"`,
 		LastModified:       "Tue, 01 Jun 2026 12:00:00 GMT",
+	}
+}
+
+func TestEmptyURLShowsGuidanceError(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model.selected = 0
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithKey(t, model, tea.KeyEnter)
+
+	if model.screen != screenURLInput {
+		t.Fatalf("screen = %v, want URL input", model.screen)
+	}
+	if model.errorMessage == "" {
+		t.Fatal("errorMessage is empty, want guidance error for empty URL")
+	}
+	if !strings.Contains(model.errorMessage, "https://") {
+		t.Fatalf("errorMessage %q should mention https://", model.errorMessage)
+	}
+}
+
+func TestEmptyFilePathShowsGuidanceError(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model.selected = 1
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithKey(t, model, tea.KeyEnter)
+
+	if model.screen != screenFileInput {
+		t.Fatalf("screen = %v, want file input", model.screen)
+	}
+	if model.errorMessage == "" {
+		t.Fatal("errorMessage is empty, want guidance error for empty file path")
+	}
+	if !strings.Contains(model.errorMessage, ".txt") {
+		t.Fatalf("errorMessage %q should mention .txt", model.errorMessage)
+	}
+}
+
+func TestInvalidURLSchemeShowsError(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model.selected = 0
+	model = updateWithKey(t, model, tea.KeyEnter)
+	model = updateWithString(t, model, "ftp://example.com/file.zip")
+	model = updateWithKey(t, model, tea.KeyEnter)
+
+	if model.screen != screenURLInput {
+		t.Fatalf("screen = %v, want URL input", model.screen)
+	}
+	if model.errorMessage == "" {
+		t.Fatal("errorMessage is empty, want scheme validation error")
+	}
+}
+
+func TestURLInputViewShowsDefaultsPreview(t *testing.T) {
+	model := NewModel(Options{NoColor: true, DownloadDir: "/tmp/downloads", Retries: 5, Resume: false, UseConfigDefaults: true})
+	model.selected = 0
+	model = updateWithKey(t, model, tea.KeyEnter)
+
+	view := model.View()
+	if !strings.Contains(view, "Defaults:") {
+		t.Fatalf("URL input view missing defaults preview:\n%s", view)
+	}
+	if !strings.Contains(view, "retries 5") {
+		t.Fatalf("URL input view defaults preview missing retries:\n%s", view)
+	}
+	if !strings.Contains(view, "resume false") {
+		t.Fatalf("URL input view defaults preview missing resume:\n%s", view)
+	}
+}
+
+func TestFileInputViewShowsDefaultsPreview(t *testing.T) {
+	model := NewModel(Options{NoColor: true, Retries: 2, Resume: true})
+	model.selected = 1
+	model = updateWithKey(t, model, tea.KeyEnter)
+
+	view := model.View()
+	if !strings.Contains(view, "Defaults:") {
+		t.Fatalf("file input view missing defaults preview:\n%s", view)
+	}
+}
+
+func TestHelpViewMentionsSettings(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model.screen = screenHelp
+	view := model.View()
+	if !strings.Contains(view, "Settings") {
+		t.Fatalf("help view does not mention Settings:\n%s", view)
+	}
+}
+
+func TestURLInputPromptMentionsScheme(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model.selected = 0
+	model = updateWithKey(t, model, tea.KeyEnter)
+	view := model.View()
+	if !strings.Contains(view, "https://") {
+		t.Fatalf("URL input prompt does not mention https://:\n%s", view)
+	}
+}
+
+func TestFileInputPromptMentionsAbsolutePath(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model.selected = 1
+	model = updateWithKey(t, model, tea.KeyEnter)
+	view := model.View()
+	if !strings.Contains(view, "absolute") {
+		t.Fatalf("file input prompt does not mention absolute path:\n%s", view)
+	}
+}
+
+func TestErrorMessageClearsOnInputChange(t *testing.T) {
+	model := NewModel(Options{NoColor: true})
+	model.selected = 0
+	model = updateWithKey(t, model, tea.KeyEnter)
+	// trigger an error
+	model = updateWithKey(t, model, tea.KeyEnter)
+	if model.errorMessage == "" {
+		t.Fatal("expected error message after empty submit")
+	}
+	// typing a character should clear the error
+	model = updateWithString(t, model, "h")
+	if model.errorMessage != "" {
+		t.Fatalf("errorMessage = %q, want empty after typing", model.errorMessage)
 	}
 }
 

@@ -8,6 +8,22 @@ import (
 	"github.com/he8um/daryaft/internal/download"
 )
 
+func tuiURLError(rawURL string) error {
+	trimmed := strings.TrimSpace(rawURL)
+	if trimmed == "" {
+		return fmt.Errorf("enter a URL to download (e.g. https://example.com/file.zip)")
+	}
+	return download.ValidateURL(trimmed)
+}
+
+func tuiFilePathError(path string) error {
+	trimmed := strings.TrimSpace(path)
+	if trimmed == "" {
+		return fmt.Errorf("enter the path to a .txt file (e.g. /home/user/urls.txt)")
+	}
+	return nil
+}
+
 const (
 	tuiDefaultRetries = 3
 	tuiDefaultResume  = true

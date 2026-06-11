@@ -21,20 +21,25 @@ Use up/down arrows or `k`/`j` to move and enter to select. Escape navigates
 back from sub-screens. Backspace edits text when the current input has content
 and navigates back only when the input is empty. `q` quits unless a download is
 running; ctrl+c exits from anywhere. Download from URL and Download from .txt
-file open input forms, validate with the existing download planner, then ask
-for an output directory before showing dry-run plans. The single URL flow then
-asks for an optional custom filename; leaving it empty means auto-detect. The
-`.txt` batch flow does not offer one custom filename and keeps per-item
-auto-detect. Leaving the output directory empty uses the effective output
-default, which falls back to `~/Downloads` when no environment or config value
-is set. Enter `.` to use the current directory explicitly. Press enter on the
-plan screen to start a real download in the TUI. Inspect URL prompts for one
-HTTP/HTTPS URL and shows read-only metadata without starting a download or
-writing files. The TUI panel and input width adapt to terminal resize messages
-with bounded minimum and maximum widths. Existing CLI download commands remain
-fully supported, and CLI `-o`/`--output` and `--name` behavior is unchanged.
-Pressing `q` while a TUI download is running cancels it and keeps partial state
-for resume.
+file open input forms. The URL input prompt specifies `https://` or `http://`
+schemes. The file input prompt specifies an absolute path with one URL per line.
+Both input screens display a defaults preview with the configured save
+directory, retry count, and resume flag. Submitting an empty URL or empty file
+path shows an inline guidance message with an example value. Entering an
+unsupported URL scheme shows an inline error before any plan is built. After
+valid input, the TUI validates with the existing download planner, then asks for
+an output directory before showing dry-run plans. The single URL flow then asks
+for an optional custom filename; leaving it empty means auto-detect. The `.txt`
+batch flow does not offer one custom filename and keeps per-item auto-detect.
+Leaving the output directory empty uses the effective output default, which
+falls back to `~/Downloads` when no environment or config value is set. Enter
+`.` to use the current directory explicitly. Press enter on the plan screen to
+start a real download in the TUI. Inspect URL prompts for one HTTP/HTTPS URL
+and shows read-only metadata without starting a download or writing files. The
+TUI panel and input width adapt to terminal resize messages with bounded minimum
+and maximum widths. Existing CLI download commands remain fully supported, and
+CLI `-o`/`--output` and `--name` behavior is unchanged. Pressing `q` while a
+TUI download is running cancels it and keeps partial state for resume.
 
 **Settings screen:** Read-only view of the active config path, whether a config file
 was loaded, and safe effective settings (download directory, retries, resume, no-color,

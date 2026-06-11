@@ -463,3 +463,25 @@ func TestBuildPlan_ExistingSingleChecksumBehaviorUnchanged(t *testing.T) {
 		t.Fatal("plan.TargetChecksums != nil")
 	}
 }
+
+func TestValidateURLExported(t *testing.T) {
+	tests := []struct {
+		name    string
+		url     string
+		wantErr bool
+	}{
+		{"valid https", "https://example.com/file.zip", false},
+		{"valid http", "http://example.com/file.zip", false},
+		{"ftp scheme", "ftp://example.com/file.zip", true},
+		{"no scheme", "example.com/file.zip", true},
+		{"empty host", "https:///file.zip", true},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			err := ValidateURL(tc.url)
+			if (err != nil) != tc.wantErr {
+				t.Fatalf("ValidateURL(%q) error = %v, wantErr %v", tc.url, err, tc.wantErr)
+			}
+		})
+	}
+}

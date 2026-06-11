@@ -157,6 +157,11 @@ func collectURLs(options Options) ([]string, error) {
 	return urls, nil
 }
 
+// ValidateURL validates a single URL for download use.
+func ValidateURL(rawURL string) error {
+	return validateURL(rawURL)
+}
+
 func validateURL(rawURL string) error {
 	parsed, err := url.Parse(rawURL)
 	if err != nil {

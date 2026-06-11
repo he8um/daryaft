@@ -92,9 +92,9 @@ func clamp(value, minValue, maxValue int) int {
 func (m Model) inputPrompt() string {
 	switch m.screen {
 	case screenURLInput:
-		return "Enter download URL"
+		return "Enter a download URL (https:// or http://)"
 	case screenFileInput:
-		return "Enter path to .txt file"
+		return "Enter the absolute path to a .txt file with one URL per line"
 	case screenInspectInput:
 		return "Enter URL to inspect"
 	case screenOutputInput:
