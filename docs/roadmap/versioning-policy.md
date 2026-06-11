@@ -2,8 +2,8 @@
 
 Daryaft uses milestone-oriented semantic versioning.
 
-The latest stable release is `v1.11.0`. The current source development metadata
-version is `1.12.0-dev`, representing active post-1.11.0 development on `main`.
+The latest stable release is `v1.12.0`. The current source development metadata
+version is `1.13.0-dev`, representing active post-1.12.0 development on `main`.
 
 ## Version History Note
 
@@ -32,7 +32,7 @@ are post-1.0 work.
 Source builds default to:
 
 ```text
-version: 1.12.0-dev
+version: 1.13.0-dev
 commit: local
 date: unknown
 built_by: source
@@ -71,7 +71,7 @@ goreleaser release --snapshot --clean --skip=publish
 
 This check is local validation only. It does not publish a release, create tags,
 or enable package-manager publishing. Snapshot versions are named
-`1.12.0-dev-SNAPSHOT-<short-commit>` so they align with the current development
+`1.13.0-dev-SNAPSHOT-<short-commit>` so they align with the current development
 metadata instead of deriving from release tags. Snapshot output is local and
 ignored by Git.
 

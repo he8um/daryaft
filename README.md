@@ -8,13 +8,12 @@ packaging, and future self-update support.
 
 ## Status
 
-**v1.11.0 is the current stable release.** Download binary archives from the
-[GitHub releases page](https://github.com/he8um/daryaft/releases/tag/v1.11.0).
+**v1.12.0 is the current stable release.** Download binary archives from the
+[GitHub releases page](https://github.com/he8um/daryaft/releases/tag/v1.12.0).
 
-Daryaft v1.11.0 adds a read-only TUI Settings screen for safe configuration
-awareness. Open it with `c` from the TUI home screen or by selecting Settings.
-It displays the active config path, loaded/default state, and safe effective
-settings. Credentials and secrets are intentionally excluded. The full feature
+Daryaft v1.12.0 polishes the TUI download input experience with cleaner URL and
+file path validation, actionable guidance messages, and a compact safe defaults
+preview on input screens. The full feature
 set includes CLI and TUI HTTP/HTTPS downloading with dry-run planning, single URL
 and sequential batch downloads, resume from `.part` files, retry with exponential
 backoff, CLI checksum verification for single URL downloads (`--checksum`) and
@@ -41,7 +40,7 @@ Auto-update (`daryaft update` without `--check`) is not yet implemented.
 Known limitations (Windows, concurrent downloads, TUI HTTP options, auto-update,
 package managers, checksum auto-discovery, PGP/attestation verification,
 `Retry-After` not honored) are documented in the
-[v1.11.0 release notes](docs/operations/release-notes-v1.11.0.md). Post-1.0
+[v1.12.0 release notes](docs/operations/release-notes-v1.11.0.md). Post-1.0
 features are tracked in [post-1-feature-packs.md](docs/roadmap/post-1-feature-packs.md).
 
 - Repository: https://github.com/he8um/daryaft
@@ -64,8 +63,8 @@ daryaft version
 
 ```bash
 # Example: macOS Apple Silicon
-curl -L -O https://github.com/he8um/daryaft/releases/download/v1.11.0/daryaft_darwin_arm64.tar.gz
-curl -L -O https://github.com/he8um/daryaft/releases/download/v1.11.0/checksums.txt
+curl -L -O https://github.com/he8um/daryaft/releases/download/v1.12.0/daryaft_darwin_arm64.tar.gz
+curl -L -O https://github.com/he8um/daryaft/releases/download/v1.12.0/checksums.txt
 shasum -a 256 --check checksums.txt
 tar -xzf daryaft_darwin_arm64.tar.gz
 ./daryaft version
@@ -78,7 +77,7 @@ For future releases, `scripts/update-homebrew-formula.sh` updates a local tap
 clone from the published GitHub release checksums — the maintainer reviews the
 diff and pushes manually. GoReleaser Homebrew publishing remains disabled.
 Other package manager channels (deb, rpm, Arch) are later post-1.0 work.
-Source builds on `main` report `1.11.0-dev` (current development default);
+Source builds on `main` report `1.13.0-dev` (current development default);
 release builds inject the exact tag version via GoReleaser ldflags.
 
 For local development:
@@ -118,7 +117,7 @@ make run
 `make release-check` requires GoReleaser v2 and runs a local snapshot release
 check without publishing, creating tags, or enabling package-manager publishing.
 Install GoReleaser with `brew install goreleaser` if the command is missing.
-Snapshot versions are named like `1.11.0-dev-SNAPSHOT-<short-commit>`, and any
+Snapshot versions are named like `1.13.0-dev-SNAPSHOT-<short-commit>`, and any
 snapshot artifacts are written under ignored local build directories such as
 `dist/`.
 
