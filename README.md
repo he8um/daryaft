@@ -334,7 +334,6 @@ target, stops remaining batch items, and exits non-zero.
 Repository documentation lives in `docs/`.
 
 Start here:
-
 - [Documentation Index](docs/index.md)
 - [Quick Start](docs/quick-start.md)
 - [Installation](docs/installation.md)
