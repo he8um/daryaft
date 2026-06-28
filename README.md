@@ -40,7 +40,7 @@ Auto-update (`daryaft update` without `--check`) is not yet implemented.
 Known limitations (Windows, concurrent downloads, TUI HTTP options, auto-update,
 package managers, checksum auto-discovery, PGP/attestation verification,
 `Retry-After` not honored) are documented in the
-[v1.12.0 release notes](docs/operations/release-notes-v1.11.0.md). Post-1.0
+[v1.12.0 release notes](docs/operations/release-notes-v1.12.0.md). Post-1.0
 features are tracked in [post-1-feature-packs.md](docs/roadmap/post-1-feature-packs.md).
 
 - Repository: https://github.com/he8um/daryaft
