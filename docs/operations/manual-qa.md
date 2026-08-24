@@ -624,3 +624,31 @@ These checks exercise the new `user_agent`, `timeout`, and `--config` additions.
    `DARYAFT_USERNAME` / `DARYAFT_PASSWORD`.
 
 9. **Cleanup**: delete `/tmp/qa.yaml` after QA.
+
+## v1.13.0 — TUI HTTP Options Wiring QA
+
+1. **Configured `user_agent` in TUI downloads**:
+   - Start local QA server: `scripts/manual-qa-server.sh`.
+   - Set custom user agent: `daryaft --config /tmp/qa-v13.yaml config init && daryaft --config /tmp/qa-v13.yaml config set user_agent "DaryaftTUIQA/1.13"`.
+   - Start TUI: `daryaft --config /tmp/qa-v13.yaml`.
+   - Select **Download from URL**, enter `http://127.0.0.1:8091/file.txt`, and complete the download.
+   - Verify server request logs confirm the `User-Agent: DaryaftTUIQA/1.13` header was received.
+
+2. **Configured `timeout` in TUI downloads**:
+   - Set small timeout: `daryaft --config /tmp/qa-v13.yaml config set timeout 1s`.
+   - Start TUI: `daryaft --config /tmp/qa-v13.yaml`.
+   - Attempt a download against an endpoint that delays responses (or an unreachable/slow host).
+   - Verify TUI handles the timeout cleanly without panicking.
+
+3. **Empty defaults preserve built-in behavior**:
+   - Reset config: `daryaft --config /tmp/qa-v13.yaml config reset`.
+   - Start TUI: `daryaft --config /tmp/qa-v13.yaml`.
+   - Download `http://127.0.0.1:8091/file.txt`.
+   - Verify download succeeds using default user agent without premature timeout.
+
+4. **Settings and defaults preview**:
+   - Verify Settings screen and URL/file input defaults preview show configured `user_agent` and `timeout` accurately.
+   - Verify no secret credentials, auth headers, or tokens appear.
+
+5. **Cleanup**:
+   - Delete `/tmp/qa-v13.yaml` and test output files.

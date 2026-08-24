@@ -1927,3 +1927,102 @@ func updateWithMsgAndCmd(t *testing.T, model Model, msg tea.Msg) (Model, tea.Cmd
 	}
 	return next, cmd
 }
+
+func TestPlanFromURLCarriesUserAgent(t *testing.T) {
+	plan, err := planFromURL("https://example.com/file.zip", "/tmp", "custom.zip", "", 3, true, "DaryaftBot/1.0")
+	if err != nil {
+		t.Fatalf("planFromURL returned error: %v", err)
+	}
+	if plan.HTTPOptions.UserAgent != "DaryaftBot/1.0" {
+		t.Fatalf("plan.HTTPOptions.UserAgent = %q, want DaryaftBot/1.0", plan.HTTPOptions.UserAgent)
+	}
+}
+
+func TestPlanFromFileCarriesUserAgent(t *testing.T) {
+	tmpFile := filepath.Join(t.TempDir(), "urls.txt")
+	if err := os.WriteFile(tmpFile, []byte("https://example.com/1.zip\n"), 0o600); err != nil {
+		t.Fatalf("failed to write test urls file: %v", err)
+	}
+	plan, err := planFromFile(tmpFile, "/tmp", 3, true, "DaryaftBot/1.0")
+	if err != nil {
+		t.Fatalf("planFromFile returned error: %v", err)
+	}
+	if plan.HTTPOptions.UserAgent != "DaryaftBot/1.0" {
+		t.Fatalf("plan.HTTPOptions.UserAgent = %q, want DaryaftBot/1.0", plan.HTTPOptions.UserAgent)
+	}
+}
+
+func TestPlanFromURLEmptyUserAgentPreservesDefault(t *testing.T) {
+	plan, err := planFromURL("https://example.com/file.zip", "", "", "", 3, true, "")
+	if err != nil {
+		t.Fatalf("planFromURL returned error: %v", err)
+	}
+	if plan.HTTPOptions.UserAgent != "" {
+		t.Fatalf("plan.HTTPOptions.UserAgent = %q, want empty", plan.HTTPOptions.UserAgent)
+	}
+}
+
+func TestURLDownloadWorkflowCarriesUserAgentToExecutionRunner(t *testing.T) {
+	var received download.Plan
+	model := NewModelWithRunner(Options{
+		NoColor:   true,
+		UserAgent: "DaryaftIntegration/1.13",
+		Timeout:   "15s",
+	}, capturePlanRunner(&received))
+
+	model = singleURLPlanModel(t, model, "https://example.com/file.zip", "downloads", "")
+	if model.screen != screenPlan {
+		t.Fatalf("screen = %v, want screenPlan", model.screen)
+	}
+	if model.plan.HTTPOptions.UserAgent != "DaryaftIntegration/1.13" {
+		t.Fatalf("plan.HTTPOptions.UserAgent = %q, want DaryaftIntegration/1.13", model.plan.HTTPOptions.UserAgent)
+	}
+
+	model, cmd := updateWithKeyAndCmd(t, model, tea.KeyEnter)
+	if model.screen != screenExecution {
+		t.Fatalf("screen = %v, want screenExecution", model.screen)
+	}
+	if cmd == nil {
+		t.Fatal("execution command is nil")
+	}
+
+	_ = cmd()
+	if received.HTTPOptions.UserAgent != "DaryaftIntegration/1.13" {
+		t.Fatalf("runner received.HTTPOptions.UserAgent = %q, want DaryaftIntegration/1.13", received.HTTPOptions.UserAgent)
+	}
+}
+
+func TestFileDownloadWorkflowCarriesUserAgentToExecutionRunner(t *testing.T) {
+	tmpFile := filepath.Join(t.TempDir(), "urls.txt")
+	if err := os.WriteFile(tmpFile, []byte("https://example.com/1.zip\nhttps://example.com/2.zip\n"), 0o600); err != nil {
+		t.Fatalf("failed to write test urls file: %v", err)
+	}
+
+	var received download.Plan
+	model := NewModelWithRunner(Options{
+		NoColor:   true,
+		UserAgent: "BatchAgent/2.0",
+		Timeout:   "30s",
+	}, capturePlanRunner(&received))
+
+	model = batchPlanModel(t, model, tmpFile, "downloads")
+	if model.screen != screenPlan {
+		t.Fatalf("screen = %v, want screenPlan", model.screen)
+	}
+	if model.plan.HTTPOptions.UserAgent != "BatchAgent/2.0" {
+		t.Fatalf("plan.HTTPOptions.UserAgent = %q, want BatchAgent/2.0", model.plan.HTTPOptions.UserAgent)
+	}
+
+	model, cmd := updateWithKeyAndCmd(t, model, tea.KeyEnter)
+	if model.screen != screenExecution {
+		t.Fatalf("screen = %v, want screenExecution", model.screen)
+	}
+	if cmd == nil {
+		t.Fatal("execution command is nil")
+	}
+
+	_ = cmd()
+	if received.HTTPOptions.UserAgent != "BatchAgent/2.0" {
+		t.Fatalf("runner received.HTTPOptions.UserAgent = %q, want BatchAgent/2.0", received.HTTPOptions.UserAgent)
+	}
+}

@@ -6,6 +6,22 @@ Daryaft uses the project versioning policy described in `docs/roadmap/versioning
 
 ## [Unreleased]
 
+### Added
+
+- Wired configured `user_agent` and `timeout` into TUI download execution.
+- Configured User-Agent header is now propagated to TUI download HTTP requests.
+- Configured request timeout is now applied to TUI HTTP clients and download execution.
+
+### Security
+
+- Preserved TUI secret-exclusion boundaries; no credential, auth header, cookie, or proxy input was added.
+
+### Tests
+
+- Added regression coverage for TUI HTTP option propagation and default behavior.
+- Added tests for execution runner User-Agent header propagation and timeout enforcement.
+- Added tests for invalid and non-positive timeout error handling in TUI execution.
+
 ## [1.12.0] - 2026-06-11
 
 ### Added

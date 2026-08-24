@@ -4,9 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/he8um/daryaft/internal/download"
 	"github.com/he8um/daryaft/internal/downloader"
+	"github.com/he8um/daryaft/internal/httpopts"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -60,10 +63,56 @@ type executionFailure struct {
 type ExecutionRunner func(context.Context, download.Plan, downloader.BatchHandlers) downloader.BatchResult
 
 func defaultExecutionRunner(ctx context.Context, plan download.Plan, handlers downloader.BatchHandlers) downloader.BatchResult {
-	// Checksum verification (both single-target Plan.Checksum and per-target
-	// Plan.TargetChecksums) is handled inside DownloadBatchContext, so the TUI
-	// does not perform any checksum verification itself.
-	return downloader.New().DownloadBatchContext(ctx, plan, handlers)
+	return newDefaultExecutionRunner("")(ctx, plan, handlers)
+}
+
+func newDefaultExecutionRunner(timeoutStr string) ExecutionRunner {
+	return func(ctx context.Context, plan download.Plan, handlers downloader.BatchHandlers) downloader.BatchResult {
+		httpClient, err := httpopts.NewClient(downloader.DefaultHTTPClient(), plan.HTTPOptions)
+		if err != nil {
+			return makeErrorBatchResult(plan, err, handlers)
+		}
+		if strings.TrimSpace(timeoutStr) != "" {
+			duration, parseErr := time.ParseDuration(strings.TrimSpace(timeoutStr))
+			if parseErr != nil {
+				return makeErrorBatchResult(plan, fmt.Errorf("invalid timeout %q: %w", timeoutStr, parseErr), handlers)
+			}
+			if duration <= 0 {
+				return makeErrorBatchResult(plan, fmt.Errorf("timeout must be positive"), handlers)
+			}
+			httpClient.Timeout = duration
+		}
+		return downloader.NewWithOptions(httpClient, plan.HTTPOptions).DownloadBatchContext(ctx, plan, handlers)
+	}
+}
+
+func makeErrorBatchResult(plan download.Plan, err error, handlers downloader.BatchHandlers) downloader.BatchResult {
+	result := downloader.BatchResult{
+		Planned: len(plan.URLs),
+		Items:   make([]downloader.BatchItemResult, 0, len(plan.URLs)),
+	}
+	for index, rawURL := range plan.URLs {
+		item := downloader.BatchItem{
+			Index: index + 1,
+			Total: len(plan.URLs),
+			URL:   rawURL,
+		}
+		if handlers.ItemStarted != nil {
+			handlers.ItemStarted(item)
+		}
+		if handlers.Event != nil {
+			handlers.Event(item, downloader.Event{
+				Type:  downloader.EventFailed,
+				URL:   rawURL,
+				Error: err,
+			})
+		}
+		result.Items = append(result.Items, downloader.BatchItemResult{
+			Item: item,
+			Err:  err,
+		})
+	}
+	return result
 }
 
 func newExecutionState(plan download.Plan) executionState {

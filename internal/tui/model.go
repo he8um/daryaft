@@ -70,7 +70,7 @@ type Model struct {
 }
 
 func NewModel(options Options) Model {
-	return NewModelWithRunners(options, defaultExecutionRunner, defaultInspectRunner)
+	return NewModelWithRunners(options, newDefaultExecutionRunner(options.Timeout), defaultInspectRunner)
 }
 
 func NewModelWithRunner(options Options, runner ExecutionRunner) Model {
@@ -81,7 +81,7 @@ func NewModelWithRunners(options Options, runner ExecutionRunner, inspectRunner 
 	noColorMode := options.NoColor || config.IsMonoTheme(options.Theme)
 	styles := newStyles(noColorMode)
 	if runner == nil {
-		runner = defaultExecutionRunner
+		runner = newDefaultExecutionRunner(options.Timeout)
 	}
 	if inspectRunner == nil {
 		inspectRunner = defaultInspectRunner

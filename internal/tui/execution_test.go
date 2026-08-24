@@ -1,10 +1,16 @@
 package tui
 
 import (
+	"context"
 	"errors"
+	"net/http"
+	"net/http/httptest"
+	"strings"
 	"testing"
 
+	"github.com/he8um/daryaft/internal/download"
 	"github.com/he8um/daryaft/internal/downloader"
+	"github.com/he8um/daryaft/internal/httpopts"
 )
 
 func TestExecutionStateAccumulatesItems(t *testing.T) {
@@ -85,5 +91,86 @@ func TestTruncateURL(t *testing.T) {
 		if got != c.want {
 			t.Errorf("truncateURL(%q, %d) = %q, want %q", c.url, c.max, got, c.want)
 		}
+	}
+}
+
+func TestNewDefaultExecutionRunnerAppliesUserAgentAndTimeout(t *testing.T) {
+	var receivedUA string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		receivedUA = r.Header.Get("User-Agent")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("content"))
+	}))
+	defer server.Close()
+
+	runner := newDefaultExecutionRunner("10s")
+	plan := download.Plan{
+		URLs:        []string{server.URL},
+		Output:      t.TempDir(),
+		HTTPOptions: httpopts.Options{UserAgent: "DaryaftTUI/1.13"},
+	}
+
+	result := runner(context.Background(), plan, downloader.BatchHandlers{})
+	if result.Completed() != 1 {
+		t.Fatalf("expected 1 completed, got %d (failed: %d)", result.Completed(), result.Failed())
+	}
+	if receivedUA != "DaryaftTUI/1.13" {
+		t.Fatalf("received User-Agent = %q, want DaryaftTUI/1.13", receivedUA)
+	}
+}
+
+func TestNewDefaultExecutionRunnerInvalidTimeout(t *testing.T) {
+	runner := newDefaultExecutionRunner("not-a-duration")
+	plan := download.Plan{
+		URLs:   []string{"http://127.0.0.1:9999/test"},
+		Output: t.TempDir(),
+	}
+	result := runner(context.Background(), plan, downloader.BatchHandlers{})
+	if result.Failed() != 1 {
+		t.Fatalf("expected 1 failure for invalid timeout, got %d", result.Failed())
+	}
+	if len(result.Items) == 0 || !strings.Contains(result.Items[0].Err.Error(), "invalid timeout") {
+		t.Fatalf("expected invalid timeout error, got %v", result.Items)
+	}
+}
+
+func TestNewDefaultExecutionRunnerNonPositiveTimeout(t *testing.T) {
+	for _, timeout := range []string{"0s", "-5s"} {
+		runner := newDefaultExecutionRunner(timeout)
+		plan := download.Plan{
+			URLs:   []string{"http://127.0.0.1:9999/test"},
+			Output: t.TempDir(),
+		}
+		result := runner(context.Background(), plan, downloader.BatchHandlers{})
+		if result.Failed() != 1 {
+			t.Fatalf("expected 1 failure for non-positive timeout %q, got %d", timeout, result.Failed())
+		}
+		if len(result.Items) == 0 || !strings.Contains(result.Items[0].Err.Error(), "timeout must be positive") {
+			t.Fatalf("expected timeout must be positive error, got %v", result.Items)
+		}
+	}
+}
+
+func TestDefaultExecutionRunnerUsesEmptyTimeout(t *testing.T) {
+	var receivedUA string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		receivedUA = r.Header.Get("User-Agent")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("ok"))
+	}))
+	defer server.Close()
+
+	plan := download.Plan{
+		URLs:        []string{server.URL},
+		Output:      t.TempDir(),
+		HTTPOptions: httpopts.Options{UserAgent: "CustomAgent/1"},
+	}
+
+	result := defaultExecutionRunner(context.Background(), plan, downloader.BatchHandlers{})
+	if result.Completed() != 1 {
+		t.Fatalf("expected 1 completed, got %d", result.Completed())
+	}
+	if receivedUA != "CustomAgent/1" {
+		t.Fatalf("received User-Agent = %q, want CustomAgent/1", receivedUA)
 	}
 }

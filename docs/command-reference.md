@@ -34,7 +34,8 @@ batch flow does not offer one custom filename and keeps per-item auto-detect.
 Leaving the output directory empty uses the effective output default, which
 falls back to `~/Downloads` when no environment or config value is set. Enter
 `.` to use the current directory explicitly. Press enter on the plan screen to
-start a real download in the TUI. Inspect URL prompts for one HTTP/HTTPS URL
+start a real download in the TUI (honoring configured `user_agent` and `timeout`).
+Inspect URL prompts for one HTTP/HTTPS URL
 and shows read-only metadata without starting a download or writing files. The
 TUI panel and input width adapt to terminal resize messages with bounded minimum
 and maximum widths. Existing CLI download commands remain fully supported, and

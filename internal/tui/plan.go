@@ -6,6 +6,7 @@ import (
 
 	"github.com/he8um/daryaft/internal/config"
 	"github.com/he8um/daryaft/internal/download"
+	"github.com/he8um/daryaft/internal/httpopts"
 )
 
 func tuiURLError(rawURL string) error {
@@ -29,25 +30,27 @@ const (
 	tuiDefaultResume  = true
 )
 
-func planFromURL(rawURL, output, name, checksum string, retries int, resume bool) (download.Plan, error) {
+func planFromURL(rawURL, output, name, checksum string, retries int, resume bool, userAgent string) (download.Plan, error) {
 	return download.BuildPlan(download.Options{
-		URLs:     []string{strings.TrimSpace(rawURL)},
-		Output:   output,
-		Name:     name,
-		DryRun:   true,
-		Checksum: checksum,
-		Retries:  retries,
-		Resume:   resume,
+		URLs:        []string{strings.TrimSpace(rawURL)},
+		Output:      output,
+		Name:        name,
+		DryRun:      true,
+		Checksum:    checksum,
+		Retries:     retries,
+		Resume:      resume,
+		HTTPOptions: httpopts.Options{UserAgent: userAgent},
 	})
 }
 
-func planFromFile(path, output string, retries int, resume bool) (download.Plan, error) {
+func planFromFile(path, output string, retries int, resume bool, userAgent string) (download.Plan, error) {
 	return download.BuildPlan(download.Options{
-		File:    strings.TrimSpace(path),
-		Output:  output,
-		DryRun:  true,
-		Retries: retries,
-		Resume:  resume,
+		File:        strings.TrimSpace(path),
+		Output:      output,
+		DryRun:      true,
+		Retries:     retries,
+		Resume:      resume,
+		HTTPOptions: httpopts.Options{UserAgent: userAgent},
 	})
 }
 

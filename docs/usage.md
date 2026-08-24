@@ -176,7 +176,8 @@ which falls back to `~/Downloads` when no CLI flag, environment variable, or
 config value is set. Enter `.` to download to the current directory explicitly.
 Press enter on the plan screen to start a real download. The TUI supports one
 URL and sequential `.txt` batch execution using the same downloader event
-stream as the CLI, and both flows honor the selected output directory. The TUI
+stream as the CLI, honoring the selected output directory, configured `user_agent`,
+and configured `timeout` duration. The TUI
 resizes its panel and text inputs to the terminal window. Escape navigates
 back; Backspace edits a non-empty text input and navigates back only when the
 current input is empty.

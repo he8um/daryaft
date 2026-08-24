@@ -147,10 +147,10 @@ DARYAFT_NO_TUI=true daryaft
 - `retries`: default retry attempts after the initial attempt. Valid range:
   `0` through `20`.
 - `resume`: default resume behavior for interrupted `.part` files.
-- `user_agent`: default User-Agent header for downloads. Empty means Daryaft uses
+- `user_agent`: default User-Agent header for CLI and TUI downloads. Empty means Daryaft uses
   its built-in default (`Daryaft/<version>`). `--user-agent` and `DARYAFT_USER_AGENT`
   override this value. Must not contain control characters.
-- `timeout`: overall HTTP request timeout as a Go duration string (for example
+- `timeout`: overall HTTP request timeout for CLI and TUI downloads as a Go duration string (for example
   `30s`, `2m`, `1m30s`). Empty means no overall timeout is set. `--timeout` and
   `DARYAFT_TIMEOUT` override this value. Must be a positive duration when set.
 - `no_color`: default no-color preference for the TUI.
